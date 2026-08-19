@@ -1,0 +1,11 @@
+{
+    "name": "CMS",
+    "alias": "cms",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Domains\\CMS\\Providers\\CMSServiceProvider"
+    ],
+    "files": []
+}

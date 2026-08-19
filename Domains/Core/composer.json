@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/core",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Domains\\Core\\": "app/",
+            "Domains\\Core\\Database\\Factories\\": "database/factories/",
+            "Domains\\Core\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Domains\\Core\\Tests\\": "tests/"
+        }
+    }
+}

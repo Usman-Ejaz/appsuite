@@ -1,0 +1,8 @@
+{
+    "Core": true,
+    "Identity": true,
+    "Auth": true,
+    "CMS": true,
+    "Shared": true,
+    "Ecommerce": true
+}

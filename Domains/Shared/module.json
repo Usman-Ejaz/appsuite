@@ -1,0 +1,11 @@
+{
+    "name": "Shared",
+    "alias": "shared",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Domains\\Shared\\Providers\\SharedServiceProvider"
+    ],
+    "files": []
+}
