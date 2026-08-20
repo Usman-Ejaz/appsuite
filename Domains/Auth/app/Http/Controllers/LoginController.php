@@ -3,65 +3,38 @@
 namespace Domains\Auth\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Domains\Auth\Actions\AuthenticateUser;
+use Domains\Auth\Http\Requests\LoginRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
-    /**
-     * Create the controller instance.
-     */
-    public function __construct(protected AuthRepository $repo)
+    public function __construct(protected AuthenticateUser $authenticateUser)
     {
         //
     }
 
     /**
-     * Display a listing of the resource.
+     * Authenticate a user and issue a bearer token for subsequent requests.
      */
-    public function index(Request $request)
+    public function login(LoginRequest $request): JsonResponse
     {
-        $filters = $request->filters();
+        $result = $this->authenticateUser->handle(
+            $request->validated('email'),
+            $request->validated('password'),
+        );
 
-        return response()->json([]);
+        return response()->json($result, 201);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Revoke the current access token (logout).
      */
-    public function store(Request $request)
+    public function logout(Request $request): JsonResponse
     {
-        //
+        $request->user()->currentAccessToken()->delete();
 
-        return response()->json([]);
-    }
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
-    {
-        //
-
-        return response()->json([]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        //
-
-        return response()->json([]);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        //
-
-        return response()->json([]);
+        return response()->json(null, 204);
     }
 }

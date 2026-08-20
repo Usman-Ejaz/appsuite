@@ -8,17 +8,18 @@ use Tests\TestCase;
 uses(TestCase::class, RefreshDatabase::class);
 
 test('a permission can be created with its fillable attributes and belongs to an app', function () {
-    $app = App::factory()->create();
+    $app = App::factory()->create(['code' => 'crm']);
 
     $permission = Permission::create([
         'app_id' => $app->id,
-        'name' => 'contacts.view',
+        'name' => 'crm:contacts:view',
         'label' => 'View Contacts',
         'code' => 'contacts_view',
         'guard_name' => 'web',
     ]);
 
     expect($permission->label)->toBe('View Contacts')
+        ->and($permission->name)->toBe('crm:contacts:view')
         ->and($permission->app)->toBeInstanceOf(App::class)
         ->and($permission->app->id)->toBe($app->id);
 });

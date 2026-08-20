@@ -4,5 +4,6 @@
     "Auth": true,
     "CMS": true,
     "Shared": true,
-    "Ecommerce": true
+    "Ecommerce": true,
+    "Storage": true
 }

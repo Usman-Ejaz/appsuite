@@ -1,17 +1,17 @@
 <?php
 
-namespace Domains\CMS\Http\Controllers;
+namespace Domains\Storage\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Domains\CMS\Repsoitories\CMSControllerRepository;
+use Domains\Storage\Repsoitories\StorageControllerRepository;
 use Illuminate\Http\Request;
 
-class CMSController extends Controller
+class StorageController extends Controller
 {
     /**
      * Create the controller instance.
      */
-    public function __construct(protected CMSControllerRepository $repo)
+    public function __construct(protected StorageControllerRepository $repo)
     {
         // 
     }

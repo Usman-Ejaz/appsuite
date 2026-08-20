@@ -1,0 +1,11 @@
+{
+    "name": "Storage",
+    "alias": "storage",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Domains\\Storage\\Providers\\StorageServiceProvider"
+    ],
+    "files": []
+}

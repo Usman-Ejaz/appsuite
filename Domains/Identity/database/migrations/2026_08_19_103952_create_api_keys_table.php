@@ -13,7 +13,14 @@ return new class extends Migration
     {
         Schema::create('api_keys', function (Blueprint $table) {
             $table->id();
-            
+            $table->company();
+            $table->string('name');
+            $table->string('api_key', 64)->unique();
+            $table->string('api_secret', 64);
+            $table->json('abilities')->nullable();
+            $table->timestamp('last_used_at')->nullable();
+            $table->timestamp('expires_at')->nullable();
+            $table->editor();
             $table->timestamps();
         });
     }

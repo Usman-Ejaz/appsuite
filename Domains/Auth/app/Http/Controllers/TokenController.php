@@ -3,65 +3,30 @@
 namespace Domains\Auth\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Domains\Auth\Actions\AuthenticateApiKey;
+use Domains\Auth\Http\Requests\TokenRequest;
+use Illuminate\Http\JsonResponse;
 
 class TokenController extends Controller
 {
-    /**
-     * Create the controller instance.
-     */
-    public function __construct(protected AuthRepository $repo)
+    public function __construct(protected AuthenticateApiKey $authenticateApiKey)
     {
         //
     }
 
     /**
-     * Display a listing of the resource.
+     * Exchange an API key + secret pair for a Sanctum bearer token, scoped
+     * to the same abilities and expiry as the API key. Intended for
+     * server-to-server integrations that authenticate as the API key
+     * itself rather than as a specific user.
      */
-    public function index(Request $request)
+    public function create(TokenRequest $request): JsonResponse
     {
-        $filters = $request->filters();
+        $result = $this->authenticateApiKey->handle(
+            $request->validated('api_key'),
+            $request->validated('api_secret'),
+        );
 
-        return response()->json([]);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-
-        return response()->json([]);
-    }
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
-    {
-        //
-
-        return response()->json([]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        //
-
-        return response()->json([]);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        //
-
-        return response()->json([]);
+        return response()->json($result, 201);
     }
 }

@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/storage",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Domains\\Storage\\": "app/",
+            "Domains\\Storage\\Database\\Factories\\": "database/factories/",
+            "Domains\\Storage\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Domains\\Storage\\Tests\\": "tests/"
+        }
+    }
+}
