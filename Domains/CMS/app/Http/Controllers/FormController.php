@@ -4,75 +4,64 @@ namespace Domains\CMS\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Domains\CMS\Actions\SubmitForm;
-use Domains\CMS\Http\Requests\CreateFormRequest;
-use Domains\CMS\Http\Requests\SubmitFormRequest;
-use Domains\CMS\Http\Requests\UpdateFormRequest;
+use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Http\Requests\Form\CreateRequest;
+use Domains\CMS\Http\Requests\Form\SubmitRequest;
+use Domains\CMS\Http\Requests\Form\UpdateRequest;
 use Domains\CMS\Http\Resources\FormCollection;
 use Domains\CMS\Http\Resources\FormResource;
 use Domains\CMS\Http\Resources\FormSubmissionResource;
-use Domains\CMS\Models\Form;
+use Domains\CMS\Repositories\FormRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class FormController extends Controller
 {
-    public function __construct(protected SubmitForm $submitForm)
-    {
+    public function __construct(
+        protected FormRepository $forms,
+        protected SubmitForm $submitForm,
+    ) {
         //
     }
 
     public function list(Request $request): FormCollection
     {
-        abort_unless($request->user()?->can('cms:forms:view'), 403);
+        $this->authorize('permission', CmsPermission::ViewForms->value);
 
-        $forms = Form::query()
-            ->where('company_id', $request->user()->getCompanyId())
-            ->latest()
-            ->paginate();
-
-        return new FormCollection($forms);
+        return new FormCollection($this->forms->filter($request->query())->list());
     }
 
-    public function create(CreateFormRequest $request): JsonResponse
+    public function create(CreateRequest $request): JsonResponse
     {
-        $form = Form::create($request->validated());
+        $form = $this->forms->create($request->validated());
 
-        return response()->json(['data' => new FormResource($form)], 201);
+        return response()->json(['data' => FormResource::make($form)], 201);
     }
 
-    public function get(Request $request, int $form): FormResource
+    public function get(int $form): FormResource
     {
-        abort_unless($request->user()?->can('cms:forms:view'), 403);
+        $this->authorize('permission', CmsPermission::ViewForms->value);
 
-        $formModel = Form::query()
-            ->where('company_id', $request->user()->getCompanyId())
-            ->with(['fields' => fn ($query) => $query->orderBy('sort_order')])
-            ->findOrFail($form);
-
-        return new FormResource($formModel);
+        return FormResource::make($this->forms->findOrFail($form));
     }
 
-    public function update(UpdateFormRequest $request, int $form): FormResource
+    public function update(UpdateRequest $request, int $form): FormResource
     {
-        $formModel = Form::query()->where('company_id', $request->user()->getCompanyId())->findOrFail($form);
-
-        $formModel->update($request->validated());
-
-        return new FormResource($formModel);
+        return FormResource::make($this->forms->update($form, $request->validated()));
     }
 
-    public function delete(Request $request, int $form): JsonResponse
+    public function delete(int $form): JsonResponse
     {
-        abort_unless($request->user()?->can('cms:forms:delete'), 403);
+        $this->authorize('permission', CmsPermission::DeleteForms->value);
 
-        Form::query()->where('company_id', $request->user()->getCompanyId())->findOrFail($form)->delete();
+        $this->forms->delete($form);
 
         return response()->json(null, 204);
     }
 
-    public function submit(SubmitFormRequest $request, int $form): JsonResponse
+    public function submit(SubmitRequest $request, int $form): JsonResponse
     {
-        $formModel = Form::query()->where('company_id', $request->user()->getCompanyId())->findOrFail($form);
+        $formModel = $this->forms->findOrFail($form);
 
         $submission = $this->submitForm->handle(
             $formModel,
@@ -81,6 +70,6 @@ class FormController extends Controller
             $request->userAgent(),
         );
 
-        return response()->json(['data' => new FormSubmissionResource($submission)], 201);
+        return response()->json(['data' => FormSubmissionResource::make($submission)], 201);
     }
 }

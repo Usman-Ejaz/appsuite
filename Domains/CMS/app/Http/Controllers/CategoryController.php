@@ -3,65 +3,53 @@
 namespace Domains\CMS\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Domains\CMS\Http\Requests\CreateCategoryRequest;
-use Domains\CMS\Http\Requests\UpdateCategoryRequest;
+use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Http\Requests\Category\CreateRequest;
+use Domains\CMS\Http\Requests\Category\UpdateRequest;
 use Domains\CMS\Http\Resources\CategoryCollection;
 use Domains\CMS\Http\Resources\CategoryResource;
-use Domains\Shared\Models\Category;
+use Domains\CMS\Repositories\CategoryRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
+    public function __construct(protected CategoryRepository $categories)
+    {
+        //
+    }
+
     public function list(Request $request): CategoryCollection
     {
-        abort_unless($request->user()?->can('cms:categories:view'), 403);
+        $this->authorize('permission', CmsPermission::ViewCategories->value);
 
-        $categories = Category::query()
-            ->where('company_id', $request->user()->getCompanyId())
-            ->latest()
-            ->get();
-
-        return new CategoryCollection($categories);
+        return new CategoryCollection($this->categories->filter($request->query())->list());
     }
 
-    public function create(CreateCategoryRequest $request): JsonResponse
+    public function create(CreateRequest $request): JsonResponse
     {
-        $category = Category::create($request->validated());
+        $category = $this->categories->create($request->validated());
 
-        return response()->json(['data' => new CategoryResource($category)], 201);
+        return response()->json(['data' => CategoryResource::make($category)], 201);
     }
 
-    public function get(Request $request, int $id): CategoryResource
+    public function get(int $id): CategoryResource
     {
-        abort_unless($request->user()?->can('cms:categories:view'), 403);
+        $this->authorize('permission', CmsPermission::ViewCategories->value);
 
-        $category = Category::query()
-            ->where('company_id', $request->user()->getCompanyId())
-            ->findOrFail($id);
-
-        return new CategoryResource($category);
+        return CategoryResource::make($this->categories->findOrFail($id));
     }
 
-    public function update(UpdateCategoryRequest $request, int $id): CategoryResource
+    public function update(UpdateRequest $request, int $id): CategoryResource
     {
-        $category = Category::query()
-            ->where('company_id', $request->user()->getCompanyId())
-            ->findOrFail($id);
-
-        $category->update($request->validated());
-
-        return new CategoryResource($category);
+        return CategoryResource::make($this->categories->update($id, $request->validated()));
     }
 
-    public function delete(Request $request, int $id): JsonResponse
+    public function delete(int $id): JsonResponse
     {
-        abort_unless($request->user()?->can('cms:categories:manage'), 403);
+        $this->authorize('permission', CmsPermission::ManageCategories->value);
 
-        Category::query()
-            ->where('company_id', $request->user()->getCompanyId())
-            ->findOrFail($id)
-            ->delete();
+        $this->categories->delete($id);
 
         return response()->json(null, 204);
     }

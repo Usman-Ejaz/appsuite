@@ -31,25 +31,25 @@ beforeEach(function () {
 });
 
 test('a category can be created, listed, updated, and deleted', function () {
-    $response = $this->postJson('/api/v1/categories', ['name' => 'News', 'slug' => 'news']);
+    $response = $this->postJson('/api/v1/cms/categories', ['name' => 'News', 'slug' => 'news']);
     $response->assertCreated()->assertJsonPath('data.name', 'News');
 
     $id = $response->json('data.id');
 
-    $this->getJson('/api/v1/categories')->assertOk()->assertJsonCount(1, 'data');
+    $this->getJson('/api/v1/cms/categories')->assertOk()->assertJsonCount(1, 'data');
 
-    $this->putJson("/api/v1/categories/{$id}", ['name' => 'Updates'])
+    $this->putJson("/api/v1/cms/categories/{$id}", ['name' => 'Updates'])
         ->assertOk()
         ->assertJsonPath('data.name', 'Updates');
 
-    $this->deleteJson("/api/v1/categories/{$id}")->assertNoContent();
+    $this->deleteJson("/api/v1/cms/categories/{$id}")->assertNoContent();
     $this->assertDatabaseMissing('categories', ['id' => $id]);
 });
 
 test('slug uniqueness is scoped per company', function () {
     Category::factory()->create(['company_id' => $this->company->id, 'slug' => 'news']);
 
-    $this->postJson('/api/v1/categories', ['name' => 'News Again', 'slug' => 'news'])
+    $this->postJson('/api/v1/cms/categories', ['name' => 'News Again', 'slug' => 'news'])
         ->assertUnprocessable();
 });
 
@@ -57,15 +57,15 @@ test('a category belonging to a different company is not found', function () {
     $otherCompany = Company::factory()->create();
     $category = Category::factory()->create(['company_id' => $otherCompany->id]);
 
-    $this->getJson("/api/v1/categories/{$category->id}")->assertNotFound();
-    $this->putJson("/api/v1/categories/{$category->id}", ['name' => 'Hijacked'])->assertNotFound();
-    $this->deleteJson("/api/v1/categories/{$category->id}")->assertNotFound();
+    $this->getJson("/api/v1/cms/categories/{$category->id}")->assertNotFound();
+    $this->putJson("/api/v1/cms/categories/{$category->id}", ['name' => 'Hijacked'])->assertNotFound();
+    $this->deleteJson("/api/v1/cms/categories/{$category->id}")->assertNotFound();
 });
 
 test('a user without permission cannot manage categories', function () {
     $unprivilegedUser = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => true]);
     Sanctum::actingAs($unprivilegedUser);
 
-    $this->postJson('/api/v1/categories', ['name' => 'News', 'slug' => 'news'])->assertForbidden();
-    $this->getJson('/api/v1/categories')->assertForbidden();
+    $this->postJson('/api/v1/cms/categories', ['name' => 'News', 'slug' => 'news'])->assertForbidden();
+    $this->getJson('/api/v1/cms/categories')->assertForbidden();
 });

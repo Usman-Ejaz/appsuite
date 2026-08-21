@@ -40,7 +40,7 @@ test('a valid submission is recorded', function () {
         'name' => 'email', 'type' => 'email', 'is_required' => true,
     ]);
 
-    $this->postJson("/api/v1/forms/{$this->form->id}/submit", ['data' => ['email' => 'visitor@example.com']])
+    $this->postJson("/api/v1/cms/forms/{$this->form->id}/submit", ['data' => ['email' => 'visitor@example.com']])
         ->assertCreated()
         ->assertJsonPath('data.data.email', 'visitor@example.com');
 });
@@ -51,7 +51,7 @@ test('a missing required field is rejected', function () {
         'name' => 'email', 'type' => 'email', 'is_required' => true,
     ]);
 
-    $this->postJson("/api/v1/forms/{$this->form->id}/submit", ['data' => []])
+    $this->postJson("/api/v1/cms/forms/{$this->form->id}/submit", ['data' => []])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['data.email']);
 });
@@ -62,7 +62,7 @@ test('a value of the wrong type is rejected', function () {
         'name' => 'age', 'type' => 'number', 'is_required' => true,
     ]);
 
-    $this->postJson("/api/v1/forms/{$this->form->id}/submit", ['data' => ['age' => 'not-a-number']])
+    $this->postJson("/api/v1/cms/forms/{$this->form->id}/submit", ['data' => ['age' => 'not-a-number']])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['data.age']);
 });
@@ -74,7 +74,7 @@ test('custom validation_rules are enforced', function () {
         'validation_rules' => ['max' => 5],
     ]);
 
-    $this->postJson("/api/v1/forms/{$this->form->id}/submit", ['data' => ['message' => 'this is too long']])
+    $this->postJson("/api/v1/cms/forms/{$this->form->id}/submit", ['data' => ['message' => 'this is too long']])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['data.message']);
 });
@@ -85,7 +85,7 @@ test('undeclared data keys are silently dropped, not stored', function () {
         'name' => 'email', 'type' => 'email', 'is_required' => true,
     ]);
 
-    $response = $this->postJson("/api/v1/forms/{$this->form->id}/submit", [
+    $response = $this->postJson("/api/v1/cms/forms/{$this->form->id}/submit", [
         'data' => ['email' => 'visitor@example.com', 'unexpected_field' => 'hello'],
     ])->assertCreated();
 
@@ -95,14 +95,14 @@ test('undeclared data keys are silently dropped, not stored', function () {
 test('submitting to an inactive form is rejected', function () {
     $this->form->update(['is_active' => false]);
 
-    $this->postJson("/api/v1/forms/{$this->form->id}/submit", ['data' => []])->assertNotFound();
+    $this->postJson("/api/v1/cms/forms/{$this->form->id}/submit", ['data' => []])->assertNotFound();
 });
 
 test('a submission belonging to a different company is not found', function () {
     $otherCompany = Company::factory()->create();
     $otherForm = Form::factory()->create(['company_id' => $otherCompany->id]);
 
-    $this->postJson("/api/v1/forms/{$otherForm->id}/submit", ['data' => []])->assertNotFound();
+    $this->postJson("/api/v1/cms/forms/{$otherForm->id}/submit", ['data' => []])->assertNotFound();
 });
 
 test('a restricted api key can submit but is blocked from viewing, updating, or deleting submissions', function () {
@@ -112,24 +112,24 @@ test('a restricted api key can submit but is blocked from viewing, updating, or 
     ]);
     Sanctum::actingAs($apiKey);
 
-    $this->postJson("/api/v1/forms/{$this->form->id}/submit", ['data' => []])->assertCreated();
+    $this->postJson("/api/v1/cms/forms/{$this->form->id}/submit", ['data' => []])->assertCreated();
 
     $submission = FormSubmission::query()->where('form_id', $this->form->id)->firstOrFail();
 
-    $this->getJson("/api/v1/forms/{$this->form->id}/submissions")->assertForbidden();
-    $this->getJson("/api/v1/forms/{$this->form->id}/submissions/{$submission->id}")->assertForbidden();
-    $this->putJson("/api/v1/forms/{$this->form->id}/submissions/{$submission->id}", ['status' => 'read'])->assertForbidden();
-    $this->deleteJson("/api/v1/forms/{$this->form->id}/submissions/{$submission->id}")->assertForbidden();
+    $this->getJson("/api/v1/cms/forms/{$this->form->id}/submissions")->assertForbidden();
+    $this->getJson("/api/v1/cms/forms/{$this->form->id}/submissions/{$submission->id}")->assertForbidden();
+    $this->putJson("/api/v1/cms/forms/{$this->form->id}/submissions/{$submission->id}", ['status' => 'read'])->assertForbidden();
+    $this->deleteJson("/api/v1/cms/forms/{$this->form->id}/submissions/{$submission->id}")->assertForbidden();
 });
 
 test('a user can list, view, update the status of, and delete submissions', function () {
     $submission = FormSubmission::factory()->create(['form_id' => $this->form->id, 'company_id' => $this->company->id]);
 
-    $this->getJson("/api/v1/forms/{$this->form->id}/submissions")->assertOk()->assertJsonCount(1, 'data');
+    $this->getJson("/api/v1/cms/forms/{$this->form->id}/submissions")->assertOk()->assertJsonCount(1, 'data');
 
-    $this->putJson("/api/v1/forms/{$this->form->id}/submissions/{$submission->id}", ['status' => 'read'])
+    $this->putJson("/api/v1/cms/forms/{$this->form->id}/submissions/{$submission->id}", ['status' => 'read'])
         ->assertOk()
         ->assertJsonPath('data.status', 'read');
 
-    $this->deleteJson("/api/v1/forms/{$this->form->id}/submissions/{$submission->id}")->assertNoContent();
+    $this->deleteJson("/api/v1/cms/forms/{$this->form->id}/submissions/{$submission->id}")->assertNoContent();
 });

@@ -1,15 +1,17 @@
 <?php
 
-namespace Domains\CMS\Http\Requests;
+namespace Domains\CMS\Http\Requests\Form;
 
+use Domains\CMS\Enums\CmsPermission;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
-class UpdateFormRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return (bool) $this->user()?->can('cms:forms:update');
+        return Gate::allows('permission', CmsPermission::UpdateForms->value);
     }
 
     public function rules(): array

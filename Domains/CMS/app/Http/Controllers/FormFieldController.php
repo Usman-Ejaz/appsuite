@@ -4,80 +4,78 @@ namespace Domains\CMS\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Domains\CMS\Actions\ReorderFormFields;
-use Domains\CMS\Http\Requests\CreateFormFieldRequest;
-use Domains\CMS\Http\Requests\ReorderFormFieldsRequest;
-use Domains\CMS\Http\Requests\UpdateFormFieldRequest;
+use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Http\Requests\FormField\CreateRequest;
+use Domains\CMS\Http\Requests\FormField\ReorderRequest;
+use Domains\CMS\Http\Requests\FormField\UpdateRequest;
 use Domains\CMS\Http\Resources\FormFieldCollection;
 use Domains\CMS\Http\Resources\FormFieldResource;
-use Domains\CMS\Models\Form;
+use Domains\CMS\Repositories\FormFieldRepository;
+use Domains\CMS\Repositories\FormRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class FormFieldController extends Controller
 {
-    public function __construct(protected ReorderFormFields $reorderFormFields)
-    {
+    public function __construct(
+        protected FormRepository $forms,
+        protected FormFieldRepository $fields,
+        protected ReorderFormFields $reorderFormFields,
+    ) {
         //
     }
 
-    public function list(Request $request, int $form): FormFieldCollection
+    public function list(int $form): FormFieldCollection
     {
-        abort_unless($request->user()?->can('cms:forms:view'), 403);
+        $this->authorize('permission', CmsPermission::ViewForms->value);
 
-        $formModel = $this->findForm($request, $form);
+        $this->forms->findOrFail($form);
 
-        return new FormFieldCollection($formModel->fields()->get());
+        return new FormFieldCollection($this->fields->filter(['form_id' => $form])->list());
     }
 
-    public function create(CreateFormFieldRequest $request, int $form): JsonResponse
+    public function create(CreateRequest $request, int $form): JsonResponse
     {
-        $formModel = $this->findForm($request, $form);
+        $this->forms->findOrFail($form);
 
-        $field = $formModel->fields()->create($request->validated());
+        $field = $this->fields->create([...$request->validated(), 'form_id' => $form]);
 
-        return response()->json(['data' => new FormFieldResource($field)], 201);
+        return response()->json(['data' => FormFieldResource::make($field)], 201);
     }
 
-    public function reorder(ReorderFormFieldsRequest $request, int $form): JsonResponse
+    public function reorder(ReorderRequest $request, int $form): JsonResponse
     {
-        $formModel = $this->findForm($request, $form);
+        $formModel = $this->forms->findOrFail($form);
 
         $this->reorderFormFields->handle($formModel, $request->validated('fields'));
 
         return response()->json(null, 204);
     }
 
-    public function get(Request $request, int $form, int $id): FormFieldResource
+    public function get(int $form, int $id): FormFieldResource
     {
-        abort_unless($request->user()?->can('cms:forms:view'), 403);
+        $this->authorize('permission', CmsPermission::ViewForms->value);
 
-        $formModel = $this->findForm($request, $form);
+        $this->forms->findOrFail($form);
 
-        return new FormFieldResource($formModel->fields()->whereKey($id)->firstOrFail());
+        return FormFieldResource::make($this->fields->filter(['form_id' => $form])->findOrFail($id));
     }
 
-    public function update(UpdateFormFieldRequest $request, int $form, int $id): FormFieldResource
+    public function update(UpdateRequest $request, int $form, int $id): FormFieldResource
     {
-        $formModel = $this->findForm($request, $form);
+        $this->forms->findOrFail($form);
 
-        $field = $formModel->fields()->whereKey($id)->firstOrFail();
-        $field->update($request->validated());
+        $field = $this->fields->filter(['form_id' => $form])->update($id, $request->validated());
 
-        return new FormFieldResource($field);
+        return FormFieldResource::make($field);
     }
 
-    public function delete(Request $request, int $form, int $id): JsonResponse
+    public function delete(int $form, int $id): JsonResponse
     {
-        abort_unless($request->user()?->can('cms:forms:update'), 403);
+        $this->authorize('permission', CmsPermission::UpdateForms->value);
 
-        $formModel = $this->findForm($request, $form);
-        $formModel->fields()->whereKey($id)->firstOrFail()->delete();
+        $this->forms->findOrFail($form);
+        $this->fields->filter(['form_id' => $form])->delete($id);
 
         return response()->json(null, 204);
-    }
-
-    protected function findForm(Request $request, int $form): Form
-    {
-        return Form::query()->where('company_id', $request->user()->getCompanyId())->findOrFail($form);
     }
 }

@@ -5,7 +5,7 @@ namespace Domains\Identity\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Domains\Identity\Actions\IssueApiKey;
 use Domains\Identity\Actions\RevokeApiKey;
-use Domains\Identity\Http\Requests\CreateApiKeyRequest;
+use Domains\Identity\Http\Requests\ApiKey\CreateRequest;
 use Domains\Identity\Http\Resources\ApiKeyResource;
 use Domains\Identity\Models\ApiKey;
 use Illuminate\Http\JsonResponse;
@@ -40,7 +40,7 @@ class ApiKeyController extends Controller
      * The api_secret is only ever shown here, at creation time — it is
      * stored hashed and cannot be retrieved again afterwards.
      */
-    public function create(CreateApiKeyRequest $request): JsonResponse
+    public function create(CreateRequest $request): JsonResponse
     {
         ['apiKey' => $apiKey, 'plainSecret' => $plainSecret] = $this->issueApiKey->handle(
             $request->user()->company,
@@ -48,7 +48,7 @@ class ApiKeyController extends Controller
         );
 
         return response()->json([
-            'data' => new ApiKeyResource($apiKey),
+            'data' => ApiKeyResource::make($apiKey),
             'api_secret' => $plainSecret,
         ], 201);
     }

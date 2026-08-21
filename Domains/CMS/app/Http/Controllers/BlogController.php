@@ -5,19 +5,19 @@ namespace Domains\CMS\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Domains\CMS\Actions\PublishBlog;
 use Domains\CMS\Actions\UnpublishBlog;
-use Domains\CMS\Http\Requests\CreateBlogRequest;
-use Domains\CMS\Http\Requests\UpdateBlogRequest;
+use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Http\Requests\Blog\CreateRequest;
+use Domains\CMS\Http\Requests\Blog\UpdateRequest;
 use Domains\CMS\Http\Resources\BlogCollection;
 use Domains\CMS\Http\Resources\BlogResource;
-use Domains\CMS\Models\Blog;
-use Domains\Identity\Models\ApiKey;
-use Illuminate\Database\Eloquent\Builder;
+use Domains\CMS\Repositories\BlogRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BlogController extends Controller
 {
     public function __construct(
+        protected BlogRepository $blogs,
         protected PublishBlog $publishBlog,
         protected UnpublishBlog $unpublishBlog,
     ) {
@@ -26,82 +26,50 @@ class BlogController extends Controller
 
     public function list(Request $request): BlogCollection
     {
-        abort_unless($request->user()?->can('cms:blogs:view'), 403);
+        $this->authorize('permission', CmsPermission::ViewBlogs->value);
 
-        $blogs = $this->restrictToPublishedForApiKeys(
-            Blog::query()->where('company_id', $request->user()->getCompanyId())->with(['author', 'category']),
-            $request,
-        )->latest()->paginate();
-
-        return new BlogCollection($blogs);
+        return new BlogCollection($this->blogs->filter($request->query())->list());
     }
 
-    public function create(CreateBlogRequest $request): JsonResponse
+    public function create(CreateRequest $request): JsonResponse
     {
-        $blog = Blog::create($request->validated());
+        $blog = $this->blogs->create($request->validated());
 
-        return response()->json(['data' => new BlogResource($blog)], 201);
+        return response()->json(['data' => BlogResource::make($blog)], 201);
     }
 
-    public function get(Request $request, int $id): BlogResource
+    public function get(int $id): BlogResource
     {
-        abort_unless($request->user()?->can('cms:blogs:view'), 403);
+        $this->authorize('permission', CmsPermission::ViewBlogs->value);
 
-        $blog = $this->restrictToPublishedForApiKeys(
-            Blog::query()->where('company_id', $request->user()->getCompanyId())->with(['author', 'category']),
-            $request,
-        )->findOrFail($id);
-
-        return new BlogResource($blog);
+        return BlogResource::make($this->blogs->findOrFail($id));
     }
 
-    public function update(UpdateBlogRequest $request, int $id): BlogResource
+    public function update(UpdateRequest $request, int $id): BlogResource
     {
-        $blog = Blog::query()->where('company_id', $request->user()->getCompanyId())->findOrFail($id);
-
-        $blog->update($request->validated());
-
-        return new BlogResource($blog);
+        return BlogResource::make($this->blogs->update($id, $request->validated()));
     }
 
-    public function delete(Request $request, int $id): JsonResponse
+    public function delete(int $id): JsonResponse
     {
-        abort_unless($request->user()?->can('cms:blogs:delete'), 403);
+        $this->authorize('permission', CmsPermission::DeleteBlogs->value);
 
-        Blog::query()->where('company_id', $request->user()->getCompanyId())->findOrFail($id)->delete();
+        $this->blogs->delete($id);
 
         return response()->json(null, 204);
     }
 
-    public function publish(Request $request, int $id): BlogResource
+    public function publish(int $id): BlogResource
     {
-        abort_unless($request->user()?->can('cms:blogs:publish'), 403);
+        $this->authorize('permission', CmsPermission::PublishBlogs->value);
 
-        $blog = Blog::query()->where('company_id', $request->user()->getCompanyId())->findOrFail($id);
-
-        return new BlogResource($this->publishBlog->handle($blog));
+        return BlogResource::make($this->publishBlog->handle($this->blogs->findOrFail($id)));
     }
 
-    public function unpublish(Request $request, int $id): BlogResource
+    public function unpublish(int $id): BlogResource
     {
-        abort_unless($request->user()?->can('cms:blogs:publish'), 403);
+        $this->authorize('permission', CmsPermission::PublishBlogs->value);
 
-        $blog = Blog::query()->where('company_id', $request->user()->getCompanyId())->findOrFail($id);
-
-        return new BlogResource($this->unpublishBlog->handle($blog));
-    }
-
-    /**
-     * ApiKey actors (public-website integrations) can never see draft/
-     * unpublished blogs, regardless of their granted abilities — a
-     * hard-coded restriction, not a permission string.
-     */
-    protected function restrictToPublishedForApiKeys(Builder $query, Request $request): Builder
-    {
-        if ($request->user() instanceof ApiKey || ! $request->user()->can('cms:blogs:create')) {
-            $query->published();
-        }
-
-        return $query;
+        return BlogResource::make($this->unpublishBlog->handle($this->blogs->findOrFail($id)));
     }
 }

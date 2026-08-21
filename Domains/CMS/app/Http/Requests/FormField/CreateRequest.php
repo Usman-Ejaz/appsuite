@@ -1,24 +1,26 @@
 <?php
 
-namespace Domains\CMS\Http\Requests;
+namespace Domains\CMS\Http\Requests\FormField;
 
+use Domains\CMS\Enums\CmsPermission;
 use Domains\CMS\Enums\FormFieldType;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
-class UpdateFormFieldRequest extends FormRequest
+class CreateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return (bool) $this->user()?->can('cms:forms:update');
+        return Gate::allows('permission', CmsPermission::UpdateForms->value);
     }
 
     public function rules(): array
     {
         return [
-            'label' => ['sometimes', 'string', 'max:255'],
-            'name' => ['sometimes', 'string', 'max:100', Rule::unique('form_fields')->where('form_id', $this->route('form'))->ignore($this->route('id'))],
-            'type' => ['sometimes', Rule::enum(FormFieldType::class)],
+            'label' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:100', Rule::unique('form_fields')->where('form_id', $this->route('form'))],
+            'type' => ['required', Rule::enum(FormFieldType::class)],
             'options' => ['nullable', 'array'],
             'default_value' => ['nullable'],
             'placeholder' => ['nullable', 'string', 'max:255'],

@@ -3,65 +3,67 @@
 namespace Domains\CMS\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Domains\CMS\Http\Requests\CreateFormActionRequest;
-use Domains\CMS\Http\Requests\UpdateFormActionRequest;
+use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Http\Requests\FormAction\CreateRequest;
+use Domains\CMS\Http\Requests\FormAction\UpdateRequest;
 use Domains\CMS\Http\Resources\FormActionCollection;
 use Domains\CMS\Http\Resources\FormActionResource;
-use Domains\CMS\Models\Form;
+use Domains\CMS\Repositories\FormActionRepository;
+use Domains\CMS\Repositories\FormRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class FormActionController extends Controller
 {
-    public function list(Request $request, int $form): FormActionCollection
-    {
-        abort_unless($request->user()?->can('cms:forms:view'), 403);
-
-        $formModel = $this->findForm($request, $form);
-
-        return new FormActionCollection($formModel->actions()->get());
+    public function __construct(
+        protected FormRepository $forms,
+        protected FormActionRepository $actions,
+    ) {
+        //
     }
 
-    public function create(CreateFormActionRequest $request, int $form): JsonResponse
+    public function list(int $form): FormActionCollection
     {
-        $formModel = $this->findForm($request, $form);
+        $this->authorize('permission', CmsPermission::ViewForms->value);
 
-        $action = $formModel->actions()->create($request->validated());
+        $this->forms->findOrFail($form);
 
-        return response()->json(['data' => new FormActionResource($action)], 201);
+        return new FormActionCollection($this->actions->filter(['form_id' => $form])->list());
     }
 
-    public function get(Request $request, int $form, int $id): FormActionResource
+    public function create(CreateRequest $request, int $form): JsonResponse
     {
-        abort_unless($request->user()?->can('cms:forms:view'), 403);
+        $this->forms->findOrFail($form);
 
-        $formModel = $this->findForm($request, $form);
+        $action = $this->actions->create([...$request->validated(), 'form_id' => $form]);
 
-        return new FormActionResource($formModel->actions()->whereKey($id)->firstOrFail());
+        return response()->json(['data' => FormActionResource::make($action)], 201);
     }
 
-    public function update(UpdateFormActionRequest $request, int $form, int $id): FormActionResource
+    public function get(int $form, int $id): FormActionResource
     {
-        $formModel = $this->findForm($request, $form);
+        $this->authorize('permission', CmsPermission::ViewForms->value);
 
-        $action = $formModel->actions()->whereKey($id)->firstOrFail();
-        $action->update($request->validated());
+        $this->forms->findOrFail($form);
 
-        return new FormActionResource($action);
+        return FormActionResource::make($this->actions->filter(['form_id' => $form])->findOrFail($id));
     }
 
-    public function delete(Request $request, int $form, int $id): JsonResponse
+    public function update(UpdateRequest $request, int $form, int $id): FormActionResource
     {
-        abort_unless($request->user()?->can('cms:forms:update'), 403);
+        $this->forms->findOrFail($form);
 
-        $formModel = $this->findForm($request, $form);
-        $formModel->actions()->whereKey($id)->firstOrFail()->delete();
+        $action = $this->actions->filter(['form_id' => $form])->update($id, $request->validated());
+
+        return FormActionResource::make($action);
+    }
+
+    public function delete(int $form, int $id): JsonResponse
+    {
+        $this->authorize('permission', CmsPermission::UpdateForms->value);
+
+        $this->forms->findOrFail($form);
+        $this->actions->filter(['form_id' => $form])->delete($id);
 
         return response()->json(null, 204);
-    }
-
-    protected function findForm(Request $request, int $form): Form
-    {
-        return Form::query()->where('company_id', $request->user()->getCompanyId())->findOrFail($form);
     }
 }

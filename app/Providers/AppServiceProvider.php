@@ -3,8 +3,11 @@
 namespace App\Providers;
 
 use Carbon\CarbonImmutable;
+use Domains\Identity\Contracts\Actor;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -24,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        $this->registerGates();
     }
 
     /**
@@ -46,5 +51,22 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    protected function registerGates()
+    {
+        Gate::before(function (Actor $actor) {
+            if ($actor->isRoot()) {
+                return true;
+            }
+        });
+
+        Gate::define('permission', function (Actor $actor, array|string $permission) {
+            if ($actor->isOwner()) {
+                return true;
+            }
+
+            return $actor->can(Arr::wrap($permission));
+        });
     }
 }

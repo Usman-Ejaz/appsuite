@@ -17,7 +17,7 @@ test('a root user bypasses app-access checks regardless of subscription', functi
     $user = User::factory()->create(['is_root' => true]);
     Sanctum::actingAs($user);
 
-    $this->getJson('/api/v1/blogs')->assertOk();
+    $this->getJson('/api/v1/cms/blogs')->assertOk();
 });
 
 test('an owner is allowed when their company has the app', function () {
@@ -27,7 +27,7 @@ test('an owner is allowed when their company has the app', function () {
     $user = User::factory()->create(['company_id' => $company->id, 'is_owner' => true]);
     Sanctum::actingAs($user);
 
-    $this->getJson('/api/v1/blogs')->assertOk();
+    $this->getJson('/api/v1/cms/blogs')->assertOk();
 });
 
 test('an owner is forbidden when their company does not have the app', function () {
@@ -36,7 +36,7 @@ test('an owner is forbidden when their company does not have the app', function 
     $user = User::factory()->create(['company_id' => $company->id, 'is_owner' => true]);
     Sanctum::actingAs($user);
 
-    $this->getJson('/api/v1/blogs')->assertForbidden();
+    $this->getJson('/api/v1/cms/blogs')->assertForbidden();
 });
 
 test('a regular user requires both company subscription and an individual app grant', function () {
@@ -46,16 +46,16 @@ test('a regular user requires both company subscription and an individual app gr
     $user = User::factory()->create(['company_id' => $company->id, 'is_owner' => false]);
     Sanctum::actingAs($user);
 
-    $this->getJson('/api/v1/blogs')->assertForbidden();
+    $this->getJson('/api/v1/cms/blogs')->assertForbidden();
 
     $user->apps()->attach($cmsApp->id);
     Cache::store('redis')->flush();
 
-    $this->getJson('/api/v1/blogs')->assertOk();
+    $this->getJson('/api/v1/cms/blogs')->assertOk();
 });
 
 test('an unauthenticated request is rejected', function () {
-    $this->getJson('/api/v1/blogs')->assertUnauthorized();
+    $this->getJson('/api/v1/cms/blogs')->assertUnauthorized();
 });
 
 test('a second request within the cache ttl does not re-query the database for company subscription', function () {
@@ -67,10 +67,10 @@ test('a second request within the cache ttl does not re-query the database for c
 
     DB::enableQueryLog();
 
-    $this->getJson('/api/v1/blogs')->assertOk();
+    $this->getJson('/api/v1/cms/blogs')->assertOk();
     DB::flushQueryLog();
 
-    $this->getJson('/api/v1/blogs')->assertOk();
+    $this->getJson('/api/v1/cms/blogs')->assertOk();
     $companyLookups = collect(DB::getQueryLog())->filter(fn ($entry) => str_contains($entry['query'], 'companies'));
 
     expect($companyLookups)->toBeEmpty();

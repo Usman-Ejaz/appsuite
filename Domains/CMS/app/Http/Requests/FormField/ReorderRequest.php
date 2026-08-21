@@ -1,14 +1,16 @@
 <?php
 
-namespace Domains\CMS\Http\Requests;
+namespace Domains\CMS\Http\Requests\FormField;
 
+use Domains\CMS\Enums\CmsPermission;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
-class ReorderFormFieldsRequest extends FormRequest
+class ReorderRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return (bool) $this->user()?->can('cms:forms:update');
+        return Gate::allows('permission', CmsPermission::UpdateForms->value);
     }
 
     public function rules(): array

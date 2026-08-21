@@ -1,16 +1,18 @@
 <?php
 
-namespace Domains\CMS\Http\Requests;
+namespace Domains\CMS\Http\Requests\Blog;
 
 use Domains\CMS\Enums\BlogStatus;
+use Domains\CMS\Enums\CmsPermission;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
-class UpdateBlogRequest extends FormRequest
+class CreateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return (bool) $this->user()?->can('cms:blogs:update');
+        return Gate::allows('permission', CmsPermission::CreateBlogs->value);
     }
 
     public function rules(): array
@@ -18,8 +20,8 @@ class UpdateBlogRequest extends FormRequest
         $companyId = $this->user()->getCompanyId();
 
         return [
-            'title' => ['sometimes', 'string', 'max:255'],
-            'slug' => ['sometimes', 'string', 'max:255', Rule::unique('blogs')->where('company_id', $companyId)->ignore($this->route('id'))],
+            'title' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', Rule::unique('blogs')->where('company_id', $companyId)],
             'excerpt' => ['nullable', 'string'],
             'content' => ['nullable', 'string'],
             'featured_image' => ['nullable', 'string', 'max:255'],

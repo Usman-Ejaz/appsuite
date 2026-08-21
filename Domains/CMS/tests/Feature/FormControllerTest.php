@@ -32,18 +32,18 @@ beforeEach(function () {
 });
 
 test('a form can be created, listed, updated, and deleted', function () {
-    $response = $this->postJson('/api/v1/forms', ['name' => 'Contact Us', 'slug' => 'contact-us']);
+    $response = $this->postJson('/api/v1/cms/forms', ['name' => 'Contact Us', 'slug' => 'contact-us']);
     $response->assertCreated()->assertJsonPath('data.name', 'Contact Us');
 
     $id = $response->json('data.id');
 
-    $this->getJson('/api/v1/forms')->assertOk()->assertJsonCount(1, 'data');
+    $this->getJson('/api/v1/cms/forms')->assertOk()->assertJsonCount(1, 'data');
 
-    $this->putJson("/api/v1/forms/{$id}", ['name' => 'Contact Sales'])
+    $this->putJson("/api/v1/cms/forms/{$id}", ['name' => 'Contact Sales'])
         ->assertOk()
         ->assertJsonPath('data.name', 'Contact Sales');
 
-    $this->deleteJson("/api/v1/forms/{$id}")->assertNoContent();
+    $this->deleteJson("/api/v1/cms/forms/{$id}")->assertNoContent();
     $this->assertDatabaseMissing('forms', ['id' => $id]);
 });
 
@@ -51,22 +51,22 @@ test('a form belonging to a different company is not found', function () {
     $otherCompany = Company::factory()->create();
     $form = Form::factory()->create(['company_id' => $otherCompany->id]);
 
-    $this->getJson("/api/v1/forms/{$form->id}")->assertNotFound();
-    $this->putJson("/api/v1/forms/{$form->id}", ['name' => 'Hijacked'])->assertNotFound();
-    $this->deleteJson("/api/v1/forms/{$form->id}")->assertNotFound();
+    $this->getJson("/api/v1/cms/forms/{$form->id}")->assertNotFound();
+    $this->putJson("/api/v1/cms/forms/{$form->id}", ['name' => 'Hijacked'])->assertNotFound();
+    $this->deleteJson("/api/v1/cms/forms/{$form->id}")->assertNotFound();
 });
 
 test('a user without permission cannot manage forms', function () {
     $unprivilegedUser = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => true]);
     Sanctum::actingAs($unprivilegedUser);
 
-    $this->postJson('/api/v1/forms', ['name' => 'Contact Us', 'slug' => 'contact-us'])->assertForbidden();
+    $this->postJson('/api/v1/cms/forms', ['name' => 'Contact Us', 'slug' => 'contact-us'])->assertForbidden();
 });
 
 test('slug uniqueness is scoped per company', function () {
     Form::factory()->create(['company_id' => $this->company->id, 'slug' => 'contact-us']);
 
-    $this->postJson('/api/v1/forms', ['name' => 'Another', 'slug' => 'contact-us'])
+    $this->postJson('/api/v1/cms/forms', ['name' => 'Another', 'slug' => 'contact-us'])
         ->assertUnprocessable();
 });
 
@@ -75,7 +75,7 @@ test('getting a form returns its fields ordered by sort_order', function () {
     FormField::factory()->create(['form_id' => $form->id, 'company_id' => $this->company->id, 'name' => 'second', 'sort_order' => 2]);
     FormField::factory()->create(['form_id' => $form->id, 'company_id' => $this->company->id, 'name' => 'first', 'sort_order' => 1]);
 
-    $response = $this->getJson("/api/v1/forms/{$form->id}")->assertOk();
+    $response = $this->getJson("/api/v1/cms/forms/{$form->id}")->assertOk();
 
     expect($response->json('data.fields.0.name'))->toBe('first')
         ->and($response->json('data.fields.1.name'))->toBe('second');

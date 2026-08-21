@@ -1,10 +1,10 @@
 <?php
 
-namespace Domains\Identity\Http\Requests;
+namespace Domains\Identity\Http\Requests\ApiKey;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateApiKeyRequest extends FormRequest
+class CreateRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.

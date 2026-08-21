@@ -33,47 +33,47 @@ beforeEach(function () {
 });
 
 test('a form action can be created, listed, updated, and deleted — schema and CRUD only, not executed', function () {
-    $response = $this->postJson("/api/v1/forms/{$this->form->id}/actions", [
+    $response = $this->postJson("/api/v1/cms/forms/{$this->form->id}/actions", [
         'type' => 'send_email', 'config' => ['to' => ['ops@example.com']],
     ]);
     $response->assertCreated()->assertJsonPath('data.type', 'send_email');
 
     $id = $response->json('data.id');
 
-    $this->getJson("/api/v1/forms/{$this->form->id}/actions")->assertOk()->assertJsonCount(1, 'data');
+    $this->getJson("/api/v1/cms/forms/{$this->form->id}/actions")->assertOk()->assertJsonCount(1, 'data');
 
-    $this->putJson("/api/v1/forms/{$this->form->id}/actions/{$id}", ['is_active' => false])
+    $this->putJson("/api/v1/cms/forms/{$this->form->id}/actions/{$id}", ['is_active' => false])
         ->assertOk()
         ->assertJsonPath('data.is_active', false);
 
-    $this->deleteJson("/api/v1/forms/{$this->form->id}/actions/{$id}")->assertNoContent();
+    $this->deleteJson("/api/v1/cms/forms/{$this->form->id}/actions/{$id}")->assertNoContent();
     $this->assertDatabaseMissing('form_actions', ['id' => $id]);
 });
 
 test('type and config accept any string/array for now, per the deferred execution design', function () {
-    $this->postJson("/api/v1/forms/{$this->form->id}/actions", [
+    $this->postJson("/api/v1/cms/forms/{$this->form->id}/actions", [
         'type' => 'not_yet_a_real_handler', 'config' => ['anything' => 'goes'],
     ])->assertCreated();
 });
 
 test('creating an action requires a type and a config array', function () {
-    $this->postJson("/api/v1/forms/{$this->form->id}/actions", [])->assertUnprocessable();
+    $this->postJson("/api/v1/cms/forms/{$this->form->id}/actions", [])->assertUnprocessable();
 });
 
 test('a form action belonging to a different form is not found', function () {
     $otherForm = Form::factory()->create(['company_id' => $this->company->id]);
     $action = FormAction::factory()->create(['form_id' => $otherForm->id, 'company_id' => $this->company->id]);
 
-    $this->getJson("/api/v1/forms/{$this->form->id}/actions/{$action->id}")->assertNotFound();
-    $this->putJson("/api/v1/forms/{$this->form->id}/actions/{$action->id}", ['is_active' => false])->assertNotFound();
-    $this->deleteJson("/api/v1/forms/{$this->form->id}/actions/{$action->id}")->assertNotFound();
+    $this->getJson("/api/v1/cms/forms/{$this->form->id}/actions/{$action->id}")->assertNotFound();
+    $this->putJson("/api/v1/cms/forms/{$this->form->id}/actions/{$action->id}", ['is_active' => false])->assertNotFound();
+    $this->deleteJson("/api/v1/cms/forms/{$this->form->id}/actions/{$action->id}")->assertNotFound();
 });
 
 test('a user without permission cannot manage form actions', function () {
     $unprivilegedUser = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => true]);
     Sanctum::actingAs($unprivilegedUser);
 
-    $this->postJson("/api/v1/forms/{$this->form->id}/actions", [
+    $this->postJson("/api/v1/cms/forms/{$this->form->id}/actions", [
         'type' => 'send_email', 'config' => [],
     ])->assertForbidden();
 });

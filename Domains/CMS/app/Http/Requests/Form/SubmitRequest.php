@@ -1,16 +1,18 @@
 <?php
 
-namespace Domains\CMS\Http\Requests;
+namespace Domains\CMS\Http\Requests\Form;
 
 use Domains\CMS\Actions\BuildSubmissionValidationRules;
+use Domains\CMS\Enums\CmsPermission;
 use Domains\CMS\Models\Form;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
-class SubmitFormRequest extends FormRequest
+class SubmitRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return (bool) $this->user()?->can('cms:forms:submit');
+        return Gate::allows('permission', CmsPermission::SubmitForms->value);
     }
 
     public function rules(): array

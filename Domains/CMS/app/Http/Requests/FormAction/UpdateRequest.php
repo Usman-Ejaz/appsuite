@@ -1,14 +1,16 @@
 <?php
 
-namespace Domains\CMS\Http\Requests;
+namespace Domains\CMS\Http\Requests\FormAction;
 
+use Domains\CMS\Enums\CmsPermission;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
-class CreateFormActionRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return (bool) $this->user()?->can('cms:forms:update');
+        return Gate::allows('permission', CmsPermission::UpdateForms->value);
     }
 
     /**
@@ -19,9 +21,9 @@ class CreateFormActionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => ['required', 'string', 'max:100'],
+            'type' => ['sometimes', 'string', 'max:100'],
             'name' => ['nullable', 'string', 'max:255'],
-            'config' => ['required', 'array'],
+            'config' => ['sometimes', 'array'],
             'is_active' => ['nullable', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ];
