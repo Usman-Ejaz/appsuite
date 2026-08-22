@@ -2,10 +2,14 @@
 
 namespace Domains\CMS\Http\Resources;
 
+use Domains\CMS\Models\Blog;
 use Domains\Core\Http\Resources\BaseResource;
 use Domains\Identity\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 
+/**
+ * @mixin Blog
+ */
 class BlogResource extends BaseResource
 {
     public string $routeName = 'api.cms.blogs';

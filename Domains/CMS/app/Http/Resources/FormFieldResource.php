@@ -2,10 +2,14 @@
 
 namespace Domains\CMS\Http\Resources;
 
+use Domains\CMS\Models\FormField;
 use Domains\Core\Http\Resources\BaseResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+/**
+ * @mixin FormField
+ */
 class FormFieldResource extends BaseResource
 {
     public string $routeName = 'api.cms.forms.fields';

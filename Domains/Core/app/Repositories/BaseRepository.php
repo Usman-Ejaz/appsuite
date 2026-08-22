@@ -277,17 +277,6 @@ class BaseRepository
 
     public function dbTransaction(callable $callback)
     {
-        try {
-            DB::beginTransaction();
-
-            $response = $callback();
-
-            DB::commit();
-
-            return $response;
-        } catch (\Exception $ex) {
-            DB::rollBack();
-            report($ex);
-        }
+        return DB::transaction($callback);
     }
 }

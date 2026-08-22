@@ -2,6 +2,9 @@
 
 namespace Domains\Ecommerce\Database\Seeders;
 
+use Domains\Core\Models\App;
+use Domains\Ecommerce\Enums\EcommercePermission;
+use Domains\Identity\Models\Permission;
 use Illuminate\Database\Seeder;
 
 class EcommerceDatabaseSeeder extends Seeder
@@ -11,6 +14,21 @@ class EcommerceDatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $this->call([]);
+        $ecommerceApp = App::firstOrCreate(['code' => 'ecommerce'], [
+            'name' => 'Ecommerce',
+            'label' => 'Ecommerce',
+            'slug' => 'ecommerce',
+            'category' => 'Commerce',
+            'icon' => 'shopping-cart',
+            'is_active' => true,
+            'released_at' => now(),
+        ]);
+
+        foreach (EcommercePermission::cases() as $permission) {
+            Permission::firstOrCreate(
+                ['app_id' => $ecommerceApp->id, 'name' => $permission->value, 'guard_name' => 'web'],
+                ['label' => $permission->label(), 'code' => $permission->code(), 'description' => $permission->description()],
+            );
+        }
     }
 }

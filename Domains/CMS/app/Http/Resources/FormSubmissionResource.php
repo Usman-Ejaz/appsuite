@@ -2,10 +2,14 @@
 
 namespace Domains\CMS\Http\Resources;
 
+use Domains\CMS\Models\FormSubmission;
 use Domains\Core\Http\Resources\BaseResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+/**
+ * @mixin FormSubmission
+ */
 class FormSubmissionResource extends BaseResource
 {
     public string $routeName = 'api.cms.forms.submissions';

@@ -3,6 +3,7 @@
 namespace Domains\Shared\Models;
 
 use Domains\Core\Models\BaseModel;
+use Domains\Shared\Database\Factories\CategoryFactory;
 
 class Category extends BaseModel
 {
@@ -14,4 +15,9 @@ class Category extends BaseModel
         'slug',
         'description',
     ];
+
+    protected static function newFactory(): CategoryFactory
+    {
+        return CategoryFactory::new();
+    }
 }

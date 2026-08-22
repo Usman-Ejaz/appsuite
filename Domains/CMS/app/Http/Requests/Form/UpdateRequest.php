@@ -18,7 +18,7 @@ class UpdateRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'slug' => ['sometimes', 'string', 'max:255', Rule::unique('forms')->where('company_id', $this->user()->getCompanyId())->ignore($this->route('form'))],
+            'slug' => ['sometimes', 'string', 'max:255', Rule::unique('forms')->where('company_id', $this->user()?->getCompanyId())->ignore($this->route('form'))],
             'description' => ['nullable', 'string'],
             'is_active' => ['nullable', 'boolean'],
             'success_message' => ['nullable', 'string', 'max:500'],

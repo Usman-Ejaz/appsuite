@@ -13,8 +13,16 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            
+            $table->company()->nullable(false);
+            $table->string('name');
+            $table->string('slug');
+            $table->text('description')->nullable();
+            $table->string('thumbnail')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->editor();
             $table->timestamps();
+
+            $table->unique(['company_id', 'slug']);
         });
     }
 

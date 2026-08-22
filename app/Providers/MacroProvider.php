@@ -16,10 +16,6 @@ class MacroProvider extends ServiceProvider
     public function register(): void
     {
         $this->registerRequestMacros();
-
-        $this->registerInertiaReponseMacros();
-
-        $this->registerApiResponseMacros();
     }
 
     /**
@@ -103,15 +99,5 @@ class MacroProvider extends ServiceProvider
         });
 
         Request::macro('filters', fn () => $this->filter());
-    }
-
-    protected function registerInertiaReponseMacros()
-    {
-        //
-    }
-
-    protected function registerApiResponseMacros()
-    {
-        //
     }
 }

@@ -112,8 +112,8 @@ test('slug uniqueness is scoped per company', function () {
 });
 
 test('an api key with only the view ability never sees draft blogs, unlike a user with the same ability', function () {
-    Blog::factory()->create(['company_id' => $this->company->id, 'status' => 'draft']);
-    Blog::factory()->create(['company_id' => $this->company->id, 'status' => 'published', 'published_at' => now()->subDay()]);
+    Blog::factory()->create(['company_id' => $this->company->id, 'status' => 'Draft']);
+    Blog::factory()->create(['company_id' => $this->company->id, 'status' => 'Published', 'published_at' => now()->subDay()]);
 
     $viewOnlyUser = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => true]);
     $viewPermission = Permission::create([

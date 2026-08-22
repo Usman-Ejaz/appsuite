@@ -25,7 +25,7 @@ defineProps<Props>();
 const leaveTeamDialogOpen = ref(false);
 const teamLeaving = ref<Team | null>(null);
 
-const canLeaveTeam = (team: Team) => !team.isPersonal && team.role !== 'owner';
+const canLeaveTeam = (team: Team) => !team.isPersonal && team.role !== 'Owner';
 
 const openLeaveTeamDialog = (team: Team) => {
     teamLeaving.value = team;
@@ -103,7 +103,7 @@ defineOptions({
                             </TooltipContent>
                         </Tooltip>
 
-                        <Tooltip v-if="team.role === 'member'">
+                        <Tooltip v-if="team.role === 'Member'">
                             <TooltipTrigger as-child>
                                 <Button
                                     data-test="team-view-button"

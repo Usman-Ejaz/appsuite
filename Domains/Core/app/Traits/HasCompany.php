@@ -15,7 +15,7 @@ trait HasCompany
     protected static function bootHasCompany()
     {
         static::creating(function (BaseModel|Model $model) {
-            if (Auth::check() && Schema::hasColumn($model->getTable(), 'company_id')) {
+            if (Auth::check() && Schema::hasColumn($model->getTable(), 'company_id') && empty($model->company_id)) {
                 $model->company_id = Auth::user()?->company_id;
             }
         });
@@ -26,11 +26,7 @@ trait HasCompany
             }
         });
 
-        $request = request();
-
-        $user = $request->user();
-
-        static::addGlobalScope(new CompanyScope($user));
+        static::addGlobalScope(new CompanyScope);
     }
 
     /**

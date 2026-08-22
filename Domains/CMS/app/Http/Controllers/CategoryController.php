@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    public function __construct(protected CategoryRepository $categories)
+    public function __construct(protected CategoryRepository $repo)
     {
         //
     }
@@ -23,12 +23,12 @@ class CategoryController extends Controller
     {
         $this->authorize('permission', CmsPermission::ViewCategories->value);
 
-        return new CategoryCollection($this->categories->filter($request->query())->list());
+        return new CategoryCollection($this->repo->filter($request->query())->list());
     }
 
     public function create(CreateRequest $request): JsonResponse
     {
-        $category = $this->categories->create($request->validated());
+        $category = $this->repo->create($request->validated());
 
         return response()->json(['data' => CategoryResource::make($category)], 201);
     }
@@ -37,19 +37,19 @@ class CategoryController extends Controller
     {
         $this->authorize('permission', CmsPermission::ViewCategories->value);
 
-        return CategoryResource::make($this->categories->findOrFail($id));
+        return CategoryResource::make($this->repo->findOrFail($id));
     }
 
     public function update(UpdateRequest $request, int $id): CategoryResource
     {
-        return CategoryResource::make($this->categories->update($id, $request->validated()));
+        return CategoryResource::make($this->repo->update($id, $request->validated()));
     }
 
     public function delete(int $id): JsonResponse
     {
         $this->authorize('permission', CmsPermission::ManageCategories->value);
 
-        $this->categories->delete($id);
+        $this->repo->delete($id);
 
         return response()->json(null, 204);
     }

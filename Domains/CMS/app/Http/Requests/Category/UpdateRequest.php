@@ -18,7 +18,7 @@ class UpdateRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'slug' => ['sometimes', 'string', 'max:255', Rule::unique('categories')->where('company_id', $this->user()->getCompanyId())->ignore($this->route('id'))],
+            'slug' => ['sometimes', 'string', 'max:255', Rule::unique('categories')->where('company_id', $this->user()?->getCompanyId())->ignore($this->route('id'))],
             'description' => ['nullable', 'string'],
         ];
     }

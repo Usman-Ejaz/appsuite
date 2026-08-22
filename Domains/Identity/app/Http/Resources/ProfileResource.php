@@ -3,10 +3,14 @@
 namespace Domains\Identity\Http\Resources;
 
 use Domains\Core\Models\App;
+use Domains\Identity\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
 
+/**
+ * @mixin User
+ */
 class ProfileResource extends JsonResource
 {
     public static $wrap = null;

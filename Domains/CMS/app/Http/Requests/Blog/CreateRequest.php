@@ -17,7 +17,7 @@ class CreateRequest extends FormRequest
 
     public function rules(): array
     {
-        $companyId = $this->user()->getCompanyId();
+        $companyId = $this->user()?->getCompanyId();
 
         return [
             'title' => ['required', 'string', 'max:255'],

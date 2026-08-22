@@ -2,9 +2,13 @@
 
 namespace Domains\Identity\Http\Resources;
 
+use Domains\Identity\Models\ApiKey;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin ApiKey
+ */
 class ApiKeyResource extends JsonResource
 {
     /**

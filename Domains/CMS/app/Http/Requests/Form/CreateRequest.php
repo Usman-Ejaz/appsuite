@@ -18,7 +18,7 @@ class CreateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', Rule::unique('forms')->where('company_id', $this->user()->getCompanyId())],
+            'slug' => ['required', 'string', 'max:255', Rule::unique('forms')->where('company_id', $this->user()?->getCompanyId())],
             'description' => ['nullable', 'string'],
             'is_active' => ['nullable', 'boolean'],
             'success_message' => ['nullable', 'string', 'max:500'],

@@ -18,7 +18,7 @@ class SubmitRequest extends FormRequest
     public function rules(): array
     {
         $form = Form::query()
-            ->where('company_id', $this->user()->getCompanyId())
+            ->where('company_id', $this->user()?->getCompanyId())
             ->where('is_active', true)
             ->findOrFail($this->route('form'));
 

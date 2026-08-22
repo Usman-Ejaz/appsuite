@@ -13,8 +13,18 @@ return new class extends Migration
     {
         Schema::create('campaigns', function (Blueprint $table) {
             $table->id();
-
+            $table->company()->nullable(false);
+            $table->string('name');
+            $table->string('slug');
+            $table->text('description')->nullable();
+            $table->string('status', 20)->default('Draft');
+            $table->timestamp('starts_at')->nullable();
+            $table->timestamp('ends_at')->nullable();
+            $table->editor();
             $table->timestamps();
+
+            $table->unique(['company_id', 'slug']);
+            $table->index(['company_id', 'status']);
         });
     }
 

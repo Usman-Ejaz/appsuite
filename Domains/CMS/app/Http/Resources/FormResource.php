@@ -2,9 +2,13 @@
 
 namespace Domains\CMS\Http\Resources;
 
+use Domains\CMS\Models\Form;
 use Domains\Core\Http\Resources\BaseResource;
 use Illuminate\Http\Request;
 
+/**
+ * @mixin Form
+ */
 class FormResource extends BaseResource
 {
     public string $routeName = 'api.cms.forms';

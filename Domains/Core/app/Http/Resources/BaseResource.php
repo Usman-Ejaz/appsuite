@@ -30,7 +30,6 @@ class BaseResource extends JsonResource
     public function toArray(Request $request): array
     {
         $fields = [
-            /** @var int */
             'id' => $this->id,
 
             /** @var Carbon */
@@ -42,14 +41,12 @@ class BaseResource extends JsonResource
             'creator_id' => $this->whenHas('creator_id'),
             /** @var string */
             'creator_type' => $this->whenHas('creator_type'),
-            /** @var UserResource */
             'creator' => UserResource::make($this->whenLoaded('creator')),
 
             /** @var int */
             'updater_id' => $this->whenHas('updater_id'),
             /** @var string */
             'updater_type' => $this->whenHas('updater_type'),
-            /** @var UserResource */
             'updater' => UserResource::make($this->whenLoaded('updater')),
 
             '_links' => $this->getLinks(),

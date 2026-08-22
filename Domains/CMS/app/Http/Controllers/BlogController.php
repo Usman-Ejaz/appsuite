@@ -3,8 +3,7 @@
 namespace Domains\CMS\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Domains\CMS\Actions\PublishBlog;
-use Domains\CMS\Actions\UnpublishBlog;
+use Domains\CMS\Actions\BlogPublisher;
 use Domains\CMS\Enums\CmsPermission;
 use Domains\CMS\Http\Requests\Blog\CreateRequest;
 use Domains\CMS\Http\Requests\Blog\UpdateRequest;
@@ -17,9 +16,7 @@ use Illuminate\Http\Request;
 class BlogController extends Controller
 {
     public function __construct(
-        protected BlogRepository $blogs,
-        protected PublishBlog $publishBlog,
-        protected UnpublishBlog $unpublishBlog,
+        protected BlogRepository $blogs
     ) {
         //
     }
@@ -63,13 +60,21 @@ class BlogController extends Controller
     {
         $this->authorize('permission', CmsPermission::PublishBlogs->value);
 
-        return BlogResource::make($this->publishBlog->handle($this->blogs->findOrFail($id)));
+        $blog = BlogPublisher::publish(
+            $this->blogs->findOrFail($id)
+        );
+
+        return BlogResource::make($blog);
     }
 
     public function unpublish(int $id): BlogResource
     {
         $this->authorize('permission', CmsPermission::PublishBlogs->value);
 
-        return BlogResource::make($this->unpublishBlog->handle($this->blogs->findOrFail($id)));
+        $blog = BlogPublisher::unpublish(
+            $this->blogs->findOrFail($id)
+        );
+
+        return BlogResource::make($blog);
     }
 }

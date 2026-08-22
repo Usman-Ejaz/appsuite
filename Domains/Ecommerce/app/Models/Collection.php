@@ -3,6 +3,8 @@
 namespace Domains\Ecommerce\Models;
 
 use Domains\Core\Models\BaseModel;
+use Domains\Ecommerce\Database\Factories\CollectionFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Collection extends BaseModel
 {
@@ -10,7 +12,19 @@ class Collection extends BaseModel
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        //
+        'name',
+        'slug',
+        'description',
+        'image',
+        'is_active',
+    ];
+
+    /**
+     * Mirrors the migration's column default on the in-memory model
+     * immediately after creation.
+     */
+    protected $attributes = [
+        'is_active' => true,
     ];
 
     /**
@@ -21,7 +35,19 @@ class Collection extends BaseModel
     protected function casts(): array
     {
         return [
-            //
+            'is_active' => 'boolean',
         ];
+    }
+
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(EcommerceProduct::class, 'collection_ecommerce_product')
+            ->withPivot('sort_order')
+            ->orderByPivot('sort_order');
+    }
+
+    protected static function newFactory(): CollectionFactory
+    {
+        return CollectionFactory::new();
     }
 }

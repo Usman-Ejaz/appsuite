@@ -1,5 +1,6 @@
 <?php
 
+use Domains\CMS\Models\Form;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('form_actions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('form_id')->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Form::class)->constrained()->cascadeOnDelete();
             $table->company()->nullable(false);
             // Not resolved/executed against anything yet — see Domains/CMS/app/Actions/SubmitForm.php
             // for the deferred FormAction execution TODO.

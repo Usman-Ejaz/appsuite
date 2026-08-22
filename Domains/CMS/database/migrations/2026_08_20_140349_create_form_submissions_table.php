@@ -1,5 +1,6 @@
 <?php
 
+use Domains\CMS\Models\Form;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,10 +14,10 @@ return new class extends Migration
     {
         Schema::create('form_submissions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('form_id')->constrained()->restrictOnDelete();
+            $table->foreignIdFor(Form::class)->constrained()->restrictOnDelete();
             $table->company()->nullable(false);
             $table->json('data');
-            $table->string('status', 20)->default('new');
+            $table->string('status', 20)->default('New');
             $table->string('ip_address', 45)->nullable();
             $table->string('user_agent', 500)->nullable();
             $table->string('referrer_url')->nullable();

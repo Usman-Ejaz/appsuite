@@ -17,7 +17,7 @@ class UpdateRequest extends FormRequest
 
     public function rules(): array
     {
-        $companyId = $this->user()->getCompanyId();
+        $companyId = $this->user()?->getCompanyId();
 
         return [
             'title' => ['sometimes', 'string', 'max:255'],

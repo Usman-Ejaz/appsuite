@@ -194,7 +194,7 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
                     <div class="flex items-center gap-2">
                         <DropdownMenu
                             v-if="
-                                member.role !== 'owner' &&
+                                member.role !== 'Owner' &&
                                 permissions.canUpdateMember
                             "
                         >
@@ -229,7 +229,7 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
 
                         <TooltipProvider
                             v-if="
-                                member.role !== 'owner' &&
+                                member.role !== 'Owner' &&
                                 permissions.canRemoveMember
                             "
                         >

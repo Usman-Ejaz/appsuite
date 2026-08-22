@@ -1,5 +1,7 @@
 <?php
 
+use Domains\Identity\Models\User;
+use Domains\Shared\Models\Category;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -19,9 +21,9 @@ return new class extends Migration
             $table->text('excerpt')->nullable();
             $table->longText('content')->nullable();
             $table->string('featured_image')->nullable();
-            $table->foreignId('author_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('category_id')->nullable()->constrained('categories')->nullOnDelete();
-            $table->string('status', 20)->default('draft');
+            $table->foreignIdFor(User::class, 'author_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(Category::class)->nullable()->constrained()->nullOnDelete();
+            $table->string('status', 20)->default('Draft');
             $table->timestamp('published_at')->nullable();
             $table->string('meta_title')->nullable();
             $table->string('meta_description', 500)->nullable();

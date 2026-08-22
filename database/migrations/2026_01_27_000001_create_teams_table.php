@@ -22,8 +22,8 @@ return new class extends Migration
 
         // Schema::create('team_members', function (Blueprint $table) {
         //     $table->id();
-        //     $table->foreignId('team_id')->constrained()->cascadeOnDelete();
-        //     $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+        //     $table->foreignIdFor(\App\Models\Team::class)->constrained()->cascadeOnDelete();
+        //     $table->foreignIdFor(\Domains\Identity\Models\User::class)->constrained()->cascadeOnDelete();
         //     $table->string('role');
         //     $table->timestamps();
 
@@ -33,10 +33,10 @@ return new class extends Migration
         // Schema::create('team_invitations', function (Blueprint $table) {
         //     $table->id();
         //     $table->string('code', 64)->unique();
-        //     $table->foreignId('team_id')->constrained()->cascadeOnDelete();
+        //     $table->foreignIdFor(\App\Models\Team::class)->constrained()->cascadeOnDelete();
         //     $table->string('email');
         //     $table->string('role');
-        //     $table->foreignId('invited_by')->constrained('users')->cascadeOnDelete();
+        //     $table->foreignIdFor(\Domains\Identity\Models\User::class, 'invited_by')->constrained()->cascadeOnDelete();
         //     $table->timestamp('expires_at')->nullable();
         //     $table->timestamp('accepted_at')->nullable();
         //     $table->timestamps();

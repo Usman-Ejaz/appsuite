@@ -4,9 +4,9 @@ namespace App\Enums;
 
 enum TeamRole: string
 {
-    case Owner = 'owner';
-    case Admin = 'admin';
-    case Member = 'member';
+    case Owner = 'Owner';
+    case Admin = 'Admin';
+    case Member = 'Member';
 
     /**
      * Get the display label for the role.

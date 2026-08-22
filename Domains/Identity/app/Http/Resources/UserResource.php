@@ -2,9 +2,13 @@
 
 namespace Domains\Identity\Http\Resources;
 
+use Domains\Identity\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin User
+ */
 class UserResource extends JsonResource
 {
     /**

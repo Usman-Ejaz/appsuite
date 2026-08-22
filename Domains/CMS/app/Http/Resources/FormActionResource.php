@@ -2,10 +2,14 @@
 
 namespace Domains\CMS\Http\Resources;
 
+use Domains\CMS\Models\FormAction;
 use Domains\Core\Http\Resources\BaseResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+/**
+ * @mixin FormAction
+ */
 class FormActionResource extends BaseResource
 {
     public string $routeName = 'api.cms.forms.actions';

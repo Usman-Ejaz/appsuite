@@ -35,14 +35,14 @@ const emit = defineEmits<{
     'update:open': [value: boolean];
 }>();
 
-const inviteRole = ref('member');
+const inviteRole = ref('Member');
 const formKey = ref(0);
 
 function handleOpenChange(value: boolean) {
     emit('update:open', value);
 
     if (!value) {
-        inviteRole.value = 'member';
+        inviteRole.value = 'Member';
         formKey.value++;
     }
 }

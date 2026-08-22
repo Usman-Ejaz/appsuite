@@ -118,7 +118,7 @@ test('a restricted api key can submit but is blocked from viewing, updating, or 
 
     $this->getJson("/api/v1/cms/forms/{$this->form->id}/submissions")->assertForbidden();
     $this->getJson("/api/v1/cms/forms/{$this->form->id}/submissions/{$submission->id}")->assertForbidden();
-    $this->putJson("/api/v1/cms/forms/{$this->form->id}/submissions/{$submission->id}", ['status' => 'read'])->assertForbidden();
+    $this->putJson("/api/v1/cms/forms/{$this->form->id}/submissions/{$submission->id}", ['status' => 'Read'])->assertForbidden();
     $this->deleteJson("/api/v1/cms/forms/{$this->form->id}/submissions/{$submission->id}")->assertForbidden();
 });
 
@@ -127,9 +127,9 @@ test('a user can list, view, update the status of, and delete submissions', func
 
     $this->getJson("/api/v1/cms/forms/{$this->form->id}/submissions")->assertOk()->assertJsonCount(1, 'data');
 
-    $this->putJson("/api/v1/cms/forms/{$this->form->id}/submissions/{$submission->id}", ['status' => 'read'])
+    $this->putJson("/api/v1/cms/forms/{$this->form->id}/submissions/{$submission->id}", ['status' => 'Read'])
         ->assertOk()
-        ->assertJsonPath('data.status', 'read');
+        ->assertJsonPath('data.status', 'Read');
 
     $this->deleteJson("/api/v1/cms/forms/{$this->form->id}/submissions/{$submission->id}")->assertNoContent();
 });

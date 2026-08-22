@@ -3,8 +3,12 @@
 namespace Domains\CMS\Http\Resources;
 
 use Domains\Core\Http\Resources\BaseResource;
+use Domains\Shared\Models\Category;
 use Illuminate\Http\Request;
 
+/**
+ * @mixin Category
+ */
 class CategoryResource extends BaseResource
 {
     public string $routeName = 'api.cms.categories';
