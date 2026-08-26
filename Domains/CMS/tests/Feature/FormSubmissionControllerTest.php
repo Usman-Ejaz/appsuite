@@ -53,7 +53,7 @@ test('a missing required field is rejected', function () {
 
     $this->postJson("/api/v1/cms/forms/{$this->form->id}/submit", ['data' => []])
         ->assertUnprocessable()
-        ->assertJsonValidationErrors(['data.email']);
+        ->assertJsonValidationErrors(['data.email'], responseKey: 'data');
 });
 
 test('a value of the wrong type is rejected', function () {
@@ -64,7 +64,7 @@ test('a value of the wrong type is rejected', function () {
 
     $this->postJson("/api/v1/cms/forms/{$this->form->id}/submit", ['data' => ['age' => 'not-a-number']])
         ->assertUnprocessable()
-        ->assertJsonValidationErrors(['data.age']);
+        ->assertJsonValidationErrors(['data.age'], responseKey: 'data');
 });
 
 test('custom validation_rules are enforced', function () {
@@ -76,7 +76,7 @@ test('custom validation_rules are enforced', function () {
 
     $this->postJson("/api/v1/cms/forms/{$this->form->id}/submit", ['data' => ['message' => 'this is too long']])
         ->assertUnprocessable()
-        ->assertJsonValidationErrors(['data.message']);
+        ->assertJsonValidationErrors(['data.message'], responseKey: 'data');
 });
 
 test('undeclared data keys are silently dropped, not stored', function () {

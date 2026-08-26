@@ -1,0 +1,214 @@
+<?php
+
+namespace Kalimulhaq\Qubuilder\Http\Requests;
+
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
+use Kalimulhaq\Qubuilder\Rules\ValidateFilter;
+use Kalimulhaq\Qubuilder\Rules\ValidateInclude;
+use Kalimulhaq\Qubuilder\Rules\ValidateSort;
+use Kalimulhaq\Qubuilder\Rules\ValidateStringArray;
+use Kalimulhaq\Qubuilder\Support\Helper;
+
+/**
+ * Form request for paginated collection endpoints.
+ *
+ * Validates and normalises all Qubuilder query parameters from the HTTP request.
+ * All parameters are optional. JSON parameters accept either a JSON-encoded string
+ * or, when called programmatically (e.g. tests), a pre-decoded PHP array.
+ *
+ * Parameter names are configurable via `qubuilder.params`; the names below reflect
+ * the defaults.
+ */
+class GetCollectionRequest extends FormRequest
+{
+    /**
+     * The parsed filters array, populated after successful validation.
+     *
+     * @var array<string, mixed>
+     */
+    protected array $filters = [];
+
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * All parameters are optional (`sometimes`). Each JSON parameter is validated
+     * against the exact structure the package expects. The `limit` is capped at
+     * the value configured in `qubuilder.limit.max`.
+     *
+     * @return array<string, ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        $select = Helper::param('select');
+        $filter = Helper::param('filter');
+        $include = Helper::param('include');
+        $sort = Helper::param('sort');
+        $group = Helper::param('group');
+        $page = Helper::param('page');
+        $limit = Helper::param('limit');
+
+        $selectRules = Helper::allowSelectAll()
+            ? ['sometimes', new ValidateStringArray]
+            : ['required', new ValidateStringArray(forbidWildcard: true)];
+
+        $rules = [
+            /**
+             * @queryParam select string
+             *   Indexed JSON array of column names to include in the response.
+             *   Omit to return all columns. When `qubuilder.allow_select_all` is
+             *   disabled, this parameter is required and "*" is rejected.
+             *   Example: ["id","name","email"]
+             */
+            $select => $selectRules,
+
+            /**
+             * @queryParam filter string
+             *   JSON filter definition. Supports three node shapes:
+             *   - Condition object:  {"field":"name","op":"=","value":"Alice"}
+             *   - AND / OR group:    {"AND":[...conditions/groups...]}
+             *   - Flat list (AND):   [{"field":"status","op":"=","value":"active"},...]
+             *
+             *   Operators: = != <> > < >= <= in not_in between not_between null not_null
+             *   _like like_ _like_ date year month day time json_contains json_not_contains
+             *   raw field has doesnthave any all none
+             *   Piped sub-operators: has|>= field|!= any|_like_ etc.
+             *
+             *   Example: {"AND":[{"field":"status","op":"=","value":"active"},{"field":"age","op":">=","value":18}]}
+             */
+            $filter => ['sometimes', new ValidateFilter],
+
+            /**
+             * @queryParam sort string
+             *   JSON object of column => direction pairs. Direction must be asc or desc
+             *   (case-insensitive). Prefix a key with raw: for raw SQL expressions.
+             *   Example: {"created_at":"desc","name":"asc"}
+             */
+            $sort => ['sometimes', new ValidateSort],
+
+            /**
+             * @queryParam group string
+             *   Indexed JSON array of column names to add to the GROUP BY clause.
+             *   Example: ["status","type"]
+             */
+            $group => ['sometimes', new ValidateStringArray],
+
+            /**
+             * @queryParam page integer
+             *   1-based page number for pagination. Defaults to 1.
+             *   Example: 1
+             */
+            $page => ['sometimes', 'integer', 'min:1'],
+
+            /**
+             * @queryParam limit integer
+             *   Number of records per page. Must be between 1 and the configured maximum
+             *   (default 50, set via qubuilder.limit.max). Defaults to 15.
+             *   Example: 15
+             */
+            $limit => ['sometimes', 'integer', 'between:1,'.Helper::maxLimit()],
+        ];
+
+        /**
+         * @queryParam include string
+         *   JSON array of eager-load definitions. Each object must have a `name` key
+         *   (the Eloquent relation method name) and may include:
+         *   - select    — column subset (array of strings)
+         *   - group     — GROUP BY columns (array of strings)
+         *   - filter    — sub-filter applied to the relation
+         *   - sort      — sort the relation results
+         *   - aggregate — one of: count avg sum min max
+         *   - field     — required when aggregate is avg, sum, min, or max
+         *   - page / limit — paginate the relation
+         *   - include   — nested includes (recursive)
+         *
+         *   Omitted entirely when `qubuilder.allow_include` is disabled.
+         *   Example: [{"name":"roles","select":["id","name"]},{"name":"orders","aggregate":"count"}]
+         */
+        if (Helper::allowInclude()) {
+            $rules[$include] = ['sometimes', new ValidateInclude];
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Cross-field validation: every selected column must appear in the group clause.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            $selectParam = Helper::param('select');
+            $groupParam = Helper::param('group');
+
+            if ($validator->errors()->has($selectParam) || $validator->errors()->has($groupParam)) {
+                return;
+            }
+
+            $select = $this->decodedInput($selectParam);
+            $group = $this->decodedInput($groupParam);
+
+            if (empty($select) || empty($group)) {
+                return;
+            }
+
+            $notInGroup = array_diff($select, $group);
+
+            if (! empty($notInGroup)) {
+                $validator->errors()->add(
+                    $selectParam,
+                    'The following selected columns are not in the group clause: '.implode(', ', $notInGroup).'.'
+                );
+            }
+        });
+    }
+
+    /**
+     * Parse and store all filter parameters after the request passes validation.
+     */
+    protected function passedValidation(): void
+    {
+        $this->filters = Helper::input($this);
+    }
+
+    /**
+     * Get the parsed filters array after validation.
+     *
+     * Returns a normalised array ready to pass directly to `Qubuilder::make()`.
+     *
+     * @return array<string, mixed>
+     */
+    public function filters(): array
+    {
+        return $this->filters;
+    }
+
+    /** @return array<int|string, mixed> */
+    private function decodedInput(string $param): array
+    {
+        $value = $this->input($param);
+
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
+        return [];
+    }
+}

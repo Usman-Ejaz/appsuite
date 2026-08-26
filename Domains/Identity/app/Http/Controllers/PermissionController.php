@@ -3,72 +3,46 @@
 namespace Domains\Identity\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Dedoc\Scramble\Attributes\Group;
+use Domains\Identity\Http\Requests\Permission\GetCollectionRequest;
+use Domains\Identity\Http\Requests\Permission\GetResourceRequest;
+use Domains\Identity\Http\Resources\PermissionResource;
 use Domains\Identity\Repositories\PermissionRepository;
-use Illuminate\Http\Request;
 
+/**
+ * Permissions are a fixed, code-defined catalog seeded per app (see the per-domain
+ * `*Permission` enums) — this endpoint is read-only by design, not a content-management CRUD.
+ */
+#[Group('Identity, Permissions')]
 class PermissionController extends Controller
 {
-    /**
-     * Create the controller instance.
-     */
-    public function __construct(protected PermissionRepository $repo)
+    public function __construct(protected PermissionRepository $permissions)
     {
         //
     }
 
     /**
-     * Display a listing of the resource.
+     * Get Permissions
+     *
+     * Returns the platform's permission catalog, optionally filtered by `app_id`. Restricted
+     * to root and owner users.
      */
-    public function index()
+    public function list(GetCollectionRequest $request)
     {
-        //
+        abort_unless($request->user()->isRoot() || $request->user()->isOwner(), 403);
+
+        return PermissionResource::collection($this->permissions->list($request->filters()));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Get Permission
+     *
+     * Returns the details of a single permission. Restricted to root and owner users.
      */
-    public function create()
+    public function get(GetResourceRequest $request, int $id): PermissionResource
     {
-        //
-    }
+        abort_unless($request->user()->isRoot() || $request->user()->isOwner(), 403);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        //
+        return PermissionResource::make($this->permissions->get($id, $request->filters()));
     }
 }

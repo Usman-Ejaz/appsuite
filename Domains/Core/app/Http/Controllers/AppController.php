@@ -3,72 +3,84 @@
 namespace Domains\Core\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Domains\Core\Repsoitories\AppRepository;
+use Dedoc\Scramble\Attributes\Group;
+use Domains\Core\Http\Requests\App\CreateRequest;
+use Domains\Core\Http\Requests\App\UpdateRequest;
+use Domains\Core\Http\Requests\GetCollectionRequest;
+use Domains\Core\Http\Requests\GetResourceRequest;
+use Domains\Core\Http\Resources\AppResource;
+use Domains\Core\Repositories\AppRepository;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+#[Group('Core, Apps')]
 class AppController extends Controller
 {
-    /**
-     * Create the controller instance.
-     */
-    public function __construct(protected AppRepository $repo)
+    public function __construct(protected AppRepository $apps)
     {
         //
     }
 
     /**
-     * Display a listing of the resource.
+     * Get Apps
+     *
+     * Returns the platform's app catalog. Restricted to root users.
      */
-    public function index()
+    public function list(GetCollectionRequest $request)
     {
-        //
+        abort_unless($request->user()->isRoot(), 403);
+
+        return AppResource::collection($this->apps->list($request->filters()));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Create App
+     *
+     * Adds a new app to the platform catalog. Restricted to root users. The `slug` and `code`
+     * must each be unique across the platform.
      */
-    public function create()
+    public function create(CreateRequest $request): JsonResponse
     {
-        //
+        $app = $this->apps->create($request->validated());
+
+        return response()->json(['data' => AppResource::make($app)], 201);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Get App
+     *
+     * Returns the details of a single app. Restricted to root users.
      */
-    public function store(Request $request)
+    public function get(GetResourceRequest $request, int $id): AppResource
     {
-        //
+        abort_unless($request->user()->isRoot(), 403);
+
+        return AppResource::make($this->apps->get($id, $request->filters()));
     }
 
     /**
-     * Show the specified resource.
+     * Update App
+     *
+     * Updates an existing app. Restricted to root users. Fields left out of the request keep
+     * their current value.
      */
-    public function show($id)
+    public function update(UpdateRequest $request, int $id): AppResource
     {
-        //
+        return AppResource::make($this->apps->update($id, $request->validated()));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Delete App
+     *
+     * Permanently removes an app from the catalog and its entitlements from every company it
+     * was assigned to. Restricted to root users.
      */
-    public function edit($id)
+    public function delete(Request $request, int $id): JsonResponse
     {
-        //
-    }
+        abort_unless($request->user()->isRoot(), 403);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
+        $this->apps->delete($id);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        //
+        return response()->json(null, 204);
     }
 }

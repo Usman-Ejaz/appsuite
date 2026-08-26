@@ -22,7 +22,7 @@ test('a root user sees every app in the system', function () {
 
     $response = $this->getJson('/api/v1/me')->assertOk();
 
-    expect($response->json('apps'))->toHaveCount(3);
+    expect($response->json('data.apps'))->toHaveCount(3);
 });
 
 test('a company owner sees the company\'s subscribed apps', function () {
@@ -37,8 +37,8 @@ test('a company owner sees the company\'s subscribed apps', function () {
 
     $response = $this->getJson('/api/v1/me')->assertOk();
 
-    expect($response->json('apps'))->toHaveCount(1)
-        ->and($response->json('apps.0.code'))->toBe($subscribedApp->code);
+    expect($response->json('data.apps'))->toHaveCount(1)
+        ->and($response->json('data.apps.0.code'))->toBe($subscribedApp->code);
 });
 
 test('a regular user only sees apps individually granted to them', function () {
@@ -57,8 +57,8 @@ test('a regular user only sees apps individually granted to them', function () {
 
     $response = $this->getJson('/api/v1/me')->assertOk();
 
-    expect($response->json('apps'))->toHaveCount(1)
-        ->and($response->json('apps.0.code'))->toBe($grantedApp->code);
+    expect($response->json('data.apps'))->toHaveCount(1)
+        ->and($response->json('data.apps.0.code'))->toBe($grantedApp->code);
 });
 
 test('recent_app prefers last_app when it is in the resolved apps list', function () {
@@ -71,7 +71,7 @@ test('recent_app prefers last_app when it is in the resolved apps list', functio
 
     Sanctum::actingAs($user);
 
-    $this->getJson('/api/v1/me')->assertOk()->assertJson(['recent_app' => 'beta']);
+    $this->getJson('/api/v1/me')->assertOk()->assertJson(['data' => ['recent_app' => 'beta']]);
 });
 
 test('recent_app falls back to alphabetically-first app when last_app is not in the list', function () {
@@ -84,7 +84,7 @@ test('recent_app falls back to alphabetically-first app when last_app is not in 
 
     Sanctum::actingAs($user);
 
-    $this->getJson('/api/v1/me')->assertOk()->assertJson(['recent_app' => 'alpha']);
+    $this->getJson('/api/v1/me')->assertOk()->assertJson(['data' => ['recent_app' => 'alpha']]);
 });
 
 test('permissions are scoped to the current app, with global permissions always included', function () {
@@ -105,7 +105,7 @@ test('permissions are scoped to the current app, with global permissions always 
 
     $response = $this->getJson('/api/v1/me')->assertOk();
 
-    expect($response->json('permissions'))
+    expect($response->json('data.permissions'))
         ->toContain('crm:contacts:view')
         ->toContain('platform:settings:view')
         ->not->toContain('cms:pages:view');
@@ -119,7 +119,7 @@ test('company sub-object includes name, status, and a null plan placeholder', fu
 
     $this->getJson('/api/v1/me')
         ->assertOk()
-        ->assertJson(['company' => ['name' => 'Acme Inc', 'plan' => null]]);
+        ->assertJson(['data' => ['company' => ['name' => 'Acme Inc', 'plan' => null]]]);
 });
 
 test('unauthenticated requests to me are rejected', function () {

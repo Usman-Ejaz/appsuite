@@ -15,7 +15,7 @@ test('a user can login with valid credentials and receives a token', function ()
     ]);
 
     $response->assertCreated()
-        ->assertJsonStructure(['token', 'token_type', 'scopes', 'expires_at']);
+        ->assertJsonStructure(['data' => ['token', 'token_type', 'scopes', 'expires_at']]);
 });
 
 test('login fails with invalid credentials', function () {

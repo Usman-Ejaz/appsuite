@@ -4,6 +4,8 @@ namespace Domains\Identity\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Domains\Core\Models\App;
+use Domains\Core\Traits\HasCompany;
+use Domains\Core\Traits\HasEditor;
 use Domains\Identity\Contracts\Actor;
 use Domains\Identity\Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -35,7 +37,7 @@ use Spatie\Permission\Traits\HasRoles;
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements Actor, PasskeyUser
 {
-    use HasApiTokens, HasFactory, HasRoles, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasApiTokens, HasCompany, HasEditor, HasFactory, HasRoles, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     protected $fillable = [
         'name', 'email', 'password', 'phone', 'whatsapp', 'last_app', 'is_root', 'is_owner', 'last_activity_at', 'company_id',

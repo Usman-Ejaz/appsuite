@@ -1,0 +1,203 @@
+<?php
+
+namespace Kalimulhaq\Qubuilder\Support;
+
+use Illuminate\Container\Container;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use ReflectionClass;
+use ReflectionNamedType;
+
+/**
+ * Internal utility methods used by the Qubuilder pipeline.
+ */
+class Helper
+{
+    /**
+     * Resolve the configured HTTP parameter name for a given internal key.
+     *
+     * Reads `qubuilder.params.{name}` from config. Falls back to `$name` itself
+     * when the config value is null or empty.
+     *
+     * @param  string  $name  Internal key (e.g. `'select'`, `'filter'`, `'sort'`).
+     * @return string The actual HTTP request parameter name to read.
+     */
+    public static function param(string $name): string
+    {
+        $paramName = config("qubuilder.params.$name", $name);
+
+        return ! empty($paramName) ? $paramName : $name;
+    }
+
+    /**
+     * Coerce a JSON string or iterable value into an array.
+     *
+     * Returns an empty array when the input is neither iterable nor valid JSON.
+     *
+     * @param  mixed  $input  A JSON-encoded string or any iterable.
+     * @param  bool|null  $associative  Decode JSON objects as associative arrays (default: true).
+     * @param  int  $depth  Maximum JSON decoding depth (default: 512).
+     * @param  int  $flags  JSON decoding flags (default: 0).
+     * @return array<int|string, mixed>
+     */
+    public static function inputAsArray(mixed $input, ?bool $associative = true, int $depth = 512, int $flags = 0): array
+    {
+
+        if (is_iterable($input)) {
+            return (array) $input;
+        }
+
+        $output = json_decode($input, $associative, $depth, $flags);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return [];
+        }
+
+        return $output;
+    }
+
+    /**
+     * Extract and normalise all Qubuilder filter parameters from an HTTP request.
+     *
+     * Falls back to `request()` when `$req` is null. The `limit` value is
+     * clamped between 1 and `maxLimit()`.
+     *
+     * @return array{select: array<int|string, mixed>, filter: array<int|string, mixed>, include: array<int|string, mixed>, sort: array<int|string, mixed>, group: array<int|string, mixed>, page: int, limit: int}
+     */
+    public static function input(?Request $req = null): array
+    {
+        if (! $req instanceof Request) {
+            $req = request();
+        }
+
+        $limit = $req->integer(self::param('limit'), config('qubuilder.limit.default', 15));
+        $limit = $limit > 0 && $limit <= self::maxLimit() ? $limit : self::maxLimit();
+
+        $return = [
+            'select' => self::inputAsArray($req->input(self::param('select'))),
+            'filter' => self::inputAsArray($req->input(self::param('filter'))),
+            'include' => self::allowInclude()
+                ? self::inputAsArray($req->input(self::param('include')))
+                : [],
+            'sort' => self::inputAsArray($req->input(self::param('sort'))),
+            'group' => self::inputAsArray($req->input(self::param('group'))),
+            'page' => $req->integer(self::param('page'), 1),
+            'limit' => $limit,
+        ];
+
+        return $return;
+    }
+
+    /**
+     * Get the configured maximum records-per-page limit.
+     *
+     * Reads `qubuilder.limit.max` from config (default: 50).
+     */
+    public static function maxLimit(): int
+    {
+        $limit_max = config('qubuilder.limit.max', 50);
+
+        return ! empty($limit_max) ? $limit_max : 50;
+    }
+
+    /**
+     * Whether unrestricted column selection ("SELECT *") is allowed.
+     *
+     * Reads `qubuilder.allow_select_all` from config (default: true). When false,
+     * `select` becomes required, the "*" wildcard is rejected, and the builder
+     * falls back to the model's primary key when no explicit columns are given.
+     */
+    public static function allowSelectAll(): bool
+    {
+        if (! Container::getInstance()->bound('config')) {
+            return true;
+        }
+
+        return (bool) config('qubuilder.allow_select_all', true);
+    }
+
+    /**
+     * Whether relation eager-loading via `include` is allowed.
+     *
+     * Reads `qubuilder.allow_include` from config (default: true). When false,
+     * the `include` parameter is stripped from the parsed input, its validation
+     * is skipped, and the builder never loads relations.
+     */
+    public static function allowInclude(): bool
+    {
+        if (! Container::getInstance()->bound('config')) {
+            return true;
+        }
+
+        return (bool) config('qubuilder.allow_include', true);
+    }
+
+    /**
+     * Extract the `select` array from a filters source array.
+     *
+     * @param  array<int|string, mixed>  $source  A filters array (e.g. from `Helper::input()`).
+     * @return array<int|string, mixed>
+     */
+    public static function select(array $source): array
+    {
+        return Arr::get($source, self::param('select'), []);
+    }
+
+    /**
+     * Extract the `include` array from a filters source array.
+     *
+     * @param  array<int|string, mixed>  $source  A filters array (e.g. from `Helper::input()`).
+     * @param  bool  $nameOnly  When true, returns only the `name` values as a flat array.
+     * @return array<int|string, mixed>
+     */
+    public static function include(array $source, bool $nameOnly = false): array
+    {
+        if ($nameOnly) {
+            return Arr::pluck(Arr::get($source, self::param('include'), []), 'name');
+        }
+
+        return Arr::get($source, self::param('include'), []);
+    }
+
+    /**
+     * Extract the `sort` array from a filters source array.
+     *
+     * @param  array<int|string, mixed>  $source  A filters array (e.g. from `Helper::input()`).
+     * @return array<string, string>
+     */
+    public static function sort(array $source): array
+    {
+        return Arr::get($source, self::param('sort'), []);
+    }
+
+    /**
+     * Resolve the return type name of a given class method via reflection.
+     *
+     * Returns `null` if the method does not exist, `'void'` if no return type
+     * is declared, or the fully-qualified class name of the return type.
+     *
+     * @param  string  $class  Fully-qualified class name.
+     * @param  string  $method  Method name to inspect.
+     */
+    public static function getReturnTypes(string $class, string $method): ?string
+    {
+        $reflection = new ReflectionClass($class); // Reflect the class
+
+        // Check if the method exists in the class
+        if (! $reflection->hasMethod($method)) {
+            // throw new \InvalidArgumentException("Method {$method} not found in class {$class}");
+            return null;
+        }
+
+        $reflectionMethod = $reflection->getMethod($method); // Get the method reflection
+        $returnType = $reflectionMethod->getReturnType(); // Get the return type
+
+        // Check if the method has a return type and it's a named type
+        if ($returnType instanceof ReflectionNamedType) {
+            return $returnType->getName();
+        }
+
+        // If no return type is defined
+        return 'void';
+    }
+}

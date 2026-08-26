@@ -23,6 +23,7 @@ class ProfileResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'email' => $this->email,
             'company' => $this->whenLoaded('company', fn () => $this->company ? [
                 'name' => $this->company->name,
                 'status' => $this->company->status,
@@ -33,7 +34,7 @@ class ProfileResource extends JsonResource
                 ->filter(fn ($permission) => $permission->app_id === null || $permission->app_id === $currentApp?->id)
                 ->pluck('name')
                 ->values(),
-            'apps' => $apps->map(fn (App $app) => [
+            'apps' => $apps->map(fn ($app) => [
                 'name' => $app->name,
                 'code' => $app->code,
                 'color' => $app->color,
@@ -52,7 +53,7 @@ class ProfileResource extends JsonResource
     protected function resolveApps(): Collection
     {
         if ($this->isRoot()) {
-            return App::all();
+            return App::query()->system()->get();
         }
 
         if ($this->isOwner()) {
@@ -71,7 +72,7 @@ class ProfileResource extends JsonResource
      */
     protected function resolveCurrentApp(Collection $apps): ?App
     {
-        if ($apps->isEmpty()) {
+        if ($apps->isEmpty() || $this->isRoot()) {
             return null;
         }
 

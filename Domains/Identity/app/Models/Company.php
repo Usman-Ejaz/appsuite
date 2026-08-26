@@ -15,7 +15,7 @@ class Company extends BaseModel
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'name', 'slug', 'description', 'status', 'license_number',
+        'name', 'slug', 'description', 'status', 'address', 'license_number',
     ];
 
     /**
@@ -25,7 +25,21 @@ class Company extends BaseModel
     {
         return [
             'status' => CompanyStatus::class,
+            'joined_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Stamps joined_at at creation time if it wasn't already set — when this
+     * tenant joined the platform, not something an API caller backdates.
+     */
+    protected static function booted(): void
+    {
+        parent::booted();
+
+        static::creating(function (Company $company) {
+            $company->joined_at ??= now();
+        });
     }
 
     /**

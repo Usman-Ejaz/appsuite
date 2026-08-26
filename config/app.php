@@ -56,6 +56,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | API Version
+    |--------------------------------------------------------------------------
+    |
+    | A manually-maintained minor version returned on every API response as the
+    | X-API-Version header (see App\Http\Middleware\ForceJsonResponse). `build`
+    | identifies the exact deployed commit when a BUILD_VERSION file is present
+    | (written by the deploy pipeline); null locally or wherever that file wasn't
+    | produced by a build.
+    |
+    */
+
+    'version_minor' => env('APP_VERSION_MINOR', '1.0.0'),
+
+    'build' => file_exists($buildVersionFile = base_path('BUILD_VERSION'))
+        ? (trim(file_get_contents($buildVersionFile)) ?: null)
+        : null,
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

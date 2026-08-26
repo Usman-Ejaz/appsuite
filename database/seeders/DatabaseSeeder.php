@@ -2,9 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use Domains\CMS\Database\Seeders\CMSDatabaseSeeder;
+use Domains\Core\Database\Seeders\CoreDatabaseSeeder;
+use Domains\Ecommerce\Database\Seeders\EcommerceDatabaseSeeder;
+use Domains\Identity\Database\Seeders\IdentityDatabaseSeeder;
+use Domains\Identity\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,11 +20,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        User::query()->firstOrCreate(
+            ['email' => 'root@test.com'],
+            [
+                'name' => 'Root',
+                'password' => Hash::make('password'),
+                'is_root' => true,
+            ],
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            CoreDatabaseSeeder::class,
+            CMSDatabaseSeeder::class,
+            EcommerceDatabaseSeeder::class,
+            IdentityDatabaseSeeder::class,
         ]);
     }
 }

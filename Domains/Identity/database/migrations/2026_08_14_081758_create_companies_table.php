@@ -17,7 +17,9 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('description', 500)->nullable();
             $table->string('status');
+            $table->string('address', 500)->nullable();
             $table->string('license_number')->nullable();
+            $table->timestamp('joined_at')->nullable();
             $table->editor();
             $table->timestamps();
         });

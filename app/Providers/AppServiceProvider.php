@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
+use function Illuminate\Support\enum_value;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -61,12 +63,17 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
-        Gate::define('permission', function (Actor $actor, array|string $permission) {
+        Gate::define('permission', function (Actor $actor, \BackedEnum|array|string $permission) {
             if ($actor->isOwner()) {
                 return true;
             }
 
-            return $actor->can(Arr::wrap($permission));
+            $permissions = array_map(
+                fn (\BackedEnum|string $permission): string => enum_value($permission),
+                Arr::wrap($permission),
+            );
+
+            return $actor->can($permissions);
         });
     }
 }

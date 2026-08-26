@@ -14,7 +14,7 @@ trait HasEditor
     {
         static::creating(function (BaseModel|Model $model) {
             if (Auth::check() && Schema::hasColumn($model->getTable(), 'creator_id')) {
-                $model->creator_id = Auth::id();
+                $model->creator_id ??= Auth::id();
                 $model->creator_type = class_basename(Auth::user());
             }
         });

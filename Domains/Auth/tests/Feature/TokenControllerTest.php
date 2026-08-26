@@ -18,7 +18,7 @@ test('a valid api_key/api_secret pair can be exchanged for a bearer token', func
     ]);
 
     $response->assertCreated()
-        ->assertJsonStructure(['token', 'token_type', 'scopes', 'expires_at']);
+        ->assertJsonStructure(['data' => ['token', 'token_type', 'scopes', 'expires_at']]);
 });
 
 test('an invalid api_secret is rejected', function () {

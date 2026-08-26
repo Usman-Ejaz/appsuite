@@ -49,10 +49,23 @@ class BaseResource extends JsonResource
             'updater_type' => $this->whenHas('updater_type'),
             'updater' => UserResource::make($this->whenLoaded('updater')),
 
-            '_links' => $this->getLinks(),
+            // '_links' => $this->when(! $this->isListRoute($request), fn () => $this->getLinks()),
         ];
 
         return $fields;
+    }
+
+    /**
+     * Whether the current request is resolving this resource's own "list" route.
+     *
+     * Used to suppress the per-item _links block there: `parent` would repeat
+     * identically on every row of a paginated list, and `self` is cheap for the client
+     * to derive from `id` once it already knows the list endpoint. Still included for
+     * single-resource (`get`) responses, where a self/parent link is actually useful.
+     */
+    protected function isListRoute(Request $request): bool
+    {
+        return ! empty($this->routeName) && $request->route()?->getName() === "{$this->routeName}.list";
     }
 
     public static function delete($data = null, $message = 'Record has been deleted successfully')

@@ -25,6 +25,7 @@ class CompanyFactory extends Factory
             'slug' => str($name)->slug(),
             'description' => fake()->catchPhrase(),
             'status' => CompanyStatus::ACTIVE,
+            'address' => fake()->address(),
             'license_number' => fake()->unique()->numerify('LIC-########'),
         ];
     }

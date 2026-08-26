@@ -13,12 +13,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('collection_ecommerce_product', function (Blueprint $table) {
+        Schema::create('ecom_product_collection', function (Blueprint $table) {
             $table->foreignIdFor(Collection::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(EcommerceProduct::class)->constrained()->cascadeOnDelete();
             $table->unsignedInteger('sort_order')->default(0);
 
-            $table->unique(['collection_id', 'ecommerce_product_id']);
+            // $table->unique(['collection_id', 'ecommerce_product_id']);
         });
     }
 

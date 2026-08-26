@@ -1,0 +1,29 @@
+name: code-style
+
+on:
+    push:
+        branches: [main, master]
+    pull_request:
+        branches: [main, master]
+
+jobs:
+    pint:
+        name: Laravel Pint
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v7
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  coverage: none
+
+            - name: Install composer dependencies
+              uses: ramsey/composer-install@v4
+
+            - name: Check code style
+              run: vendor/bin/pint --test

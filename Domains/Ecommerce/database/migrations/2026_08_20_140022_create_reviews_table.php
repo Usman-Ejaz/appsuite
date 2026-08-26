@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('reviews', function (Blueprint $table) {
             $table->id();
             $table->company()->nullable(false);
-            $table->foreignIdFor(EcommerceProduct::class)->constrained()->cascadeOnDelete();
+            $table->morphs('reviewable');
             $table->foreignIdFor(Customer::class)->nullable()->constrained()->nullOnDelete();
             $table->unsignedTinyInteger('rating');
             $table->string('title')->nullable();
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->editor();
             $table->timestamps();
 
-            $table->index(['ecommerce_product_id', 'status']);
+            $table->index(['reviewable_id', 'reviewable_type', 'status']);
             $table->index(['company_id', 'status']);
         });
     }

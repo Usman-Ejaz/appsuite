@@ -1,0 +1,27 @@
+name: create-release
+
+on:
+    push:
+        tags:
+            - 'v*'
+
+jobs:
+    # Run the full test matrix (reusable run-tests workflow) before releasing.
+    test:
+        uses: ./.github/workflows/main.yml
+
+    release:
+        needs: test
+        runs-on: ubuntu-latest
+
+        permissions:
+            contents: write
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v7
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v3
+              with:
+                  generate_release_notes: true

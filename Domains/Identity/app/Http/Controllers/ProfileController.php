@@ -15,7 +15,7 @@ class ProfileController extends Controller
     public function get(Request $request): ProfileResource
     {
         abort_if(! $request->user() instanceof User, 403);
-
+        info("Hello");
         return ProfileResource::make($request->user()->load(['company', 'apps']));
     }
 }

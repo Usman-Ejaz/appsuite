@@ -17,6 +17,7 @@ class CoreDatabaseSeeder extends Seeder
         'inventory' => ['name' => 'Inventory', 'category' => 'Operations', 'icon' => 'box'],
         'support' => ['name' => 'Support', 'category' => 'Service', 'icon' => 'life-buoy'],
         'cms' => ['name' => 'CMS', 'category' => 'Content', 'icon' => 'file-text'],
+        'system' => ['name' => 'System', 'category' => 'Management', 'icon' => 'file-text'],
     ];
 
     /**
