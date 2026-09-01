@@ -4,6 +4,7 @@ namespace Domains\Ecommerce\Models;
 
 use Domains\Core\Models\BaseModel;
 use Domains\Ecommerce\Database\Factories\CollectionFactory;
+use Domains\Shared\Models\Product;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Collection extends BaseModel
@@ -41,7 +42,7 @@ class Collection extends BaseModel
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(EcommerceProduct::class, 'collection_ecommerce_product')
+        return $this->belongsToMany(Product::class, 'collection_product')
             ->withPivot('sort_order')
             ->orderByPivot('sort_order');
     }

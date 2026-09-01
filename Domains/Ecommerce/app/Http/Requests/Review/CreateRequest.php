@@ -24,7 +24,7 @@ class CreateRequest extends FormRequest
              *
              * @example 17
              */
-            'ecommerce_product_id' => ['required', 'integer', Rule::exists('ecommerce_products', 'id')->where('company_id', $companyId)],
+            'product_id' => ['required', 'integer', Rule::exists('products', 'id')->where('company_id', $companyId)],
 
             /**
              * The customer who left the review, if known.

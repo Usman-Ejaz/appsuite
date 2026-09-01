@@ -2,7 +2,6 @@
 
 use Domains\Core\Models\App;
 use Domains\Ecommerce\Models\Brand;
-use Domains\Ecommerce\Models\EcommerceProduct;
 use Domains\Identity\Models\Company;
 use Domains\Identity\Models\Permission;
 use Domains\Identity\Models\User;
@@ -38,9 +37,13 @@ test('creating a product returns both basic and commerce fields in one response'
         'slug' => 'wireless-mouse',
         'description' => 'An ergonomic wireless mouse',
         'is_active' => true,
+        'is_featured' => true,
+        'meta_title' => 'Wireless Mouse | Acme Store',
         'sku' => 'SKU-0001',
-        'price' => 19.99,
+        'cost_price' => 8.50,
+        'selling_price' => 19.99,
         'stock_quantity' => 50,
+        'reorder_threshold' => 5,
     ];
 
     $response = $this->postJson('/api/v1/ecommerce/products', $payload);
@@ -50,50 +53,44 @@ test('creating a product returns both basic and commerce fields in one response'
         ->assertJsonPath('data.slug', 'wireless-mouse')
         ->assertJsonPath('data.description', 'An ergonomic wireless mouse')
         ->assertJsonPath('data.is_active', true)
+        ->assertJsonPath('data.is_featured', true)
+        ->assertJsonPath('data.meta_title', 'Wireless Mouse | Acme Store')
         ->assertJsonPath('data.sku', 'SKU-0001')
-        ->assertJsonPath('data.price', '19.99')
-        ->assertJsonPath('data.stock_quantity', 50);
-
-    $productId = $response->json('data.product_id');
+        ->assertJsonPath('data.cost_price', '8.50')
+        ->assertJsonPath('data.selling_price', '19.99')
+        ->assertJsonPath('data.stock_quantity', 50)
+        ->assertJsonPath('data.reorder_threshold', 5)
+        ->assertJsonPath('data.app_code', 'ecommerce');
 
     $this->assertDatabaseHas('products', [
-        'id' => $productId,
-        'company_id' => $this->company->id,
-        'name' => 'Wireless Mouse',
-        'slug' => 'wireless-mouse',
-    ]);
-
-    $this->assertDatabaseHas('ecommerce_products', [
         'id' => $response->json('data.id'),
         'company_id' => $this->company->id,
+        'app_code' => 'ecommerce',
+        'name' => 'Wireless Mouse',
+        'slug' => 'wireless-mouse',
         'sku' => 'SKU-0001',
-        'product_id' => $productId,
     ]);
 });
 
 test('getting a single product returns both basic and commerce fields', function () {
-    $product = Product::factory()->create([
+    $product = Product::factory()->ecommerce()->create([
         'company_id' => $this->company->id,
         'name' => 'Desk Lamp',
         'slug' => 'desk-lamp',
-    ]);
-    $ecommerceProduct = EcommerceProduct::factory()->create([
-        'company_id' => $this->company->id,
-        'product_id' => $product->id,
         'sku' => 'SKU-LAMP',
-        'price' => 45.50,
+        'selling_price' => 45.50,
     ]);
 
-    $this->getJson("/api/v1/ecommerce/products/{$ecommerceProduct->id}")
+    $this->getJson("/api/v1/ecommerce/products/{$product->id}")
         ->assertOk()
         ->assertJsonPath('data.name', 'Desk Lamp')
         ->assertJsonPath('data.slug', 'desk-lamp')
         ->assertJsonPath('data.sku', 'SKU-LAMP')
-        ->assertJsonPath('data.price', '45.50');
+        ->assertJsonPath('data.selling_price', '45.50');
 });
 
 test('listing products returns multiple results', function () {
-    EcommerceProduct::factory()->count(3)->create(['company_id' => $this->company->id]);
+    Product::factory()->ecommerce()->count(3)->create(['company_id' => $this->company->id]);
 
     $this->getJson('/api/v1/ecommerce/products')
         ->assertOk()
@@ -101,39 +98,34 @@ test('listing products returns multiple results', function () {
 });
 
 test('updating a product updates both basic and commerce fields', function () {
-    $product = Product::factory()->create(['company_id' => $this->company->id, 'name' => 'Old Name']);
-    $ecommerceProduct = EcommerceProduct::factory()->create([
+    $product = Product::factory()->ecommerce()->create([
         'company_id' => $this->company->id,
-        'product_id' => $product->id,
-        'price' => 10.00,
+        'name' => 'Old Name',
+        'selling_price' => 10.00,
     ]);
 
-    $this->putJson("/api/v1/ecommerce/products/{$ecommerceProduct->id}", [
+    $this->putJson("/api/v1/ecommerce/products/{$product->id}", [
         'name' => 'New Name',
-        'price' => 25.00,
+        'selling_price' => 25.00,
+        'cost_price' => 12.00,
     ])->assertOk()
         ->assertJsonPath('data.name', 'New Name')
-        ->assertJsonPath('data.price', '25.00');
+        ->assertJsonPath('data.selling_price', '25.00')
+        ->assertJsonPath('data.cost_price', '12.00');
 
-    $this->assertDatabaseHas('products', ['id' => $product->id, 'name' => 'New Name']);
-    $this->assertDatabaseHas('ecommerce_products', ['id' => $ecommerceProduct->id, 'price' => 25.00]);
+    $this->assertDatabaseHas('products', ['id' => $product->id, 'name' => 'New Name', 'selling_price' => 25.00]);
 
-    $this->getJson("/api/v1/ecommerce/products/{$ecommerceProduct->id}")
+    $this->getJson("/api/v1/ecommerce/products/{$product->id}")
         ->assertOk()
         ->assertJsonPath('data.name', 'New Name')
-        ->assertJsonPath('data.price', '25.00');
+        ->assertJsonPath('data.selling_price', '25.00');
 });
 
-test('deleting a product removes both the parent and child rows', function () {
-    $product = Product::factory()->create(['company_id' => $this->company->id]);
-    $ecommerceProduct = EcommerceProduct::factory()->create([
-        'company_id' => $this->company->id,
-        'product_id' => $product->id,
-    ]);
+test('deleting a product removes it', function () {
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id]);
 
-    $this->deleteJson("/api/v1/ecommerce/products/{$ecommerceProduct->id}")->assertNoContent();
+    $this->deleteJson("/api/v1/ecommerce/products/{$product->id}")->assertNoContent();
 
-    $this->assertDatabaseMissing('ecommerce_products', ['id' => $ecommerceProduct->id]);
     $this->assertDatabaseMissing('products', ['id' => $product->id]);
 });
 
@@ -147,30 +139,30 @@ test('creating a product without a sku or price is rejected', function () {
 test('creating a product without a name or slug is rejected', function () {
     $this->postJson('/api/v1/ecommerce/products', [
         'sku' => 'SKU-0001',
-        'price' => 19.99,
+        'selling_price' => 19.99,
     ])->assertUnprocessable();
 });
 
 test('sku uniqueness is scoped per company', function () {
-    EcommerceProduct::factory()->create(['company_id' => $this->company->id, 'sku' => 'DUPLICATE-SKU']);
+    Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'sku' => 'DUPLICATE-SKU']);
 
     $this->postJson('/api/v1/ecommerce/products', [
         'name' => 'Another Product',
         'slug' => 'another-product',
         'sku' => 'DUPLICATE-SKU',
-        'price' => 9.99,
+        'selling_price' => 9.99,
     ])->assertUnprocessable();
 });
 
 test('the same sku can be used across different companies', function () {
     $otherCompany = Company::factory()->create();
-    EcommerceProduct::factory()->create(['company_id' => $otherCompany->id, 'sku' => 'SHARED-SKU']);
+    Product::factory()->ecommerce()->create(['company_id' => $otherCompany->id, 'sku' => 'SHARED-SKU']);
 
     $this->postJson('/api/v1/ecommerce/products', [
         'name' => 'My Product',
         'slug' => 'my-product',
         'sku' => 'SHARED-SKU',
-        'price' => 9.99,
+        'selling_price' => 9.99,
     ])->assertCreated();
 });
 
@@ -181,7 +173,7 @@ test('slug uniqueness is scoped per company', function () {
         'name' => 'Another Product',
         'slug' => 'duplicate-slug',
         'sku' => 'SKU-UNIQUE-1',
-        'price' => 9.99,
+        'selling_price' => 9.99,
     ])->assertUnprocessable();
 });
 
@@ -193,44 +185,37 @@ test('the same slug can be used across different companies', function () {
         'name' => 'My Product',
         'slug' => 'shared-slug',
         'sku' => 'SKU-UNIQUE-2',
-        'price' => 9.99,
+        'selling_price' => 9.99,
     ])->assertCreated();
 });
 
 test('a product belonging to a different company cannot be viewed', function () {
     $otherCompany = Company::factory()->create();
-    $otherProduct = Product::factory()->create(['company_id' => $otherCompany->id]);
-    $ecommerceProduct = EcommerceProduct::factory()->create([
-        'company_id' => $otherCompany->id,
-        'product_id' => $otherProduct->id,
-    ]);
+    $otherProduct = Product::factory()->ecommerce()->create(['company_id' => $otherCompany->id]);
 
-    $this->getJson("/api/v1/ecommerce/products/{$ecommerceProduct->id}")->assertNotFound();
+    $this->getJson("/api/v1/ecommerce/products/{$otherProduct->id}")->assertNotFound();
 });
 
 test('a product belonging to a different company cannot be updated', function () {
     $otherCompany = Company::factory()->create();
-    $otherProduct = Product::factory()->create(['company_id' => $otherCompany->id]);
-    $ecommerceProduct = EcommerceProduct::factory()->create([
-        'company_id' => $otherCompany->id,
-        'product_id' => $otherProduct->id,
-    ]);
+    $otherProduct = Product::factory()->ecommerce()->create(['company_id' => $otherCompany->id]);
 
-    $this->putJson("/api/v1/ecommerce/products/{$ecommerceProduct->id}", ['name' => 'Hijacked'])->assertNotFound();
+    $this->putJson("/api/v1/ecommerce/products/{$otherProduct->id}", ['name' => 'Hijacked'])->assertNotFound();
 });
 
 test('a product belonging to a different company cannot be deleted', function () {
     $otherCompany = Company::factory()->create();
-    $otherProduct = Product::factory()->create(['company_id' => $otherCompany->id]);
-    $ecommerceProduct = EcommerceProduct::factory()->create([
-        'company_id' => $otherCompany->id,
-        'product_id' => $otherProduct->id,
-    ]);
+    $otherProduct = Product::factory()->ecommerce()->create(['company_id' => $otherCompany->id]);
 
-    $this->deleteJson("/api/v1/ecommerce/products/{$ecommerceProduct->id}")->assertNotFound();
+    $this->deleteJson("/api/v1/ecommerce/products/{$otherProduct->id}")->assertNotFound();
 
-    $this->assertDatabaseHas('ecommerce_products', ['id' => $ecommerceProduct->id]);
     $this->assertDatabaseHas('products', ['id' => $otherProduct->id]);
+});
+
+test('a product belonging to a different app cannot be viewed', function () {
+    $otherAppProduct = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'app_code' => 'cms']);
+
+    $this->getJson("/api/v1/ecommerce/products/{$otherAppProduct->id}")->assertNotFound();
 });
 
 test('a user without permission cannot manage products', function () {
@@ -242,7 +227,7 @@ test('a user without permission cannot manage products', function () {
         'name' => 'Wireless Mouse',
         'slug' => 'wireless-mouse',
         'sku' => 'SKU-0001',
-        'price' => 19.99,
+        'selling_price' => 19.99,
     ])->assertForbidden();
 });
 
@@ -254,7 +239,7 @@ test('a brand_id belonging to a different company is rejected', function () {
         'name' => 'Wireless Mouse',
         'slug' => 'wireless-mouse',
         'sku' => 'SKU-0001',
-        'price' => 19.99,
+        'selling_price' => 19.99,
         'brand_id' => $invalidBrand->id,
     ])->assertUnprocessable();
 });
@@ -266,7 +251,7 @@ test('a valid brand_id succeeds and is nested in the get response', function () 
         'name' => 'Wireless Mouse',
         'slug' => 'wireless-mouse',
         'sku' => 'SKU-0001',
-        'price' => 19.99,
+        'selling_price' => 19.99,
         'brand_id' => $brand->id,
     ]);
 

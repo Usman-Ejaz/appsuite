@@ -4,6 +4,8 @@ namespace Domains\Ecommerce\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
+use Domains\Core\Http\Requests\GetCollectionRequest;
+use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Ecommerce\Actions\AddOrderItem;
 use Domains\Ecommerce\Actions\RemoveOrderItem;
 use Domains\Ecommerce\Actions\UpdateOrderItemQuantity;
@@ -12,12 +14,12 @@ use Domains\Ecommerce\Http\Requests\OrderItem\CreateRequest;
 use Domains\Ecommerce\Http\Requests\OrderItem\UpdateRequest;
 use Domains\Ecommerce\Http\Resources\OrderItemCollection;
 use Domains\Ecommerce\Http\Resources\OrderItemResource;
-use Domains\Ecommerce\Models\EcommerceProduct;
 use Domains\Ecommerce\Repositories\OrderItemRepository;
 use Domains\Ecommerce\Repositories\OrderRepository;
+use Domains\Shared\Models\Product;
 use Illuminate\Http\JsonResponse;
 
-#[Group('Ecommerce, Order Items')]
+#[Group('Ecommerce')]
 class OrderItemController extends Controller
 {
     public function __construct(
@@ -35,12 +37,16 @@ class OrderItemController extends Controller
      *
      * Returns the line items belonging to an order.
      */
-    public function list(int $order): OrderItemCollection
+    public function list(GetCollectionRequest $request, int $order): OrderItemCollection
     {
         $this->authorize('permission', EcommercePermission::ORDER_VIEW->value);
         $this->orders->findOrFail($order);
 
-        return new OrderItemCollection($this->items->filter(['order_id' => $order])->list());
+        $filters = $request->filters();
+
+        $records = $this->items->filter(['order_id' => $order])->list($filters);
+
+        return new OrderItemCollection($records);
     }
 
     /**
@@ -53,9 +59,11 @@ class OrderItemController extends Controller
     public function create(CreateRequest $request, int $order): JsonResponse
     {
         $orderModel = $this->orders->findOrFail($order);
-        $product = EcommerceProduct::findOrFail($request->validated('ecommerce_product_id'));
 
-        $item = $this->addOrderItem->handle($orderModel, $product, $request->validated('quantity'));
+        $input = $request->validated();
+        $product = Product::findOrFail($input['product_id']);
+
+        $item = $this->addOrderItem->handle($orderModel, $product, $input['quantity']);
 
         return response()->json(['data' => OrderItemResource::make($item)], 201);
     }
@@ -65,12 +73,16 @@ class OrderItemController extends Controller
      *
      * Retrieves a single line item belonging to an order.
      */
-    public function get(int $order, int $id): OrderItemResource
+    public function get(GetResourceRequest $request, int $order, int $id): OrderItemResource
     {
         $this->authorize('permission', EcommercePermission::ORDER_VIEW->value);
         $this->orders->findOrFail($order);
 
-        return OrderItemResource::make($this->items->filter(['order_id' => $order])->findOrFail($id));
+        $filters = $request->filters();
+
+        $record = $this->items->filter(['order_id' => $order])->get($id, $filters);
+
+        return OrderItemResource::make($record);
     }
 
     /**

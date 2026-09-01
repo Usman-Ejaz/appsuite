@@ -13,8 +13,19 @@ return new class extends Migration
     {
         Schema::create('pages', function (Blueprint $table) {
             $table->id();
-            
+            $table->company()->nullable(false);
+            $table->string('title');
+            $table->string('slug');
+            $table->longText('description');
+            $table->string('status');
+            $table->string('app_code');
+            $table->string('meta_title')->nullable();
+            $table->longText('meta_description')->nullable();
+            $table->string('canonical_url')->nullable();
+            $table->editor();
             $table->timestamps();
+
+            $table->unique(['company_id', 'slug']);
         });
     }
 

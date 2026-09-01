@@ -4,7 +4,7 @@ namespace Domains\Shared\Models;
 
 use Domains\Core\Models\BaseModel;
 
-class Newsletter extends BaseModel
+class NewsletterSubscriber extends BaseModel
 {
     /**
      * The attributes that are mass assignable.

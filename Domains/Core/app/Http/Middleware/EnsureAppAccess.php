@@ -34,7 +34,7 @@ class EnsureAppAccess
 
         abort_if(! $companyId, 403);
 
-        $companyHasApp = Cache::store('redis')->remember(
+        $companyHasApp = Cache::remember(
             "app-access:company:{$companyId}:{$code}",
             now()->addMinutes(self::CACHE_TTL_MINUTES),
             fn () => Company::query()->find($companyId)?->hasApp($code) ?? false,
@@ -43,7 +43,7 @@ class EnsureAppAccess
         abort_unless($companyHasApp, 403);
 
         if ($actor instanceof User && ! $actor->isOwner()) {
-            $userHasApp = Cache::store('redis')->remember(
+            $userHasApp = Cache::remember(
                 "app-access:user:{$actor->id}:{$code}",
                 now()->addMinutes(self::CACHE_TTL_MINUTES),
                 fn () => $actor->hasApp($code),

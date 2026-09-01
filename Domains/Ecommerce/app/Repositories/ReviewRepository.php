@@ -13,10 +13,10 @@ class ReviewRepository extends BaseRepository
 
     protected function query()
     {
-        $query = parent::query()->with(['ecommerceProduct', 'customer']);
+        $query = parent::query()->with(['product', 'customer']);
 
-        if ($productId = Arr::get($this->filter, 'ecommerce_product_id')) {
-            $query->where('ecommerce_product_id', $productId);
+        if ($productId = Arr::get($this->filter, 'product_id')) {
+            $query->where('product_id', $productId);
         }
 
         return $query;

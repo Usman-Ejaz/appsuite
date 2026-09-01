@@ -11,7 +11,7 @@ class CreateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', CmsPermission::CreateForms->value);
+        return Gate::allows('permission', CmsPermission::FORM_CREATE->value);
     }
 
     public function rules(): array

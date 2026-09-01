@@ -1,7 +1,7 @@
 <?php
 
 use Domains\Ecommerce\Models\Collection;
-use Domains\Ecommerce\Models\EcommerceProduct;
+use Domains\Shared\Models\Product;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,12 +13,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ecom_product_collection', function (Blueprint $table) {
+        Schema::create('product_collection', function (Blueprint $table) {
             $table->foreignIdFor(Collection::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(EcommerceProduct::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Product::class)->constrained()->cascadeOnDelete();
             $table->unsignedInteger('sort_order')->default(0);
-
-            // $table->unique(['collection_id', 'ecommerce_product_id']);
         });
     }
 
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('collection_ecommerce_product');
+        Schema::dropIfExists('product_collection');
     }
 };

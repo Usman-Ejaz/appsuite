@@ -1,13 +1,13 @@
 <?php
 
 use Domains\Core\Models\App;
-use Domains\Ecommerce\Models\EcommerceProduct;
 use Domains\Ecommerce\Models\Order;
 use Domains\Ecommerce\Models\OrderItem;
 use Domains\Identity\Models\Company;
 use Domains\Identity\Models\Customer;
 use Domains\Identity\Models\Permission;
 use Domains\Identity\Models\User;
+use Domains\Shared\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -37,14 +37,14 @@ beforeEach(function () {
 });
 
 test('an item can be added, listed, updated, and removed, adjusting stock and order totals throughout', function () {
-    $product = EcommerceProduct::factory()->create(['company_id' => $this->company->id, 'stock_quantity' => 20, 'price' => 25]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 20, 'price' => 25]);
 
     $response = $this->postJson("/api/v1/ecommerce/orders/{$this->order->id}/items", [
-        'ecommerce_product_id' => $product->id,
+        'product_id' => $product->id,
         'quantity' => 4,
     ]);
     $response->assertCreated()
-        ->assertJsonPath('data.product_name', $product->product->name)
+        ->assertJsonPath('data.product_name', $product->name)
         ->assertJsonPath('data.unit_price', '25.00')
         ->assertJsonPath('data.subtotal', '100.00');
 
@@ -80,10 +80,10 @@ test('an item can be added, listed, updated, and removed, adjusting stock and or
 });
 
 test('adding more items than available stock is rejected', function () {
-    $product = EcommerceProduct::factory()->create(['company_id' => $this->company->id, 'stock_quantity' => 2, 'track_inventory' => true]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 2, 'track_inventory' => true]);
 
     $this->postJson("/api/v1/ecommerce/orders/{$this->order->id}/items", [
-        'ecommerce_product_id' => $product->id,
+        'product_id' => $product->id,
         'quantity' => 5,
     ])->assertUnprocessable();
 
@@ -91,10 +91,10 @@ test('adding more items than available stock is rejected', function () {
 });
 
 test('a product with inventory tracking disabled ignores stock limits', function () {
-    $product = EcommerceProduct::factory()->create(['company_id' => $this->company->id, 'stock_quantity' => 1, 'track_inventory' => false]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 1, 'track_inventory' => false]);
 
     $this->postJson("/api/v1/ecommerce/orders/{$this->order->id}/items", [
-        'ecommerce_product_id' => $product->id,
+        'product_id' => $product->id,
         'quantity' => 50,
     ])->assertCreated();
 
@@ -102,10 +102,10 @@ test('a product with inventory tracking disabled ignores stock limits', function
 });
 
 test('increasing quantity beyond available stock is rejected and leaves the item unchanged', function () {
-    $product = EcommerceProduct::factory()->create(['company_id' => $this->company->id, 'stock_quantity' => 5]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 5]);
 
     $response = $this->postJson("/api/v1/ecommerce/orders/{$this->order->id}/items", [
-        'ecommerce_product_id' => $product->id,
+        'product_id' => $product->id,
         'quantity' => 3,
     ]);
     $itemId = $response->json('data.id');
@@ -117,10 +117,10 @@ test('increasing quantity beyond available stock is rejected and leaves the item
 });
 
 test('line items snapshot the product name, sku, and price at the time of purchase', function () {
-    $product = EcommerceProduct::factory()->create(['company_id' => $this->company->id, 'sku' => 'ORIGINAL-SKU', 'price' => 30, 'stock_quantity' => 10]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'sku' => 'ORIGINAL-SKU', 'price' => 30, 'stock_quantity' => 10]);
 
     $response = $this->postJson("/api/v1/ecommerce/orders/{$this->order->id}/items", [
-        'ecommerce_product_id' => $product->id,
+        'product_id' => $product->id,
         'quantity' => 1,
     ]);
     $itemId = $response->json('data.id');
@@ -135,10 +135,10 @@ test('line items snapshot the product name, sku, and price at the time of purcha
 
 test('an item belonging to a different order is not found under this order\'s nested route', function () {
     $otherOrder = Order::factory()->create(['company_id' => $this->company->id, 'customer_id' => $this->customer->id]);
-    $product = EcommerceProduct::factory()->create(['company_id' => $this->company->id, 'stock_quantity' => 10]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 10]);
 
     $response = $this->postJson("/api/v1/ecommerce/orders/{$otherOrder->id}/items", [
-        'ecommerce_product_id' => $product->id,
+        'product_id' => $product->id,
         'quantity' => 1,
     ]);
     $itemId = $response->json('data.id');
@@ -161,10 +161,10 @@ test('a user without permission cannot add items to an order', function () {
     $unprivilegedUser = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => false]);
     Sanctum::actingAs($unprivilegedUser);
 
-    $product = EcommerceProduct::factory()->create(['company_id' => $this->company->id]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id]);
 
     $this->postJson("/api/v1/ecommerce/orders/{$this->order->id}/items", [
-        'ecommerce_product_id' => $product->id,
+        'product_id' => $product->id,
         'quantity' => 1,
     ])->assertForbidden();
 });
@@ -173,10 +173,10 @@ test('adding an item requires a valid product belonging to the company', functio
     $this->postJson("/api/v1/ecommerce/orders/{$this->order->id}/items", ['quantity' => 1])->assertUnprocessable();
 
     $otherCompany = Company::factory()->create();
-    $otherProduct = EcommerceProduct::factory()->create(['company_id' => $otherCompany->id]);
+    $otherProduct = Product::factory()->ecommerce()->create(['company_id' => $otherCompany->id]);
 
     $this->postJson("/api/v1/ecommerce/orders/{$this->order->id}/items", [
-        'ecommerce_product_id' => $otherProduct->id,
+        'product_id' => $otherProduct->id,
         'quantity' => 1,
     ])->assertUnprocessable();
 });

@@ -15,36 +15,40 @@ class BrandResource extends BaseResource
 
     public function toArray(Request $request): array
     {
-        return array_merge(parent::toArray($request), [
+        return [
+            'id' => $this->id,
+
             /**
              * The identifier of the company the brand belongs to.
              */
-            'company_id' => $this->company_id,
+            'company_id' => $this->whenHas('company_id'),
 
             /**
              * The brand's display name.
              */
-            'name' => $this->name,
+            'name' => $this->whenHas('name'),
 
             /**
              * A url-friendly identifier for the brand.
              */
-            'slug' => $this->slug,
+            'slug' => $this->whenHas('slug'),
 
             /**
              * A short description of the brand.
              */
-            'description' => $this->description,
+            'description' => $this->whenHas('description'),
 
             /**
              * The web address of the brand's logo image.
              */
-            'logo' => $this->logo,
+            'logo' => $this->whenHas('logo'),
 
             /**
              * Whether the brand is active.
              */
-            'is_active' => $this->is_active,
-        ]);
+            'is_active' => $this->whenHas('is_active'),
+
+            $this->merge(parent::toArray($request)),
+        ];
     }
 }

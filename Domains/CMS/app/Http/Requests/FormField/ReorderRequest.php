@@ -10,7 +10,7 @@ class ReorderRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', CmsPermission::UpdateForms->value);
+        return Gate::allows('permission', CmsPermission::FORM_UPDATE->value);
     }
 
     public function rules(): array

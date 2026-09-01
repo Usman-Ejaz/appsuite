@@ -13,7 +13,7 @@ use Domains\Identity\Repositories\PermissionRepository;
  * Permissions are a fixed, code-defined catalog seeded per app (see the per-domain
  * `*Permission` enums) — this endpoint is read-only by design, not a content-management CRUD.
  */
-#[Group('Identity, Permissions')]
+#[Group('Identity')]
 class PermissionController extends Controller
 {
     public function __construct(protected PermissionRepository $permissions)
@@ -31,7 +31,11 @@ class PermissionController extends Controller
     {
         abort_unless($request->user()->isRoot() || $request->user()->isOwner(), 403);
 
-        return PermissionResource::collection($this->permissions->list($request->filters()));
+        $filters = $request->filters();
+
+        $records = $this->permissions->list($filters);
+
+        return PermissionResource::collection($records);
     }
 
     /**
@@ -43,6 +47,10 @@ class PermissionController extends Controller
     {
         abort_unless($request->user()->isRoot() || $request->user()->isOwner(), 403);
 
-        return PermissionResource::make($this->permissions->get($id, $request->filters()));
+        $filters = $request->filters();
+
+        $record = $this->permissions->get($id, $filters);
+
+        return PermissionResource::make($record);
     }
 }

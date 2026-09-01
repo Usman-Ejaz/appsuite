@@ -4,18 +4,18 @@ namespace Domains\Ecommerce\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
+use Domains\Core\Http\Requests\GetCollectionRequest;
+use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Ecommerce\Actions\SyncCollectionProducts;
 use Domains\Ecommerce\Enums\EcommercePermission;
 use Domains\Ecommerce\Http\Requests\Collection\CreateRequest;
 use Domains\Ecommerce\Http\Requests\Collection\SyncProductsRequest;
 use Domains\Ecommerce\Http\Requests\Collection\UpdateRequest;
-use Domains\Ecommerce\Http\Resources\CollectionCollection;
 use Domains\Ecommerce\Http\Resources\CollectionResource;
 use Domains\Ecommerce\Repositories\CollectionRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
-#[Group('Ecommerce, Collections')]
+#[Group('Ecommerce')]
 class CollectionController extends Controller
 {
     public function __construct(
@@ -30,11 +30,15 @@ class CollectionController extends Controller
      *
      * Returns a paginated list of collections for the authenticated company.
      */
-    public function list(Request $request): CollectionCollection
+    public function list(GetCollectionRequest $request)
     {
-        $this->authorize('permission', EcommercePermission::COLLECTION_VIEW->value);
+        $this->authorize('permission', EcommercePermission::COLLECTION_VIEW);
 
-        return new CollectionCollection($this->collections->filter($request->query())->list());
+        $filters = $request->filters();
+
+        $records = $this->collections->list($filters);
+
+        return CollectionResource::collection($records);
     }
 
     /**
@@ -45,7 +49,9 @@ class CollectionController extends Controller
      */
     public function create(CreateRequest $request): JsonResponse
     {
-        $collection = $this->collections->create($request->validated());
+        $input = $request->validated();
+
+        $collection = $this->collections->create($input);
 
         return response()->json(['data' => CollectionResource::make($collection)], 201);
     }
@@ -55,14 +61,16 @@ class CollectionController extends Controller
      *
      * Retrieves a single collection, including the products it contains.
      */
-    public function get(int $id): CollectionResource
+    public function get(GetResourceRequest $request, int $id): CollectionResource
     {
-        $this->authorize('permission', EcommercePermission::COLLECTION_VIEW->value);
+        $this->authorize('permission', EcommercePermission::COLLECTION_VIEW);
 
-        $collection = $this->collections->findOrFail($id);
-        $collection->load('products');
+        $filters = $request->filters();
 
-        return CollectionResource::make($collection);
+        $record = $this->collections->get($id, $filters);
+        $record->load('products');
+
+        return CollectionResource::make($record);
     }
 
     /**
@@ -72,7 +80,11 @@ class CollectionController extends Controller
      */
     public function update(UpdateRequest $request, int $id): CollectionResource
     {
-        return CollectionResource::make($this->collections->update($id, $request->validated()));
+        $input = $request->validated();
+
+        $record = $this->collections->update($id, $input);
+
+        return CollectionResource::make($record);
     }
 
     /**
@@ -82,7 +94,7 @@ class CollectionController extends Controller
      */
     public function delete(int $id): JsonResponse
     {
-        $this->authorize('permission', EcommercePermission::COLLECTION_DELETE->value);
+        $this->authorize('permission', EcommercePermission::COLLECTION_DELETE);
 
         $this->collections->delete($id);
 
@@ -98,9 +110,9 @@ class CollectionController extends Controller
      * `sort_order` to control how products are ordered within the collection.
      * Returns an error if a product does not belong to the current company.
      */
-    public function syncProducts(SyncProductsRequest $request, int $collection): CollectionResource
+    public function syncProducts(SyncProductsRequest $request, int $id): CollectionResource
     {
-        $collectionModel = $this->collections->findOrFail($collection);
+        $collectionModel = $this->collections->findOrFail($id);
 
         $this->syncCollectionProducts->handle($collectionModel, $request->validated('products'));
 

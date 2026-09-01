@@ -32,7 +32,9 @@ beforeEach(function () {
 
 test('a category can be created, listed, updated, and deleted', function () {
     $response = $this->postJson('/api/v1/ecommerce/categories', ['name' => 'Electronics', 'slug' => 'electronics']);
-    $response->assertCreated()->assertJsonPath('data.name', 'Electronics');
+    $response->assertCreated()
+        ->assertJsonPath('data.name', 'Electronics')
+        ->assertJsonPath('data.app_code', 'ecommerce');
 
     $id = $response->json('data.id');
 
@@ -52,7 +54,15 @@ test('creating a category requires a name and slug', function () {
 
 test('a category belonging to a different company is not found', function () {
     $otherCompany = Company::factory()->create();
-    $category = Category::factory()->create(['company_id' => $otherCompany->id]);
+    $category = Category::factory()->create(['company_id' => $otherCompany->id, 'app_code' => 'ecommerce']);
+
+    $this->getJson("/api/v1/ecommerce/categories/{$category->id}")->assertNotFound();
+    $this->putJson("/api/v1/ecommerce/categories/{$category->id}", ['name' => 'Hijacked'])->assertNotFound();
+    $this->deleteJson("/api/v1/ecommerce/categories/{$category->id}")->assertNotFound();
+});
+
+test('a category belonging to a different app is not found', function () {
+    $category = Category::factory()->create(['company_id' => $this->company->id, 'app_code' => 'cms']);
 
     $this->getJson("/api/v1/ecommerce/categories/{$category->id}")->assertNotFound();
     $this->putJson("/api/v1/ecommerce/categories/{$category->id}", ['name' => 'Hijacked'])->assertNotFound();
@@ -71,11 +81,18 @@ test('a user without permission cannot manage categories', function () {
 
 test('slug uniqueness is scoped per company', function () {
     $otherCompany = Company::factory()->create();
-    Category::factory()->create(['company_id' => $otherCompany->id, 'slug' => 'electronics']);
+    Category::factory()->create(['company_id' => $otherCompany->id, 'app_code' => 'ecommerce', 'slug' => 'electronics']);
 
     $this->postJson('/api/v1/ecommerce/categories', ['name' => 'Electronics', 'slug' => 'electronics'])
         ->assertCreated();
 
     $this->postJson('/api/v1/ecommerce/categories', ['name' => 'Electronics Again', 'slug' => 'electronics'])
         ->assertUnprocessable();
+});
+
+test('the same slug can be used by different apps within the same company', function () {
+    Category::factory()->create(['company_id' => $this->company->id, 'app_code' => 'cms', 'slug' => 'electronics']);
+
+    $this->postJson('/api/v1/ecommerce/categories', ['name' => 'Electronics', 'slug' => 'electronics'])
+        ->assertCreated();
 });

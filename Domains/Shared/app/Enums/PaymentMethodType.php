@@ -28,6 +28,11 @@ enum PaymentMethodType: string
     case WALLET = 'Wallet';
 
     /**
+     * Payment is collected when item is delivered.
+     */
+    case CASH_ON_DELIEVRY = 'Cash On Delivery';
+
+    /**
      * A payment method that doesn't fit any of the other types.
      */
     case OTHER = 'Other';

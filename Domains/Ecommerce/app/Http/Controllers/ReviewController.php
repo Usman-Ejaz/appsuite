@@ -4,6 +4,8 @@ namespace Domains\Ecommerce\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
+use Domains\Core\Http\Requests\GetCollectionRequest;
+use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Ecommerce\Actions\ModerateReview;
 use Domains\Ecommerce\Enums\EcommercePermission;
 use Domains\Ecommerce\Enums\ReviewStatus;
@@ -14,9 +16,8 @@ use Domains\Ecommerce\Http\Resources\ReviewCollection;
 use Domains\Ecommerce\Http\Resources\ReviewResource;
 use Domains\Ecommerce\Repositories\ReviewRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
-#[Group('Ecommerce, Reviews')]
+#[Group('Ecommerce')]
 class ReviewController extends Controller
 {
     public function __construct(
@@ -31,11 +32,15 @@ class ReviewController extends Controller
      *
      * Returns a paginated list of reviews for the authenticated company.
      */
-    public function list(Request $request): ReviewCollection
+    public function list(GetCollectionRequest $request): ReviewCollection
     {
         $this->authorize('permission', EcommercePermission::REVIEW_VIEW->value);
 
-        return new ReviewCollection($this->reviews->filter($request->query())->list());
+        $filters = $request->filters();
+
+        $records = $this->reviews->list($filters);
+
+        return new ReviewCollection($records);
     }
 
     /**
@@ -47,7 +52,9 @@ class ReviewController extends Controller
      */
     public function create(CreateRequest $request): JsonResponse
     {
-        $review = $this->reviews->create($request->validated());
+        $input = $request->validated();
+
+        $review = $this->reviews->create($input);
 
         return response()->json(['data' => ReviewResource::make($review)], 201);
     }
@@ -58,11 +65,15 @@ class ReviewController extends Controller
      * Retrieves a single review, including the product it was left on and the customer who left
      * it.
      */
-    public function get(int $id): ReviewResource
+    public function get(GetResourceRequest $request, int $id): ReviewResource
     {
         $this->authorize('permission', EcommercePermission::REVIEW_VIEW->value);
 
-        return ReviewResource::make($this->reviews->findOrFail($id));
+        $filters = $request->filters();
+
+        $record = $this->reviews->get($id, $filters);
+
+        return ReviewResource::make($record);
     }
 
     /**
@@ -72,7 +83,11 @@ class ReviewController extends Controller
      */
     public function update(UpdateRequest $request, int $id): ReviewResource
     {
-        return ReviewResource::make($this->reviews->update($id, $request->validated()));
+        $input = $request->validated();
+
+        $record = $this->reviews->update($id, $input);
+
+        return ReviewResource::make($record);
     }
 
     /**

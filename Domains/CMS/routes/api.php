@@ -1,22 +1,16 @@
 <?php
 
 use Domains\CMS\Http\Controllers\BlogController;
-use Domains\CMS\Http\Controllers\CategoryController;
 use Domains\CMS\Http\Controllers\FormActionController;
 use Domains\CMS\Http\Controllers\FormController;
 use Domains\CMS\Http\Controllers\FormFieldController;
 use Domains\CMS\Http\Controllers\FormSubmissionController;
+use Domains\Shared\Routing\CategoryRoutes;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1/cms')->middleware(['auth:sanctum', 'app:cms'])->group(function () {
 
-    Route::controller(CategoryController::class)->prefix('categories')->name('cms.categories.')->group(function () {
-        Route::get('/', 'list')->name('list');
-        Route::post('/', 'create')->name('create');
-        Route::get('/{id}', 'get')->name('get');
-        Route::put('/{id}', 'update')->name('update');
-        Route::delete('/{id}', 'delete')->name('delete');
-    });
+    CategoryRoutes::register('cms');
 
     Route::controller(BlogController::class)->prefix('blogs')->name('cms.blogs.')->group(function () {
         Route::get('/', 'list')->name('list');

@@ -10,7 +10,7 @@ class SyncProductsRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', EcommercePermission::COLLECTION_UPDATE->value);
+        return Gate::allows('permission', EcommercePermission::COLLECTION_UPDATE);
     }
 
     public function rules(): array

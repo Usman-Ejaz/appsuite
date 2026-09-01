@@ -4,16 +4,16 @@ namespace Domains\Ecommerce\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
+use Domains\Core\Http\Requests\GetCollectionRequest;
+use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Ecommerce\Enums\EcommercePermission;
 use Domains\Ecommerce\Http\Requests\Coupon\CreateRequest;
 use Domains\Ecommerce\Http\Requests\Coupon\UpdateRequest;
-use Domains\Ecommerce\Http\Resources\CouponCollection;
 use Domains\Ecommerce\Http\Resources\CouponResource;
 use Domains\Ecommerce\Repositories\CouponRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
-#[Group('Ecommerce, Coupons')]
+#[Group('Ecommerce')]
 class CouponController extends Controller
 {
     public function __construct(protected CouponRepository $coupons)
@@ -26,11 +26,15 @@ class CouponController extends Controller
      *
      * Returns a paginated list of coupons for the authenticated company.
      */
-    public function list(Request $request): CouponCollection
+    public function list(GetCollectionRequest $request)
     {
-        $this->authorize('permission', EcommercePermission::COUPON_VIEW->value);
+        $this->authorize('permission', EcommercePermission::COUPON_VIEW);
 
-        return new CouponCollection($this->coupons->filter($request->query())->list());
+        $filters = $request->filters();
+
+        $records = $this->coupons->list($filters);
+
+        return CouponResource::collection($records);
     }
 
     /**
@@ -40,7 +44,9 @@ class CouponController extends Controller
      */
     public function create(CreateRequest $request): JsonResponse
     {
-        $coupon = $this->coupons->create($request->validated());
+        $input = $request->validated();
+
+        $coupon = $this->coupons->create($input);
 
         return response()->json(['data' => CouponResource::make($coupon)], 201);
     }
@@ -50,11 +56,15 @@ class CouponController extends Controller
      *
      * Retrieves a single coupon, including the campaign it belongs to, if one is linked.
      */
-    public function get(int $id): CouponResource
+    public function get(GetResourceRequest $request, int $id): CouponResource
     {
-        $this->authorize('permission', EcommercePermission::COUPON_VIEW->value);
+        $this->authorize('permission', EcommercePermission::COUPON_VIEW);
 
-        return CouponResource::make($this->coupons->findOrFail($id));
+        $filters = $request->filters();
+
+        $record = $this->coupons->get($id, $filters);
+
+        return CouponResource::make($record);
     }
 
     /**
@@ -65,7 +75,11 @@ class CouponController extends Controller
      */
     public function update(UpdateRequest $request, int $id): CouponResource
     {
-        return CouponResource::make($this->coupons->update($id, $request->validated()));
+        $input = $request->validated();
+
+        $record = $this->coupons->update($id, $input);
+
+        return CouponResource::make($record);
     }
 
     /**
@@ -75,7 +89,7 @@ class CouponController extends Controller
      */
     public function delete(int $id): JsonResponse
     {
-        $this->authorize('permission', EcommercePermission::COUPON_DELETE->value);
+        $this->authorize('permission', EcommercePermission::COUPON_DELETE);
 
         $this->coupons->delete($id);
 

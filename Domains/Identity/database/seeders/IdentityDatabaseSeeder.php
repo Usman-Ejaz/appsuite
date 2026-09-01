@@ -19,7 +19,7 @@ class IdentityDatabaseSeeder extends Seeder
      * The apps every seeded company is subscribed to (only the ones with a
      * real, working domain behind them today).
      */
-    protected array $companyApps = ['cms', 'ecommerce'];
+    protected array $companyApps = ['cms', 'ecommerce', 'hr', 'crm', 'front-desk'];
 
     /**
      * How many regular (non-owner) users to seed per company, on top of the

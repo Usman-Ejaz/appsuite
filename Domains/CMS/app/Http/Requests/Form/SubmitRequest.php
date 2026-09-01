@@ -12,7 +12,7 @@ class SubmitRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', CmsPermission::SubmitForms->value);
+        return Gate::allows('permission', CmsPermission::FORM_SUBMIT->value);
     }
 
     public function rules(): array

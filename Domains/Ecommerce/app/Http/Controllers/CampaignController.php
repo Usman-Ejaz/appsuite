@@ -4,16 +4,16 @@ namespace Domains\Ecommerce\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
+use Domains\Core\Http\Requests\GetCollectionRequest;
+use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Ecommerce\Enums\EcommercePermission;
 use Domains\Ecommerce\Http\Requests\Campaign\CreateRequest;
 use Domains\Ecommerce\Http\Requests\Campaign\UpdateRequest;
-use Domains\Ecommerce\Http\Resources\CampaignCollection;
 use Domains\Ecommerce\Http\Resources\CampaignResource;
 use Domains\Ecommerce\Repositories\CampaignRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
-#[Group('Ecommerce, Campaigns')]
+#[Group('Ecommerce')]
 class CampaignController extends Controller
 {
     public function __construct(protected CampaignRepository $campaigns)
@@ -26,11 +26,15 @@ class CampaignController extends Controller
      *
      * Returns a paginated list of campaigns for the authenticated company.
      */
-    public function list(Request $request): CampaignCollection
+    public function list(GetCollectionRequest $request)
     {
-        $this->authorize('permission', EcommercePermission::CAMPAIGN_VIEW->value);
+        $this->authorize('permission', EcommercePermission::CAMPAIGN_VIEW);
 
-        return new CampaignCollection($this->campaigns->filter($request->query())->list());
+        $filters = $request->filters();
+
+        $records = $this->campaigns->list($filters);
+
+        return CampaignResource::collection($records);
     }
 
     /**
@@ -41,7 +45,9 @@ class CampaignController extends Controller
      */
     public function create(CreateRequest $request): JsonResponse
     {
-        $campaign = $this->campaigns->create($request->validated());
+        $input = $request->validated();
+
+        $campaign = $this->campaigns->create($input);
 
         return response()->json(['data' => CampaignResource::make($campaign)], 201);
     }
@@ -51,11 +57,15 @@ class CampaignController extends Controller
      *
      * Retrieves a single campaign.
      */
-    public function get(int $id): CampaignResource
+    public function get(GetResourceRequest $request, int $id): CampaignResource
     {
-        $this->authorize('permission', EcommercePermission::CAMPAIGN_VIEW->value);
+        $this->authorize('permission', EcommercePermission::CAMPAIGN_VIEW);
 
-        return CampaignResource::make($this->campaigns->findOrFail($id));
+        $filters = $request->filters();
+
+        $record = $this->campaigns->get($id, $filters);
+
+        return CampaignResource::make($record);
     }
 
     /**
@@ -65,7 +75,11 @@ class CampaignController extends Controller
      */
     public function update(UpdateRequest $request, int $id): CampaignResource
     {
-        return CampaignResource::make($this->campaigns->update($id, $request->validated()));
+        $input = $request->validated();
+
+        $record = $this->campaigns->update($id, $input);
+
+        return CampaignResource::make($record);
     }
 
     /**
@@ -75,7 +89,7 @@ class CampaignController extends Controller
      */
     public function delete(int $id): JsonResponse
     {
-        $this->authorize('permission', EcommercePermission::CAMPAIGN_DELETE->value);
+        $this->authorize('permission', EcommercePermission::CAMPAIGN_DELETE);
 
         $this->campaigns->delete($id);
 

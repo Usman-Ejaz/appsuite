@@ -4,6 +4,8 @@ namespace Domains\Ecommerce\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
+use Domains\Core\Http\Requests\GetCollectionRequest;
+use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Ecommerce\Actions\ApplyCouponToOrder;
 use Domains\Ecommerce\Actions\CancelOrder;
 use Domains\Ecommerce\Actions\RemoveCouponFromOrder;
@@ -15,9 +17,8 @@ use Domains\Ecommerce\Http\Resources\OrderCollection;
 use Domains\Ecommerce\Http\Resources\OrderResource;
 use Domains\Ecommerce\Repositories\OrderRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
-#[Group('Ecommerce, Orders')]
+#[Group('Ecommerce')]
 class OrderController extends Controller
 {
     public function __construct(
@@ -34,11 +35,15 @@ class OrderController extends Controller
      *
      * Returns a paginated list of orders for the authenticated company.
      */
-    public function list(Request $request): OrderCollection
+    public function list(GetCollectionRequest $request): OrderCollection
     {
         $this->authorize('permission', EcommercePermission::ORDER_VIEW->value);
 
-        return new OrderCollection($this->orders->filter($request->query())->list());
+        $filters = $request->filters();
+
+        $records = $this->orders->list($filters);
+
+        return new OrderCollection($records);
     }
 
     /**
@@ -49,7 +54,9 @@ class OrderController extends Controller
      */
     public function create(CreateRequest $request): JsonResponse
     {
-        $order = $this->orders->create($request->validated());
+        $input = $request->validated();
+
+        $order = $this->orders->create($input);
 
         return response()->json(['data' => OrderResource::make($order)], 201);
     }
@@ -60,11 +67,15 @@ class OrderController extends Controller
      * Retrieves a single order, including its customer, payment method, applied coupon, and
      * line items.
      */
-    public function get(int $id): OrderResource
+    public function get(GetResourceRequest $request, int $id): OrderResource
     {
         $this->authorize('permission', EcommercePermission::ORDER_VIEW->value);
 
-        return OrderResource::make($this->orders->findOrFail($id));
+        $filters = $request->filters();
+
+        $record = $this->orders->get($id, $filters);
+
+        return OrderResource::make($record);
     }
 
     /**
@@ -74,7 +85,11 @@ class OrderController extends Controller
      */
     public function update(UpdateRequest $request, int $id): OrderResource
     {
-        return OrderResource::make($this->orders->update($id, $request->validated()));
+        $input = $request->validated();
+
+        $record = $this->orders->update($id, $input);
+
+        return OrderResource::make($record);
     }
 
     /**

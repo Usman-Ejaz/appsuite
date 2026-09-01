@@ -18,7 +18,7 @@ class UpdateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return ! ($this->user() instanceof ApiKey) && Gate::allows('permission', CmsPermission::UpdateSubmissions->value);
+        return ! ($this->user() instanceof ApiKey) && Gate::allows('permission', CmsPermission::FORM_SUBMISSIONS_UPDATE->value);
     }
 
     public function rules(): array

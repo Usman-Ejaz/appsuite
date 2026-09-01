@@ -4,6 +4,7 @@ namespace Domains\Ecommerce\Http\Resources;
 
 use Domains\Core\Http\Resources\BaseResource;
 use Domains\Ecommerce\Models\Collection;
+use Domains\Shared\Http\Resources\ProductResource;
 use Illuminate\Http\Request;
 
 /**
@@ -15,38 +16,40 @@ class CollectionResource extends BaseResource
 
     public function toArray(Request $request): array
     {
-        return array_merge(parent::toArray($request), [
-            'company_id' => $this->company_id,
+        return [
+            'company_id' => $this->whenHas('company_id'),
 
             /**
              * The collection's display name.
              */
-            'name' => $this->name,
+            'name' => $this->whenHas('name'),
 
             /**
              * A unique, URL-friendly identifier for the collection.
              */
-            'slug' => $this->slug,
+            'slug' => $this->whenHas('slug'),
 
             /**
              * A longer description of the collection.
              */
-            'description' => $this->description,
+            'description' => $this->whenHas('description'),
 
             /**
              * The URL of an image representing the collection.
              */
-            'image' => $this->image,
+            'image' => $this->whenHas('image'),
 
             /**
              * Whether the collection is visible and available for use.
              */
-            'is_active' => $this->is_active,
+            'is_active' => $this->whenHas('is_active'),
 
             /**
              * The products in this collection, ordered by their display position.
              */
-            'products' => EcommerceProductResource::collection($this->whenLoaded('products')),
-        ]);
+            'products' => ProductResource::collection($this->whenLoaded('products')),
+
+            $this->merge(parent::toArray($request)),
+        ];
     }
 }

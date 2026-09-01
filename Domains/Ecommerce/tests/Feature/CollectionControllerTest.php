@@ -2,10 +2,10 @@
 
 use Domains\Core\Models\App;
 use Domains\Ecommerce\Models\Collection;
-use Domains\Ecommerce\Models\EcommerceProduct;
 use Domains\Identity\Models\Company;
 use Domains\Identity\Models\Permission;
 use Domains\Identity\Models\User;
+use Domains\Shared\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Sanctum\Sanctum;
@@ -61,12 +61,12 @@ function createCollectionForCompany(Company $company, array $attributes = []): C
     return $collection;
 }
 
-function createEcommerceProductForCompany(Company $company, array $attributes = []): EcommerceProduct
+function createProductForCompany(Company $company, array $attributes = []): Product
 {
     $owner = User::factory()->create(['company_id' => $company->id]);
     Sanctum::actingAs($owner);
 
-    $product = EcommerceProduct::factory()->create(array_merge(['company_id' => $company->id], $attributes));
+    $product = Product::factory()->ecommerce()->create(array_merge(['company_id' => $company->id], $attributes));
 
     return $product;
 }
@@ -122,8 +122,8 @@ test('slug uniqueness is scoped per company', function () {
 
 test('syncing products attaches them and returns them nested on the collection', function () {
     $collection = Collection::factory()->create(['company_id' => $this->company->id]);
-    $productA = EcommerceProduct::factory()->create(['company_id' => $this->company->id]);
-    $productB = EcommerceProduct::factory()->create(['company_id' => $this->company->id]);
+    $productA = Product::factory()->ecommerce()->create(['company_id' => $this->company->id]);
+    $productB = Product::factory()->ecommerce()->create(['company_id' => $this->company->id]);
 
     $response = $this->putJson("/api/v1/ecommerce/collections/{$collection->id}/products", [
         'products' => [
@@ -142,7 +142,7 @@ test('syncing a product that does not belong to the company is rejected', functi
     $collection = Collection::factory()->create(['company_id' => $this->company->id]);
 
     $otherCompany = Company::factory()->create();
-    $foreignProduct = createEcommerceProductForCompany($otherCompany);
+    $foreignProduct = createProductForCompany($otherCompany);
     Sanctum::actingAs($this->user);
 
     $this->putJson("/api/v1/ecommerce/collections/{$collection->id}/products", [
@@ -154,8 +154,8 @@ test('syncing a product that does not belong to the company is rejected', functi
 
 test('syncing products replaces the previous set instead of appending to it', function () {
     $collection = Collection::factory()->create(['company_id' => $this->company->id]);
-    $productA = EcommerceProduct::factory()->create(['company_id' => $this->company->id]);
-    $productB = EcommerceProduct::factory()->create(['company_id' => $this->company->id]);
+    $productA = Product::factory()->ecommerce()->create(['company_id' => $this->company->id]);
+    $productB = Product::factory()->ecommerce()->create(['company_id' => $this->company->id]);
 
     $this->putJson("/api/v1/ecommerce/collections/{$collection->id}/products", [
         'products' => [['id' => $productA->id]],

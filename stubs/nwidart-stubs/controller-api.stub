@@ -3,6 +3,8 @@
 namespace $CLASS_NAMESPACE$;
 
 use App\Http\Controllers\Controller;
+use Domains\Core\Requests\GetCollectionRequest;
+use Domains\Core\Requests\GetResourceRequest;
 use Domains\$STUDLY_NAME$\Repsoitories\$CLASS$Repository;
 use Illuminate\Http\Request;
 
@@ -19,7 +21,7 @@ class $CLASS$ extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(GetCollectionRequest $request)
     {
         $filters = $request->filters();        
 
@@ -39,7 +41,7 @@ class $CLASS$ extends Controller
     /**
      * Show the specified resource.
      */
-    public function show($id)
+    public function get(GetResourceRequest $request, $id)
     {
         //
 

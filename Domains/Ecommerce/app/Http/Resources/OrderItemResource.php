@@ -18,7 +18,7 @@ class OrderItemResource extends BaseResource
     {
         return array_merge(parent::toArray($request), [
             'order_id' => $this->order_id,
-            'ecommerce_product_id' => $this->ecommerce_product_id,
+            'product_id' => $this->product_id,
 
             /**
              * The product's name at the time it was added to the order. This won't change even if the product is later renamed or removed.

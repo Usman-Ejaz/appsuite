@@ -15,7 +15,7 @@ use Domains\Identity\Repositories\CompanyRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-#[Group('Identity, Companies')]
+#[Group('Identity')]
 class CompanyController extends Controller
 {
     public function __construct(protected CompanyRepository $companies)
@@ -32,7 +32,11 @@ class CompanyController extends Controller
     {
         abort_unless($request->user()->isRoot(), 403, 'Forbidden');
 
-        return new CompanyCollection($this->companies->list($request->filters()));
+        $filters = $request->filters();
+
+        $records = $this->companies->list($filters);
+
+        return new CompanyCollection($records);
     }
 
     /**
@@ -43,10 +47,9 @@ class CompanyController extends Controller
      */
     public function create(CreateRequest $request): JsonResponse
     {
-        $company = $this->companies->create([
-            ...$request->validated(),
-            'status' => CompanyStatus::ACTIVE,
-        ]);
+        $input = $request->validated();
+
+        $company = $this->companies->create([...$input, 'status' => CompanyStatus::ACTIVE]);
 
         return response()->json(['data' => CompanyResource::make($company)], 201);
     }
@@ -60,7 +63,11 @@ class CompanyController extends Controller
     {
         abort_unless($request->user()->isRoot(), 403);
 
-        return CompanyResource::make($this->companies->get($id, $request->filters()));
+        $filters = $request->filters();
+
+        $record = $this->companies->get($id, $filters);
+
+        return CompanyResource::make($record);
     }
 
     /**
@@ -71,7 +78,11 @@ class CompanyController extends Controller
      */
     public function update(UpdateRequest $request, int $id): CompanyResource
     {
-        return CompanyResource::make($this->companies->update($id, $request->validated()));
+        $input = $request->validated();
+
+        $record = $this->companies->update($id, $input);
+
+        return CompanyResource::make($record);
     }
 
     /**

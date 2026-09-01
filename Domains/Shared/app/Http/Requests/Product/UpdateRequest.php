@@ -1,10 +1,8 @@
 <?php
 
-namespace Domains\Ecommerce\Http\Requests\EcommerceProduct;
+namespace Domains\Shared\Http\Requests\Product;
 
-use Domains\Ecommerce\Enums\EcommercePermission;
-use Domains\Ecommerce\Enums\EcommerceProductStatus;
-use Domains\Ecommerce\Models\EcommerceProduct;
+use Domains\Shared\Enums\ProductStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -13,17 +11,14 @@ class UpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', EcommercePermission::PRODUCT_UPDATE->value);
+        $appCode = $this->route('app_code');
+
+        return Gate::allows('permission', "{$appCode}:products:update");
     }
 
     public function rules(): array
     {
         $companyId = $this->user()?->getCompanyId();
-
-        // The route's {id} identifies the EcommerceProduct, but the slug's
-        // uniqueness lives on the parent Product row — resolve its id
-        // separately so the unique check ignores the right primary key.
-        $productId = EcommerceProduct::query()->whereKey($this->route('id'))->value('product_id');
 
         return [
             /**
@@ -38,7 +33,7 @@ class UpdateRequest extends FormRequest
              *
              * @example wireless-mouse
              */
-            'slug' => ['sometimes', 'string', 'max:255', Rule::unique('products')->where('company_id', $companyId)->ignore($productId)],
+            'slug' => ['sometimes', 'string', 'max:255', Rule::unique('products')->where('company_id', $companyId)->ignore($this->route('id'))],
 
             /**
              * A longer description of the product.
@@ -62,6 +57,35 @@ class UpdateRequest extends FormRequest
             'is_active' => ['nullable', 'boolean'],
 
             /**
+             * Whether the product should be highlighted as featured.
+             *
+             * @example false
+             */
+            'is_featured' => ['nullable', 'boolean'],
+
+            /**
+             * The page title used for search engines, if different from `name`.
+             *
+             * @example Wireless Mouse | Acme Store
+             */
+            'meta_title' => ['nullable', 'string', 'max:255'],
+
+            /**
+             * The page description used for search engines.
+             *
+             * @example Shop the ergonomic wireless mouse with adjustable DPI at Acme Store.
+             */
+            'meta_description' => ['nullable', 'string'],
+
+            /**
+             * The canonical URL for this product's page, used to avoid duplicate-content
+             * issues with search engines.
+             *
+             * @example https://store.example.com/products/wireless-mouse
+             */
+            'canonical_url' => ['nullable', 'string', 'max:2048'],
+
+            /**
              * The brand this product belongs to.
              *
              * @example 5
@@ -80,18 +104,25 @@ class UpdateRequest extends FormRequest
              *
              * @example SKU-1234-BLK
              */
-            'sku' => ['sometimes', 'string', 'max:100', Rule::unique('ecommerce_products')->where('company_id', $companyId)->ignore($this->route('id'))],
+            'sku' => ['sometimes', 'string', 'max:100', Rule::unique('products')->where('company_id', $companyId)->ignore($this->route('id'))],
+
+            /**
+             * What the product costs the company to acquire or produce.
+             *
+             * @example 12.50
+             */
+            'cost_price' => ['nullable', 'numeric', 'min:0'],
 
             /**
              * The product's selling price.
              *
              * @example 29.99
              */
-            'price' => ['sometimes', 'numeric', 'min:0'],
+            'selling_price' => ['sometimes', 'numeric', 'min:0'],
 
             /**
-             * An original price shown alongside `price` for a sale display, used when it is
-             * higher than `price`.
+             * An original price shown alongside `selling_price` for a sale display, used when
+             * it is higher than `selling_price`.
              *
              * @example 39.99
              */
@@ -112,6 +143,13 @@ class UpdateRequest extends FormRequest
             'stock_quantity' => ['nullable', 'integer', 'min:0'],
 
             /**
+             * The stock level at or below which the product should be reordered.
+             *
+             * @example 10
+             */
+            'reorder_threshold' => ['nullable', 'integer', 'min:0'],
+
+            /**
              * Whether `stock_quantity` limits how many units can be ordered. When set to
              * `false`, the product can be ordered regardless of `stock_quantity`.
              *
@@ -124,7 +162,7 @@ class UpdateRequest extends FormRequest
              *
              * @example Active
              */
-            'status' => ['nullable', Rule::enum(EcommerceProductStatus::class)],
+            'status' => ['nullable', Rule::enum(ProductStatus::class)],
 
             /**
              * A freeform array of strings used for search and filtering.

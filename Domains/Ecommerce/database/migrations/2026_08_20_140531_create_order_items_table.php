@@ -1,7 +1,7 @@
 <?php
 
-use Domains\Ecommerce\Models\EcommerceProduct;
 use Domains\Ecommerce\Models\Order;
+use Domains\Shared\Models\Product;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->company()->nullable(false);
             $table->foreignIdFor(Order::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(EcommerceProduct::class)->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(Product::class)->nullable()->constrained()->nullOnDelete();
             $table->string('product_name');
             $table->string('product_sku', 100);
             $table->decimal('unit_price', 10, 2);

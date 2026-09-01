@@ -4,6 +4,7 @@ namespace Domains\Ecommerce\Models;
 
 use Domains\Core\Models\BaseModel;
 use Domains\Ecommerce\Database\Factories\BrandFactory;
+use Domains\Shared\Models\Product;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Brand extends BaseModel
@@ -39,9 +40,9 @@ class Brand extends BaseModel
         ];
     }
 
-    public function ecommerceProducts(): HasMany
+    public function products(): HasMany
     {
-        return $this->hasMany(EcommerceProduct::class);
+        return $this->hasMany(Product::class);
     }
 
     protected static function newFactory(): BrandFactory

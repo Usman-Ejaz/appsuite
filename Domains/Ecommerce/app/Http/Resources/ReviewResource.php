@@ -4,6 +4,7 @@ namespace Domains\Ecommerce\Http\Resources;
 
 use Domains\Core\Http\Resources\BaseResource;
 use Domains\Ecommerce\Models\Review;
+use Domains\Shared\Http\Resources\ProductResource;
 use Illuminate\Http\Request;
 
 /**
@@ -17,12 +18,12 @@ class ReviewResource extends BaseResource
     {
         return array_merge(parent::toArray($request), [
             'company_id' => $this->company_id,
-            'ecommerce_product_id' => $this->ecommerce_product_id,
+            'product_id' => $this->product_id,
 
             /**
              * The product this review was left on.
              */
-            'product' => EcommerceProductResource::make($this->whenLoaded('ecommerceProduct')),
+            'product' => ProductResource::make($this->whenLoaded('product')),
 
             'customer_id' => $this->customer_id,
 

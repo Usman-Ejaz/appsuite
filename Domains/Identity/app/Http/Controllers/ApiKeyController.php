@@ -3,6 +3,7 @@
 namespace Domains\Identity\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Dedoc\Scramble\Attributes\Group;
 use Domains\Identity\Actions\IssueApiKey;
 use Domains\Identity\Actions\RevokeApiKey;
 use Domains\Identity\Http\Requests\ApiKey\CreateRequest;
@@ -12,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
+#[Group('Identity')]
 class ApiKeyController extends Controller
 {
     public function __construct(
@@ -22,7 +24,9 @@ class ApiKeyController extends Controller
     }
 
     /**
-     * List the API keys belonging to the current user's company.
+     * Get Api Keys
+     *
+     * Returns the API keys belonging to the current user's company.
      */
     public function list(Request $request): AnonymousResourceCollection
     {
@@ -35,16 +39,18 @@ class ApiKeyController extends Controller
     }
 
     /**
-     * Issue a new API key for the current user's company.
+     * Create Api Key
      *
-     * The api_secret is only ever shown here, at creation time — it is
-     * stored hashed and cannot be retrieved again afterwards.
+     * Issues a new API key for the current user's company. The `api_secret` is only ever shown
+     * here, at creation time. It is stored hashed and cannot be retrieved again afterward.
      */
     public function create(CreateRequest $request): JsonResponse
     {
+        $input = $request->validated();
+
         ['apiKey' => $apiKey, 'plainSecret' => $plainSecret] = $this->issueApiKey->handle(
             $request->user()->company,
-            $request->validated(),
+            $input,
         );
 
         return response()->json([
@@ -54,7 +60,9 @@ class ApiKeyController extends Controller
     }
 
     /**
-     * Revoke an API key belonging to the current user's company.
+     * Delete Api Key
+     *
+     * Revokes an API key belonging to the current user's company.
      */
     public function delete(Request $request, int $id): JsonResponse
     {

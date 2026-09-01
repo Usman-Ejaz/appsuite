@@ -22,7 +22,7 @@ class CreateRequest extends FormRequest
              *
              * @example 17
              */
-            'ecommerce_product_id' => ['required', 'integer', Rule::exists('ecommerce_products', 'id')->where('company_id', $this->user()?->getCompanyId())],
+            'product_id' => ['required', 'integer', Rule::exists('products', 'id')->where('company_id', $this->user()?->getCompanyId())],
 
             /**
              * How many units of the product to add. Rejected if this exceeds the product's available stock.

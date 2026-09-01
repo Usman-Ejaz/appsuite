@@ -4,6 +4,8 @@ namespace Domains\Ecommerce\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
+use Domains\Core\Http\Requests\GetCollectionRequest;
+use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Ecommerce\Enums\EcommercePermission;
 use Domains\Ecommerce\Http\Requests\Customer\CreateRequest;
 use Domains\Ecommerce\Http\Requests\Customer\UpdateRequest;
@@ -11,9 +13,8 @@ use Domains\Ecommerce\Http\Resources\CustomerCollection;
 use Domains\Ecommerce\Http\Resources\CustomerResource;
 use Domains\Ecommerce\Repositories\CustomerRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
-#[Group('Ecommerce, Customers')]
+#[Group('Ecommerce')]
 class CustomerController extends Controller
 {
     public function __construct(protected CustomerRepository $customers)
@@ -28,11 +29,15 @@ class CustomerController extends Controller
      * backoffice records for people or businesses who place orders, not accounts the customers
      * can log into themselves.
      */
-    public function list(Request $request): CustomerCollection
+    public function list(GetCollectionRequest $request): CustomerCollection
     {
         $this->authorize('permission', EcommercePermission::CUSTOMER_VIEW->value);
 
-        return new CustomerCollection($this->customers->filter($request->query())->list());
+        $filters = $request->filters();
+
+        $records = $this->customers->list($filters);
+
+        return new CustomerCollection($records);
     }
 
     /**
@@ -42,7 +47,9 @@ class CustomerController extends Controller
      */
     public function create(CreateRequest $request): JsonResponse
     {
-        $customer = $this->customers->create($request->validated());
+        $input = $request->validated();
+
+        $customer = $this->customers->create($input);
 
         return response()->json(['data' => CustomerResource::make($customer)], 201);
     }
@@ -52,11 +59,15 @@ class CustomerController extends Controller
      *
      * Retrieves a single customer record.
      */
-    public function get(int $id): CustomerResource
+    public function get(GetResourceRequest $request, int $id): CustomerResource
     {
         $this->authorize('permission', EcommercePermission::CUSTOMER_VIEW->value);
 
-        return CustomerResource::make($this->customers->findOrFail($id));
+        $filters = $request->filters();
+
+        $record = $this->customers->get($id, $filters);
+
+        return CustomerResource::make($record);
     }
 
     /**
@@ -66,7 +77,11 @@ class CustomerController extends Controller
      */
     public function update(UpdateRequest $request, int $id): CustomerResource
     {
-        return CustomerResource::make($this->customers->update($id, $request->validated()));
+        $input = $request->validated();
+
+        $record = $this->customers->update($id, $input);
+
+        return CustomerResource::make($record);
     }
 
     /**

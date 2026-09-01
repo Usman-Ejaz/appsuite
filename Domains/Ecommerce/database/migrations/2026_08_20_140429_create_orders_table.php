@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignIdFor(Customer::class)->constrained()->restrictOnDelete();
             $table->foreignIdFor(PaymentMethod::class)->nullable()->constrained()->restrictOnDelete();
             $table->foreignIdFor(Coupon::class)->nullable()->constrained()->nullOnDelete();
-            $table->string('order_number', 40);
+            $table->string('reference', 40);
             $table->string('status', 20)->default('Pending');
             $table->decimal('subtotal', 10, 2)->default(0);
             $table->decimal('discount_total', 10, 2)->default(0);
@@ -33,7 +33,7 @@ return new class extends Migration
             $table->editor();
             $table->timestamps();
 
-            $table->unique(['company_id', 'order_number']);
+            $table->unique(['company_id', 'reference']);
             $table->index(['company_id', 'status']);
         });
     }

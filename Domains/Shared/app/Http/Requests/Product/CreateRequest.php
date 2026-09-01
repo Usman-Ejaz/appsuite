@@ -1,9 +1,8 @@
 <?php
 
-namespace Domains\Ecommerce\Http\Requests\EcommerceProduct;
+namespace Domains\Shared\Http\Requests\Product;
 
-use Domains\Ecommerce\Enums\EcommercePermission;
-use Domains\Ecommerce\Enums\EcommerceProductStatus;
+use Domains\Shared\Enums\ProductStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -12,7 +11,9 @@ class CreateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', EcommercePermission::PRODUCT_CREATE->value);
+        $appCode = $this->route('app_code');
+
+        return Gate::allows('permission', "{$appCode}:products:create");
     }
 
     public function rules(): array
@@ -58,6 +59,37 @@ class CreateRequest extends FormRequest
             'is_active' => ['nullable', 'boolean'],
 
             /**
+             * Whether the product should be highlighted as featured.
+             *
+             * @example false
+             *
+             * @default false
+             */
+            'is_featured' => ['nullable', 'boolean'],
+
+            /**
+             * The page title used for search engines, if different from `name`.
+             *
+             * @example Wireless Mouse | Acme Store
+             */
+            'meta_title' => ['nullable', 'string', 'max:255'],
+
+            /**
+             * The page description used for search engines.
+             *
+             * @example Shop the ergonomic wireless mouse with adjustable DPI at Acme Store.
+             */
+            'meta_description' => ['nullable', 'string'],
+
+            /**
+             * The canonical URL for this product's page, used to avoid duplicate-content
+             * issues with search engines.
+             *
+             * @example https://store.example.com/products/wireless-mouse
+             */
+            'canonical_url' => ['nullable', 'string', 'max:2048'],
+
+            /**
              * The brand this product belongs to.
              *
              * @example 5
@@ -76,18 +108,25 @@ class CreateRequest extends FormRequest
              *
              * @example SKU-1234-BLK
              */
-            'sku' => ['required', 'string', 'max:100', Rule::unique('ecommerce_products')->where('company_id', $companyId)],
+            'sku' => ['required', 'string', 'max:100', Rule::unique('products')->where('company_id', $companyId)],
+
+            /**
+             * What the product costs the company to acquire or produce.
+             *
+             * @example 12.50
+             */
+            'cost_price' => ['nullable', 'numeric', 'min:0'],
 
             /**
              * The product's selling price.
              *
              * @example 29.99
              */
-            'price' => ['required', 'numeric', 'min:0'],
+            'selling_price' => ['required', 'numeric', 'min:0'],
 
             /**
-             * An original price shown alongside `price` for a sale display, used when it is
-             * higher than `price`.
+             * An original price shown alongside `selling_price` for a sale display, used when
+             * it is higher than `selling_price`.
              *
              * @example 39.99
              */
@@ -112,6 +151,13 @@ class CreateRequest extends FormRequest
             'stock_quantity' => ['nullable', 'integer', 'min:0'],
 
             /**
+             * The stock level at or below which the product should be reordered.
+             *
+             * @example 10
+             */
+            'reorder_threshold' => ['nullable', 'integer', 'min:0'],
+
+            /**
              * Whether `stock_quantity` limits how many units can be ordered. When set to
              * `false`, the product can be ordered regardless of `stock_quantity`.
              *
@@ -128,7 +174,7 @@ class CreateRequest extends FormRequest
              *
              * @default Draft
              */
-            'status' => ['nullable', Rule::enum(EcommerceProductStatus::class)],
+            'status' => ['nullable', Rule::enum(ProductStatus::class)],
 
             /**
              * A freeform array of strings used for search and filtering.

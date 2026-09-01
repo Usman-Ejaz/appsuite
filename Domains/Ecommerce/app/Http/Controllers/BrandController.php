@@ -4,16 +4,16 @@ namespace Domains\Ecommerce\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
+use Domains\Core\Http\Requests\GetCollectionRequest;
+use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Ecommerce\Enums\EcommercePermission;
 use Domains\Ecommerce\Http\Requests\Brand\CreateRequest;
 use Domains\Ecommerce\Http\Requests\Brand\UpdateRequest;
-use Domains\Ecommerce\Http\Resources\BrandCollection;
 use Domains\Ecommerce\Http\Resources\BrandResource;
 use Domains\Ecommerce\Repositories\BrandRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
-#[Group('Ecommerce, Brands')]
+#[Group('Ecommerce')]
 class BrandController extends Controller
 {
     public function __construct(protected BrandRepository $brands)
@@ -26,11 +26,15 @@ class BrandController extends Controller
      *
      * Returns the brands that belong to the company.
      */
-    public function list(Request $request): BrandCollection
+    public function list(GetCollectionRequest $request)
     {
-        $this->authorize('permission', EcommercePermission::BRAND_VIEW->value);
+        $this->authorize('permission', EcommercePermission::BRAND_VIEW);
 
-        return new BrandCollection($this->brands->filter($request->query())->list());
+        $filters = $request->filters();
+
+        $records = $this->brands->list($filters);
+
+        return BrandResource::collection($records);
     }
 
     /**
@@ -40,7 +44,9 @@ class BrandController extends Controller
      */
     public function create(CreateRequest $request): JsonResponse
     {
-        $brand = $this->brands->create($request->validated());
+        $input = $request->validated();
+
+        $brand = $this->brands->create($input);
 
         return response()->json(['data' => BrandResource::make($brand)], 201);
     }
@@ -50,11 +56,15 @@ class BrandController extends Controller
      *
      * Returns the details of a single brand.
      */
-    public function get(int $id): BrandResource
+    public function get(GetResourceRequest $request, int $id): BrandResource
     {
-        $this->authorize('permission', EcommercePermission::BRAND_VIEW->value);
+        $this->authorize('permission', EcommercePermission::BRAND_VIEW);
 
-        return BrandResource::make($this->brands->findOrFail($id));
+        $filters = $request->filters();
+
+        $record = $this->brands->get($id, $filters);
+
+        return BrandResource::make($record);
     }
 
     /**
@@ -64,7 +74,11 @@ class BrandController extends Controller
      */
     public function update(UpdateRequest $request, int $id): BrandResource
     {
-        return BrandResource::make($this->brands->update($id, $request->validated()));
+        $input = $request->validated();
+
+        $record = $this->brands->update($id, $input);
+
+        return BrandResource::make($record);
     }
 
     /**
@@ -74,7 +88,7 @@ class BrandController extends Controller
      */
     public function delete(int $id): JsonResponse
     {
-        $this->authorize('permission', EcommercePermission::BRAND_DELETE->value);
+        $this->authorize('permission', EcommercePermission::BRAND_DELETE);
 
         $this->brands->delete($id);
 

@@ -14,7 +14,7 @@ use Domains\Identity\Repositories\RoleRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-#[Group('Identity, Roles')]
+#[Group('Identity')]
 class RoleController extends Controller
 {
     public function __construct(protected RoleRepository $roles)
@@ -34,11 +34,13 @@ class RoleController extends Controller
 
         abort_unless($actor->isRoot() || $actor->isOwner(), 403);
 
-        return new RoleCollection(
-            $this->roles
-                ->scopeToCompany($actor->isRoot() ? null : $actor->company_id)
-                ->list($request->filters())
-        );
+        $filters = $request->filters();
+
+        $records = $this->roles
+            ->scopeToCompany($actor->isRoot() ? null : $actor->company_id)
+            ->list($filters);
+
+        return new RoleCollection($records);
     }
 
     /**
@@ -52,14 +54,14 @@ class RoleController extends Controller
     public function create(CreateRequest $request): JsonResponse
     {
         $actor = $request->user();
-        $data = $request->validated();
+        $input = $request->validated();
 
         // A root user can explicitly send `company_id: null` to create a system/platform role
         // (one that manages this admin area itself) even if their own account has a company —
         // array_key_exists distinguishes "explicitly null" from "field omitted", which `??`
         // could not (both look identical to `??`).
-        $data['company_id'] = $actor->isRoot()
-            ? (array_key_exists('company_id', $data) ? $data['company_id'] : $actor->company_id)
+        $input['company_id'] = $actor->isRoot()
+            ? (array_key_exists('company_id', $input) ? $input['company_id'] : $actor->company_id)
             : $actor->company_id;
 
         // Spatie's Role model defaults an unset guard_name to the currently active auth guard,
@@ -67,9 +69,9 @@ class RoleController extends Controller
         // (seeded data, the [company_id, name, guard_name] uniqueness check above) assumes
         // "web". Force it explicitly so a role created here is actually findable/unique
         // alongside the rest.
-        $data['guard_name'] = 'web';
+        $input['guard_name'] = 'web';
 
-        $role = $this->roles->create($data);
+        $role = $this->roles->create($input);
 
         return response()->json(['data' => RoleResource::make($role)], 201);
     }
@@ -86,11 +88,13 @@ class RoleController extends Controller
 
         abort_unless($actor->isRoot() || $actor->isOwner(), 403);
 
-        $role = $this->roles
-            ->scopeToCompany($actor->isRoot() ? null : $actor->company_id)
-            ->get($id, $request->filters());
+        $filters = $request->filters();
 
-        return RoleResource::make($role);
+        $record = $this->roles
+            ->scopeToCompany($actor->isRoot() ? null : $actor->company_id)
+            ->get($id, $filters);
+
+        return RoleResource::make($record);
     }
 
     /**
@@ -103,11 +107,13 @@ class RoleController extends Controller
     {
         $actor = $request->user();
 
-        $role = $this->roles
-            ->scopeToCompany($actor->isRoot() ? null : $actor->company_id)
-            ->update($id, $request->validated());
+        $input = $request->validated();
 
-        return RoleResource::make($role);
+        $record = $this->roles
+            ->scopeToCompany($actor->isRoot() ? null : $actor->company_id)
+            ->update($id, $input);
+
+        return RoleResource::make($record);
     }
 
     /**

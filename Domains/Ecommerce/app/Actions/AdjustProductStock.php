@@ -2,7 +2,7 @@
 
 namespace Domains\Ecommerce\Actions;
 
-use Domains\Ecommerce\Models\EcommerceProduct;
+use Domains\Shared\Models\Product;
 
 class AdjustProductStock
 {
@@ -11,7 +11,7 @@ class AdjustProductStock
      * Floors at zero rather than going negative. No-ops for products that
      * don't track inventory.
      */
-    public function handle(EcommerceProduct $product, int $delta): void
+    public function handle(Product $product, int $delta): void
     {
         if (! $product->track_inventory) {
             return;

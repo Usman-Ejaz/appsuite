@@ -17,7 +17,7 @@ class RemoveOrderItem
     {
         $order = $item->order;
 
-        if ($product = $item->ecommerceProduct) {
+        if ($product = $item->product) {
             $this->adjustProductStock->handle($product, $item->quantity);
         }
 

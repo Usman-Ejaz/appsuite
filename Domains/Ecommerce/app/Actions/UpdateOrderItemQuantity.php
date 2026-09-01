@@ -21,7 +21,7 @@ class UpdateOrderItemQuantity
     public function handle(OrderItem $item, int $quantity): OrderItem
     {
         $delta = $item->quantity - $quantity;
-        $product = $item->ecommerceProduct;
+        $product = $item->product;
 
         if ($product) {
             abort_if(

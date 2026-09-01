@@ -2,8 +2,9 @@
 
 namespace Domains\Ecommerce\Actions;
 
+use Domains\Core\Enums\AppCode;
 use Domains\Ecommerce\Models\Collection;
-use Domains\Ecommerce\Models\EcommerceProduct;
+use Domains\Shared\Models\Product;
 
 class SyncCollectionProducts
 {
@@ -12,7 +13,7 @@ class SyncCollectionProducts
      */
     public function handle(Collection $collection, array $products): void
     {
-        $validIds = EcommerceProduct::query()->pluck('id');
+        $validIds = Product::query()->where('app_code', AppCode::ECOMMERCE->value)->pluck('id');
 
         $pivotData = [];
 

@@ -32,7 +32,9 @@ beforeEach(function () {
 
 test('a category can be created, listed, updated, and deleted', function () {
     $response = $this->postJson('/api/v1/cms/categories', ['name' => 'News', 'slug' => 'news']);
-    $response->assertCreated()->assertJsonPath('data.name', 'News');
+    $response->assertCreated()
+        ->assertJsonPath('data.name', 'News')
+        ->assertJsonPath('data.app_code', 'cms');
 
     $id = $response->json('data.id');
 
@@ -47,7 +49,7 @@ test('a category can be created, listed, updated, and deleted', function () {
 });
 
 test('slug uniqueness is scoped per company', function () {
-    Category::factory()->create(['company_id' => $this->company->id, 'slug' => 'news']);
+    Category::factory()->create(['company_id' => $this->company->id, 'app_code' => 'cms', 'slug' => 'news']);
 
     $this->postJson('/api/v1/cms/categories', ['name' => 'News Again', 'slug' => 'news'])
         ->assertUnprocessable();
@@ -55,11 +57,17 @@ test('slug uniqueness is scoped per company', function () {
 
 test('a category belonging to a different company is not found', function () {
     $otherCompany = Company::factory()->create();
-    $category = Category::factory()->create(['company_id' => $otherCompany->id]);
+    $category = Category::factory()->create(['company_id' => $otherCompany->id, 'app_code' => 'cms']);
 
     $this->getJson("/api/v1/cms/categories/{$category->id}")->assertNotFound();
     $this->putJson("/api/v1/cms/categories/{$category->id}", ['name' => 'Hijacked'])->assertNotFound();
     $this->deleteJson("/api/v1/cms/categories/{$category->id}")->assertNotFound();
+});
+
+test('a category belonging to a different app is not found', function () {
+    $category = Category::factory()->create(['company_id' => $this->company->id, 'app_code' => 'ecommerce']);
+
+    $this->getJson("/api/v1/cms/categories/{$category->id}")->assertNotFound();
 });
 
 test('a user without permission cannot manage categories', function () {

@@ -13,7 +13,7 @@ use Domains\Core\Repositories\AppRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-#[Group('Core, Apps')]
+#[Group('Core')]
 class AppController extends Controller
 {
     public function __construct(protected AppRepository $apps)
@@ -30,7 +30,11 @@ class AppController extends Controller
     {
         abort_unless($request->user()->isRoot(), 403);
 
-        return AppResource::collection($this->apps->list($request->filters()));
+        $filters = $request->filters();
+
+        $records = $this->apps->list($filters);
+
+        return AppResource::collection($records);
     }
 
     /**
@@ -41,7 +45,9 @@ class AppController extends Controller
      */
     public function create(CreateRequest $request): JsonResponse
     {
-        $app = $this->apps->create($request->validated());
+        $input = $request->validated();
+
+        $app = $this->apps->create($input);
 
         return response()->json(['data' => AppResource::make($app)], 201);
     }
@@ -55,7 +61,11 @@ class AppController extends Controller
     {
         abort_unless($request->user()->isRoot(), 403);
 
-        return AppResource::make($this->apps->get($id, $request->filters()));
+        $filters = $request->filters();
+
+        $record = $this->apps->get($id, $filters);
+
+        return AppResource::make($record);
     }
 
     /**
@@ -66,7 +76,11 @@ class AppController extends Controller
      */
     public function update(UpdateRequest $request, int $id): AppResource
     {
-        return AppResource::make($this->apps->update($id, $request->validated()));
+        $input = $request->validated();
+
+        $record = $this->apps->update($id, $input);
+
+        return AppResource::make($record);
     }
 
     /**

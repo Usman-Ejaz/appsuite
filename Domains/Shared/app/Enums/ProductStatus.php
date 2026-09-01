@@ -1,11 +1,11 @@
 <?php
 
-namespace Domains\Ecommerce\Enums;
+namespace Domains\Shared\Enums;
 
 /**
  * The product's stage in its selling lifecycle.
  */
-enum EcommerceProductStatus: string
+enum ProductStatus: string
 {
     /**
      * The product has been created but is not yet available for sale.

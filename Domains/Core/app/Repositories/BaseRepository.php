@@ -36,12 +36,10 @@ class BaseRepository
      */
     public function list(array $filter = []): LengthAwarePaginator
     {
-        $this->filter($filter);
-
-        $builder = Qubuilder::make($this->filter, $this->query());
+        $builder = Qubuilder::make($filter, $this->query());
 
         return $builder->query()->paginate(
-            perPage: $this->resolvePerPage($this->filter),
+            perPage: $this->resolvePerPage($filter),
             page: $builder->page(),
         );
     }
@@ -77,9 +75,7 @@ class BaseRepository
      */
     public function get($id, array $filter = [], array $columns = ['*'])
     {
-        $this->filter($filter);
-
-        return Qubuilder::make($this->filter, $this->query())
+        return Qubuilder::make($filter, $this->query())
             ->query()
             ->findOrFail($id, $columns);
     }
@@ -96,9 +92,7 @@ class BaseRepository
      */
     public function getTrashed($id, array $filter = [], array $columns = ['*'])
     {
-        $this->filter($filter);
-
-        return Qubuilder::make($this->filter, $this->query())
+        return Qubuilder::make($filter, $this->query())
             ->query()
             ->onlyTrashed()
             ->findOrFail($id, $columns);
@@ -193,7 +187,7 @@ class BaseRepository
             return $id;
         }
 
-        return $this->model::findOrFail($id);
+        return $this->query()->findOrFail($id);
     }
 
     /**
@@ -384,11 +378,6 @@ class BaseRepository
             ->all();
 
         return $rows->sortBy($criteria)->values();
-    }
-
-    protected function withCount(): array
-    {
-        return [];
     }
 
     public function dbTransaction(callable $callback)

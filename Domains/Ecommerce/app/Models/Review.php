@@ -6,6 +6,7 @@ use Domains\Core\Models\BaseModel;
 use Domains\Ecommerce\Database\Factories\ReviewFactory;
 use Domains\Ecommerce\Enums\ReviewStatus;
 use Domains\Identity\Models\Customer;
+use Domains\Shared\Models\Product;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Review extends BaseModel
@@ -14,7 +15,7 @@ class Review extends BaseModel
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'ecommerce_product_id',
+        'product_id',
         'customer_id',
         'rating',
         'title',
@@ -43,9 +44,9 @@ class Review extends BaseModel
         ];
     }
 
-    public function ecommerceProduct(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(EcommerceProduct::class);
+        return $this->belongsTo(Product::class);
     }
 
     public function customer(): BelongsTo

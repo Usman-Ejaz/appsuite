@@ -2,9 +2,9 @@
 
 namespace Domains\Ecommerce\Actions;
 
-use Domains\Ecommerce\Models\EcommerceProduct;
 use Domains\Ecommerce\Models\Order;
 use Domains\Ecommerce\Models\OrderItem;
+use Domains\Shared\Models\Product;
 
 class AddOrderItem
 {
@@ -20,7 +20,7 @@ class AddOrderItem
      * see Order/OrderItem migration notes: a historical order must keep
      * showing what was actually charged even if the product changes later.
      */
-    public function handle(Order $order, EcommerceProduct $product, int $quantity): OrderItem
+    public function handle(Order $order, Product $product, int $quantity): OrderItem
     {
         abort_if(
             $product->track_inventory && $product->stock_quantity < $quantity,
@@ -29,12 +29,12 @@ class AddOrderItem
         );
 
         $item = $order->items()->create([
-            'ecommerce_product_id' => $product->id,
-            'product_name' => $product->product->name,
+            'product_id' => $product->id,
+            'product_name' => $product->name,
             'product_sku' => $product->sku,
-            'unit_price' => $product->price,
+            'unit_price' => $product->selling_price,
             'quantity' => $quantity,
-            'subtotal' => bcmul((string) $product->price, (string) $quantity, 2),
+            'subtotal' => bcmul((string) $product->selling_price, (string) $quantity, 2),
         ]);
 
         $this->adjustProductStock->handle($product, -$quantity);

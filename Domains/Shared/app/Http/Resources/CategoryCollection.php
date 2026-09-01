@@ -1,6 +1,6 @@
 <?php
 
-namespace Domains\Ecommerce\Http\Resources;
+namespace Domains\Shared\Http\Resources;
 
 use Domains\Core\Http\Resources\BaseResourceCollection;
 

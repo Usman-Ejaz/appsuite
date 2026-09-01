@@ -14,7 +14,7 @@ use Domains\Identity\Repositories\UserRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-#[Group('Identity, Users')]
+#[Group('Identity')]
 class UserController extends Controller
 {
     public function __construct(protected UserRepository $users)
@@ -34,10 +34,11 @@ class UserController extends Controller
 
         abort_unless($actor->isRoot() || $actor->isOwner(), 403);
 
-        return new UserCollection(
-            $this->users
-                ->list($request->filters())
-        );
+        $filters = $request->filters();
+
+        $records = $this->users->list($filters);
+
+        return new UserCollection($records);
     }
 
     /**
@@ -51,16 +52,16 @@ class UserController extends Controller
     public function create(CreateRequest $request): JsonResponse
     {
         $actor = $request->user();
-        $data = $request->validated();
+        $input = $request->validated();
 
         // array_key_exists distinguishes an explicit `company_id: null` (create a user with no
         // company) from the field being omitted entirely (default to root's own company) — `??`
         // cannot tell those apart, since both look like "absent" to it.
-        $data['company_id'] = $actor->isRoot()
-            ? (array_key_exists('company_id', $data) ? $data['company_id'] : $actor->company_id)
+        $input['company_id'] = $actor->isRoot()
+            ? (array_key_exists('company_id', $input) ? $input['company_id'] : $actor->company_id)
             : $actor->company_id;
 
-        $user = $this->users->create($data);
+        $user = $this->users->create($input);
 
         return response()->json(['data' => UserResource::make($user)], 201);
     }
@@ -77,11 +78,13 @@ class UserController extends Controller
 
         abort_unless($actor->isRoot() || $actor->isOwner(), 403);
 
-        $user = $this->users
-            ->scopeToCompany($actor->isRoot() ? null : $actor->company_id)
-            ->get($id, $request->filters());
+        $filters = $request->filters();
 
-        return UserResource::make($user);
+        $record = $this->users
+            ->scopeToCompany($actor->isRoot() ? null : $actor->company_id)
+            ->get($id, $filters);
+
+        return UserResource::make($record);
     }
 
     /**
@@ -94,11 +97,13 @@ class UserController extends Controller
     {
         $actor = $request->user();
 
-        $user = $this->users
-            ->scopeToCompany($actor->isRoot() ? null : $actor->company_id)
-            ->update($id, $request->validated());
+        $input = $request->validated();
 
-        return UserResource::make($user);
+        $record = $this->users
+            ->scopeToCompany($actor->isRoot() ? null : $actor->company_id)
+            ->update($id, $input);
+
+        return UserResource::make($record);
     }
 
     /**

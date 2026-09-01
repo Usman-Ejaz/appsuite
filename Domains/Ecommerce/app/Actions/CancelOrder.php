@@ -17,7 +17,7 @@ class CancelOrder
         abort_if($order->status === OrderStatus::CANCELLED, 422, 'This order is already cancelled.');
 
         foreach ($order->items as $item) {
-            if ($product = $item->ecommerceProduct) {
+            if ($product = $item->product) {
                 $this->adjustProductStock->handle($product, $item->quantity);
             }
         }

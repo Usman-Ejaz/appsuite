@@ -4,13 +4,13 @@ use Domains\Core\Models\App;
 use Domains\Ecommerce\Enums\CouponType;
 use Domains\Ecommerce\Enums\OrderStatus;
 use Domains\Ecommerce\Models\Coupon;
-use Domains\Ecommerce\Models\EcommerceProduct;
 use Domains\Ecommerce\Models\Order;
 use Domains\Identity\Models\Company;
 use Domains\Identity\Models\Customer;
 use Domains\Identity\Models\Permission;
 use Domains\Identity\Models\User;
 use Domains\Shared\Models\PaymentMethod;
+use Domains\Shared\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -110,11 +110,11 @@ test('a user without permission cannot manage orders', function () {
 });
 
 test('an order with an added item can be cancelled, which restocks the product and rolls back coupon usage', function () {
-    $product = EcommerceProduct::factory()->create(['company_id' => $this->company->id, 'stock_quantity' => 10, 'price' => 20]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 10, 'price' => 20]);
     $coupon = Coupon::factory()->create(['company_id' => $this->company->id, 'type' => CouponType::FIXED, 'value' => 5]);
     $order = Order::factory()->create(['company_id' => $this->company->id, 'customer_id' => $this->customer->id]);
 
-    $this->postJson("/api/v1/ecommerce/orders/{$order->id}/items", ['ecommerce_product_id' => $product->id, 'quantity' => 3])
+    $this->postJson("/api/v1/ecommerce/orders/{$order->id}/items", ['product_id' => $product->id, 'quantity' => 3])
         ->assertCreated();
 
     expect($product->fresh()->stock_quantity)->toBe(7);
@@ -154,11 +154,11 @@ test('a user without the cancel permission cannot cancel an order', function () 
 });
 
 test('applying a percentage coupon computes the discount from the order subtotal', function () {
-    $product = EcommerceProduct::factory()->create(['company_id' => $this->company->id, 'stock_quantity' => 10, 'price' => 50]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 10, 'price' => 50]);
     $coupon = Coupon::factory()->create(['company_id' => $this->company->id, 'type' => CouponType::PERCENTAGE, 'value' => 10]);
     $order = Order::factory()->create(['company_id' => $this->company->id, 'customer_id' => $this->customer->id]);
 
-    $this->postJson("/api/v1/ecommerce/orders/{$order->id}/items", ['ecommerce_product_id' => $product->id, 'quantity' => 2]);
+    $this->postJson("/api/v1/ecommerce/orders/{$order->id}/items", ['product_id' => $product->id, 'quantity' => 2]);
 
     $this->postJson("/api/v1/ecommerce/orders/{$order->id}/apply-coupon", ['code' => $coupon->code])
         ->assertOk()
@@ -168,7 +168,7 @@ test('applying a percentage coupon computes the discount from the order subtotal
 });
 
 test('a percentage coupon discount is capped by max_discount_amount', function () {
-    $product = EcommerceProduct::factory()->create(['company_id' => $this->company->id, 'stock_quantity' => 10, 'price' => 100]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 10, 'price' => 100]);
     $coupon = Coupon::factory()->create([
         'company_id' => $this->company->id,
         'type' => CouponType::PERCENTAGE,
@@ -177,7 +177,7 @@ test('a percentage coupon discount is capped by max_discount_amount', function (
     ]);
     $order = Order::factory()->create(['company_id' => $this->company->id, 'customer_id' => $this->customer->id]);
 
-    $this->postJson("/api/v1/ecommerce/orders/{$order->id}/items", ['ecommerce_product_id' => $product->id, 'quantity' => 1]);
+    $this->postJson("/api/v1/ecommerce/orders/{$order->id}/items", ['product_id' => $product->id, 'quantity' => 1]);
 
     $this->postJson("/api/v1/ecommerce/orders/{$order->id}/apply-coupon", ['code' => $coupon->code])
         ->assertOk()
@@ -192,11 +192,11 @@ test('an expired coupon cannot be applied', function () {
 });
 
 test('a coupon below its minimum order amount cannot be applied', function () {
-    $product = EcommerceProduct::factory()->create(['company_id' => $this->company->id, 'price' => 10]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'price' => 10]);
     $coupon = Coupon::factory()->create(['company_id' => $this->company->id, 'min_order_amount' => 100]);
     $order = Order::factory()->create(['company_id' => $this->company->id, 'customer_id' => $this->customer->id]);
 
-    $this->postJson("/api/v1/ecommerce/orders/{$order->id}/items", ['ecommerce_product_id' => $product->id, 'quantity' => 1]);
+    $this->postJson("/api/v1/ecommerce/orders/{$order->id}/items", ['product_id' => $product->id, 'quantity' => 1]);
 
     $this->postJson("/api/v1/ecommerce/orders/{$order->id}/apply-coupon", ['code' => $coupon->code])->assertUnprocessable();
 });

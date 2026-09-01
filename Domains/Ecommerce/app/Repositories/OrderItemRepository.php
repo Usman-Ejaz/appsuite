@@ -13,7 +13,7 @@ class OrderItemRepository extends BaseRepository
 
     protected function query()
     {
-        $query = parent::query()->with('ecommerceProduct');
+        $query = parent::query()->with('product');
 
         if ($orderId = Arr::get($this->filter, 'order_id')) {
             $query->where('order_id', $orderId);
