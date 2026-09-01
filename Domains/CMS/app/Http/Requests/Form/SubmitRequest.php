@@ -17,14 +17,18 @@ class SubmitRequest extends FormRequest
 
     public function rules(): array
     {
-        $form = Form::query()
-            ->where('company_id', $this->user()?->getCompanyId())
-            ->where('is_active', true)
-            ->findOrFail($this->route('form'));
+        $formId = $this->route('form');
+
+        $form = $formId
+            ? Form::query()
+                ->where('company_id', $this->user()?->getCompanyId())
+                ->where('is_active', true)
+                ->findOrFail($formId)
+            : null;
 
         return array_merge(
             ['data' => ['required', 'array']],
-            (new BuildSubmissionValidationRules)->handle($form),
+            $form ? (new BuildSubmissionValidationRules)->handle($form) : [],
         );
     }
 }

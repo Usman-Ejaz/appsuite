@@ -4,8 +4,8 @@ namespace Domains\Identity\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
-use Domains\Identity\Http\Requests\Permission\GetCollectionRequest;
-use Domains\Identity\Http\Requests\Permission\GetResourceRequest;
+use Domains\Core\Http\Requests\GetCollectionRequest;
+use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Identity\Http\Resources\PermissionResource;
 use Domains\Identity\Repositories\PermissionRepository;
 

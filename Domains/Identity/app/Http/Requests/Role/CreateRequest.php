@@ -17,7 +17,7 @@ class CreateRequest extends FormRequest
     public function rules(): array
     {
         $actor = $this->user();
-        $companyId = ($actor->isRoot() && $this->filled('company_id'))
+        $companyId = ($actor?->isRoot() && $this->filled('company_id'))
             ? $this->integer('company_id')
             : $actor?->company_id;
 

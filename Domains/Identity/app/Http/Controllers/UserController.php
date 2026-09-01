@@ -4,9 +4,9 @@ namespace Domains\Identity\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
+use Domains\Core\Http\Requests\GetCollectionRequest;
+use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Identity\Http\Requests\User\CreateRequest;
-use Domains\Identity\Http\Requests\User\GetCollectionRequest;
-use Domains\Identity\Http\Requests\User\GetResourceRequest;
 use Domains\Identity\Http\Requests\User\UpdateRequest;
 use Domains\Identity\Http\Resources\UserCollection;
 use Domains\Identity\Http\Resources\UserResource;
