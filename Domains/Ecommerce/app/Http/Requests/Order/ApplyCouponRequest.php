@@ -10,7 +10,7 @@ class ApplyCouponRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', EcommercePermission::ORDER_APPLY_COUPON->value);
+        return Gate::allows('permission', EcommercePermission::ORDER_APPLY_COUPON);
     }
 
     public function rules(): array

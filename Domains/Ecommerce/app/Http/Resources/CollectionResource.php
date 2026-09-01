@@ -17,6 +17,8 @@ class CollectionResource extends BaseResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
+            
             'company_id' => $this->whenHas('company_id'),
 
             /**

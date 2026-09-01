@@ -68,7 +68,6 @@ class CollectionController extends Controller
         $filters = $request->filters();
 
         $record = $this->collections->get($id, $filters);
-        $record->load('products');
 
         return CollectionResource::make($record);
     }
@@ -112,10 +111,10 @@ class CollectionController extends Controller
      */
     public function syncProducts(SyncProductsRequest $request, int $id): CollectionResource
     {
-        $collectionModel = $this->collections->findOrFail($id);
+        $collection = $this->collections->findOrFail($id);
 
-        $this->syncCollectionProducts->handle($collectionModel, $request->validated('products'));
+        $this->syncCollectionProducts->handle($collection, $request->validated('products'));
 
-        return CollectionResource::make($collectionModel->fresh('products'));
+        return CollectionResource::make($collection->fresh('products'));
     }
 }

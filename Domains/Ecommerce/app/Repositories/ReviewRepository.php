@@ -10,24 +10,4 @@ use Illuminate\Support\Arr;
 class ReviewRepository extends BaseRepository
 {
     protected string $model = Review::class;
-
-    protected function query()
-    {
-        $query = parent::query()->with(['product', 'customer']);
-
-        if ($productId = Arr::get($this->filter, 'product_id')) {
-            $query->where('product_id', $productId);
-        }
-
-        return $query;
-    }
-
-    public function findOrFail(int|Model $id)
-    {
-        if ($id instanceof Model) {
-            return $id;
-        }
-
-        return $this->query()->findOrFail($id);
-    }
 }

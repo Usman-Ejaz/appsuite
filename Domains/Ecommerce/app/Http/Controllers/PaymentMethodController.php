@@ -27,15 +27,15 @@ class PaymentMethodController extends Controller
      *
      * Returns a paginated list of payment methods for the authenticated company.
      */
-    public function list(GetCollectionRequest $request): PaymentMethodCollection
+    public function list(GetCollectionRequest $request)
     {
-        $this->authorize('permission', EcommercePermission::PAYMENT_METHOD_VIEW->value);
+        $this->authorize('permission', EcommercePermission::PAYMENT_METHOD_VIEW);
 
         $filters = $request->filters();
 
         $records = $this->paymentMethods->list($filters);
 
-        return new PaymentMethodCollection($records);
+        return PaymentMethodResource::collection($records);
     }
 
     /**
@@ -47,9 +47,9 @@ class PaymentMethodController extends Controller
     {
         $input = $request->validated();
 
-        $paymentMethod = $this->paymentMethods->create($input);
+        $record = $this->paymentMethods->create($input);
 
-        return response()->json(['data' => PaymentMethodResource::make($paymentMethod)], 201);
+        return response()->json(['data' => PaymentMethodResource::make($record)], 201);
     }
 
     /**
@@ -59,7 +59,7 @@ class PaymentMethodController extends Controller
      */
     public function get(GetResourceRequest $request, int $id): PaymentMethodResource
     {
-        $this->authorize('permission', EcommercePermission::PAYMENT_METHOD_VIEW->value);
+        $this->authorize('permission', EcommercePermission::PAYMENT_METHOD_VIEW);
 
         $filters = $request->filters();
 
@@ -90,7 +90,7 @@ class PaymentMethodController extends Controller
      */
     public function delete(int $id): JsonResponse
     {
-        $this->authorize('permission', EcommercePermission::PAYMENT_METHOD_DELETE->value);
+        $this->authorize('permission', EcommercePermission::PAYMENT_METHOD_DELETE);
 
         $this->paymentMethods->delete($id);
 

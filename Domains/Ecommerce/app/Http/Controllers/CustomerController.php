@@ -29,15 +29,15 @@ class CustomerController extends Controller
      * backoffice records for people or businesses who place orders, not accounts the customers
      * can log into themselves.
      */
-    public function list(GetCollectionRequest $request): CustomerCollection
+    public function list(GetCollectionRequest $request)
     {
-        $this->authorize('permission', EcommercePermission::CUSTOMER_VIEW->value);
+        $this->authorize('permission', EcommercePermission::CUSTOMER_VIEW);
 
         $filters = $request->filters();
 
         $records = $this->customers->list($filters);
 
-        return new CustomerCollection($records);
+        return CustomerResource::collection($records);
     }
 
     /**
@@ -61,7 +61,7 @@ class CustomerController extends Controller
      */
     public function get(GetResourceRequest $request, int $id): CustomerResource
     {
-        $this->authorize('permission', EcommercePermission::CUSTOMER_VIEW->value);
+        $this->authorize('permission', EcommercePermission::CUSTOMER_VIEW);
 
         $filters = $request->filters();
 
@@ -91,7 +91,7 @@ class CustomerController extends Controller
      */
     public function delete(int $id): JsonResponse
     {
-        $this->authorize('permission', EcommercePermission::CUSTOMER_DELETE->value);
+        $this->authorize('permission', EcommercePermission::CUSTOMER_DELETE);
 
         $this->customers->delete($id);
 

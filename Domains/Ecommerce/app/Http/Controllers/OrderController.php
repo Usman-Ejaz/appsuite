@@ -35,15 +35,15 @@ class OrderController extends Controller
      *
      * Returns a paginated list of orders for the authenticated company.
      */
-    public function list(GetCollectionRequest $request): OrderCollection
+    public function list(GetCollectionRequest $request)
     {
-        $this->authorize('permission', EcommercePermission::ORDER_VIEW->value);
+        $this->authorize('permission', EcommercePermission::ORDER_VIEW);
 
         $filters = $request->filters();
 
         $records = $this->orders->list($filters);
 
-        return new OrderCollection($records);
+        return OrderResource::collection($records);
     }
 
     /**
@@ -69,7 +69,7 @@ class OrderController extends Controller
      */
     public function get(GetResourceRequest $request, int $id): OrderResource
     {
-        $this->authorize('permission', EcommercePermission::ORDER_VIEW->value);
+        $this->authorize('permission', EcommercePermission::ORDER_VIEW);
 
         $filters = $request->filters();
 
@@ -99,7 +99,7 @@ class OrderController extends Controller
      */
     public function delete(int $id): JsonResponse
     {
-        $this->authorize('permission', EcommercePermission::ORDER_DELETE->value);
+        $this->authorize('permission', EcommercePermission::ORDER_DELETE);
 
         $this->orders->delete($id);
 
@@ -114,7 +114,7 @@ class OrderController extends Controller
      */
     public function cancel(int $id): OrderResource
     {
-        $this->authorize('permission', EcommercePermission::ORDER_CANCEL->value);
+        $this->authorize('permission', EcommercePermission::ORDER_CANCEL);
 
         return OrderResource::make($this->cancelOrder->handle($this->orders->findOrFail($id)));
     }
@@ -141,7 +141,7 @@ class OrderController extends Controller
      */
     public function removeCoupon(int $id): OrderResource
     {
-        $this->authorize('permission', EcommercePermission::ORDER_APPLY_COUPON->value);
+        $this->authorize('permission', EcommercePermission::ORDER_APPLY_COUPON);
 
         return OrderResource::make($this->removeCouponFromOrder->handle($this->orders->findOrFail($id)));
     }

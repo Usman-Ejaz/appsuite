@@ -32,15 +32,15 @@ class ReviewController extends Controller
      *
      * Returns a paginated list of reviews for the authenticated company.
      */
-    public function list(GetCollectionRequest $request): ReviewCollection
+    public function list(GetCollectionRequest $request)
     {
-        $this->authorize('permission', EcommercePermission::REVIEW_VIEW->value);
+        $this->authorize('permission', EcommercePermission::REVIEW_VIEW);
 
         $filters = $request->filters();
 
         $records = $this->reviews->list($filters);
 
-        return new ReviewCollection($records);
+        return ReviewResource::collection($records);
     }
 
     /**
@@ -67,7 +67,7 @@ class ReviewController extends Controller
      */
     public function get(GetResourceRequest $request, int $id): ReviewResource
     {
-        $this->authorize('permission', EcommercePermission::REVIEW_VIEW->value);
+        $this->authorize('permission', EcommercePermission::REVIEW_VIEW);
 
         $filters = $request->filters();
 
@@ -97,7 +97,7 @@ class ReviewController extends Controller
      */
     public function delete(int $id): JsonResponse
     {
-        $this->authorize('permission', EcommercePermission::REVIEW_DELETE->value);
+        $this->authorize('permission', EcommercePermission::REVIEW_DELETE);
 
         $this->reviews->delete($id);
 

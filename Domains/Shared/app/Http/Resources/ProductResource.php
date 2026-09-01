@@ -15,7 +15,9 @@ class ProductResource extends BaseResource
     {
         $this->routeName = "api.{$this->app_code}.products";
 
-        return array_merge(parent::toArray($request), [
+        return [
+            'id' => $this->id,
+
             'company_id' => $this->whenHas('company_id'),
 
             /**
@@ -153,6 +155,8 @@ class ProductResource extends BaseResource
              * A freeform array of strings used for search and filtering.
              */
             'tags' => $this->whenHas('tags'),
-        ]);
+
+            $this->merge(parent::toArray($request))
+        ];
     }
 }

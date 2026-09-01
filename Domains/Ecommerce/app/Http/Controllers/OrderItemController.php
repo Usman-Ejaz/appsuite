@@ -37,16 +37,18 @@ class OrderItemController extends Controller
      *
      * Returns the line items belonging to an order.
      */
-    public function list(GetCollectionRequest $request, int $order): OrderItemCollection
+    public function list(GetCollectionRequest $request, int $order_id)
     {
-        $this->authorize('permission', EcommercePermission::ORDER_VIEW->value);
-        $this->orders->findOrFail($order);
+        $this->authorize('permission', EcommercePermission::ORDER_VIEW);
+        
+        $this->orders->findOrFail($order_id);
 
         $filters = $request->filters();
+        $filters['order_id'] = $order_id;
 
-        $records = $this->items->filter(['order_id' => $order])->list($filters);
+        $records = $this->items->list($filters);
 
-        return new OrderItemCollection($records);
+        return OrderItemResource::collection($records);
     }
 
     /**
@@ -56,9 +58,9 @@ class OrderItemController extends Controller
      * are captured onto the line item at the time it's added, and its stock quantity is reduced
      * accordingly. Returns an error if the requested quantity exceeds available stock.
      */
-    public function create(CreateRequest $request, int $order): JsonResponse
+    public function create(CreateRequest $request, int $order_id): JsonResponse
     {
-        $orderModel = $this->orders->findOrFail($order);
+        $orderModel = $this->orders->findOrFail($order_id);
 
         $input = $request->validated();
         $product = Product::findOrFail($input['product_id']);
@@ -73,14 +75,16 @@ class OrderItemController extends Controller
      *
      * Retrieves a single line item belonging to an order.
      */
-    public function get(GetResourceRequest $request, int $order, int $id): OrderItemResource
+    public function get(GetResourceRequest $request, int $order_id, int $id): OrderItemResource
     {
-        $this->authorize('permission', EcommercePermission::ORDER_VIEW->value);
-        $this->orders->findOrFail($order);
+        $this->authorize('permission', EcommercePermission::ORDER_VIEW);
+
+        $this->orders->findOrFail($order_id);
 
         $filters = $request->filters();
+        $filters['order_id'] = $order_id;
 
-        $record = $this->items->filter(['order_id' => $order])->get($id, $filters);
+        $record = $this->items->get($id, $filters);
 
         return OrderItemResource::make($record);
     }
@@ -91,10 +95,11 @@ class OrderItemController extends Controller
      * Changes the quantity of a line item, adjusting the underlying product's stock by the
      * difference and recalculating the order's totals.
      */
-    public function update(UpdateRequest $request, int $order, int $id): OrderItemResource
+    public function update(UpdateRequest $request, int $order_id, int $id): OrderItemResource
     {
-        $this->orders->findOrFail($order);
-        $item = $this->items->filter(['order_id' => $order])->findOrFail($id);
+        $this->orders->findOrFail($order_id);
+
+        $item = $this->items->findOrFail($id);
 
         $item = $this->updateOrderItemQuantity->handle($item, $request->validated('quantity'));
 
@@ -107,11 +112,13 @@ class OrderItemController extends Controller
      * Removes a line item from an order, restocks its quantity, and recalculates the order's
      * totals.
      */
-    public function delete(int $order, int $id): JsonResponse
+    public function delete(int $order_id, int $id): JsonResponse
     {
-        $this->authorize('permission', EcommercePermission::ORDER_UPDATE->value);
-        $this->orders->findOrFail($order);
-        $item = $this->items->filter(['order_id' => $order])->findOrFail($id);
+        $this->authorize('permission', EcommercePermission::ORDER_UPDATE);
+
+        $this->orders->findOrFail($order_id);
+        
+        $item = $this->items->findOrFail($id);
 
         $this->removeOrderItem->handle($item);
 

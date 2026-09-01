@@ -30,7 +30,7 @@ class ProductController extends Controller
      *
      * Returns a paginated list of products for the authenticated company.
      */
-    public function list(GetCollectionRequest $request, string $app_code): ProductCollection
+    public function list(GetCollectionRequest $request, string $app_code)
     {
         $this->authorize('permission', "{$app_code}:products:view");
 
@@ -38,7 +38,7 @@ class ProductController extends Controller
 
         $records = $this->products->forAppCode($app_code)->list($filters);
 
-        return new ProductCollection($records);
+        return ProductResource::collection($records);
     }
 
     /**
