@@ -15,7 +15,9 @@ class AppResource extends BaseResource
 
     public function toArray(Request $request): array
     {
-        return array_merge(parent::toArray($request), [
+        return [
+            'id' => $this->id,
+
             /**
              * The app's display name.
              */
@@ -71,6 +73,8 @@ class AppResource extends BaseResource
              * `?include=[{"name":"permissions"}]`.
              */
             'permissions' => PermissionResource::collection($this->whenLoaded('permissions')),
-        ]);
+
+            $this->merge(parent::toArray($request)),
+        ];
     }
 }

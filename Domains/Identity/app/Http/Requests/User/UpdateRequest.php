@@ -54,6 +54,27 @@ class UpdateRequest extends FormRequest
              * @example +1 555-0100
              */
             'whatsapp' => ['nullable', 'string', 'max:50'],
+
+            /**
+             * Roles to assign to this user, from the acting company's own role catalog —
+             * replaces the user's entire role set. Omit to leave roles unchanged. Any id that
+             * doesn't belong to that company is silently ignored rather than rejected.
+             *
+             * @example [3, 5]
+             */
+            'role_ids' => ['nullable', 'array'],
+            'role_ids.*' => ['integer'],
+
+            /**
+             * App codes to individually grant this user, narrowing which of the company's
+             * subscribed apps they can access — replaces the user's entire app grant set. Omit
+             * to leave app grants unchanged. A code outside the company's own subscribed apps
+             * is silently ignored.
+             *
+             * @example ["ecommerce", "hr"]
+             */
+            'app_codes' => ['nullable', 'array'],
+            'app_codes.*' => ['string'],
         ];
     }
 }

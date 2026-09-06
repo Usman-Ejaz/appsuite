@@ -16,6 +16,8 @@ class PermissionResource extends BaseResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
+
             /**
              * The app this permission belongs to.
              */
@@ -46,7 +48,7 @@ class PermissionResource extends BaseResource
              */
             'guard_name' => $this->whenHas('guard_name'),
 
-            ...parent::toArray($request),
+            $this->merge(parent::toArray($request)),
         ];
     }
 }

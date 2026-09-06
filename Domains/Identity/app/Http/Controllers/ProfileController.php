@@ -10,12 +10,15 @@ use Illuminate\Http\Request;
 class ProfileController extends Controller
 {
     /**
-     * Return the currently authenticated user's own profile.
+     * Get Profile
+     *
+     * Returns the profile of the currently authenticated user, including their company, the
+     * apps they have access to, and their effective permissions.
      */
     public function get(Request $request): ProfileResource
     {
         abort_if(! $request->user() instanceof User, 403);
-        info("Hello");
+
         return ProfileResource::make($request->user()->load(['company', 'apps']));
     }
 }

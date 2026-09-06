@@ -24,22 +24,52 @@ class ProfileResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+
+            /**
+             * The company this user belongs to. `null` when the user has no company.
+             */
             'company' => $this->whenLoaded('company', fn () => $this->company ? [
                 'name' => $this->company->name,
                 'status' => $this->company->status,
                 'plan' => null,
             ] : null),
+
+            /**
+             * The `code` of the app this user was last active in. `null` if the user has
+             * no apps.
+             */
             'recent_app' => $currentApp?->code,
+
+            /**
+             * The names of the permissions granted to this user within their current app
+             * context.
+             */
             'permissions' => $this->getAllPermissions()
                 ->filter(fn ($permission) => $permission->app_id === null || $permission->app_id === $currentApp?->id)
                 ->pluck('name')
                 ->values(),
+
+            /**
+             * The apps this user has access to.
+             */
             'apps' => $apps->map(fn ($app) => [
                 'name' => $app->name,
                 'code' => $app->code,
                 'color' => $app->color,
                 'icon' => $app->icon,
             ])->values(),
+
+            /**
+             * Whether this user has unrestricted access across every company and app in the
+             * system.
+             */
+            'root' => $this->is_root,
+
+            /**
+             * Whether this user owns the company they belong to, granting access to
+             * everything the company is subscribed to.
+             */
+            'owner' => $this->is_owner,
         ];
     }
 

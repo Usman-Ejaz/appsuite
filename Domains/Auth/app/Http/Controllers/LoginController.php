@@ -16,7 +16,12 @@ class LoginController extends Controller
     }
 
     /**
-     * Authenticate a user and issue a bearer token for subsequent requests.
+     * Log In
+     *
+     * Authenticates a user with an email and password and issues a bearer token for use on
+     * subsequent requests. The response includes the `token` string, the `token_type`
+     * (always `Bearer`), the granted `scopes`, and an `expires_at` timestamp (`null` when
+     * the token does not expire).
      */
     public function login(LoginRequest $request): JsonResponse
     {
@@ -29,7 +34,10 @@ class LoginController extends Controller
     }
 
     /**
-     * Revoke the current access token (logout).
+     * Log Out
+     *
+     * Revokes the token used to authenticate the current request, signing the user out of
+     * the calling client. Subsequent requests made with the same token are rejected.
      */
     public function logout(Request $request): JsonResponse
     {

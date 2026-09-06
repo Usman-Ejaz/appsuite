@@ -12,7 +12,18 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
+            /**
+             * The email address used to sign in.
+             *
+             * @example jane@example.com
+             */
             'email' => ['required', 'email'],
+
+            /**
+             * The account password.
+             *
+             * @example correct-horse-battery
+             */
             'password' => ['required', 'string'],
         ];
     }

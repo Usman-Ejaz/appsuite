@@ -15,28 +15,28 @@ class RoleResource extends BaseResource
 
     public function toArray(Request $request): array
     {
-        $this->loadMissing('permissions:id,name,label,code');
+        return [
+            'id' => $this->id,
 
-        return array_merge(parent::toArray($request), [
             /**
              * The company this role belongs to.
              */
-            'company_id' => $this->company_id,
+            'company_id' => $this->whenHas('company_id'),
 
             /**
              * The role's display name.
              */
-            'name' => $this->name,
+            'name' => $this->whenHas('name'),
 
             /**
              * The auth guard this role applies to.
              */
-            'guard_name' => $this->guard_name,
+            'guard_name' => $this->whenHas('guard_name'),
 
             /**
              * Whether the role is currently assignable.
              */
-            'is_active' => $this->is_active,
+            'is_active' => $this->whenHas('is_active'),
 
             /**
              * The permissions this role grants.
@@ -44,6 +44,8 @@ class RoleResource extends BaseResource
              * @var PermissionResource[]
              */
             'permissions' => PermissionResource::collection($this->whenLoaded('permissions')),
-        ]);
+
+            $this->merge(parent::toArray($request)),
+        ];
     }
 }

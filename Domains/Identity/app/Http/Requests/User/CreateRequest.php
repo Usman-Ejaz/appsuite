@@ -63,6 +63,27 @@ class CreateRequest extends FormRequest
              * @example 1
              */
             'company_id' => ['nullable', 'integer', Rule::exists('companies', 'id')],
+
+            /**
+             * Roles to assign to the new user, from the acting company's own role catalog.
+             * Any id that doesn't belong to that company is silently ignored rather than
+             * rejected.
+             *
+             * @example [3, 5]
+             */
+            'role_ids' => ['nullable', 'array'],
+            'role_ids.*' => ['integer'],
+
+            /**
+             * App codes to individually grant this user, narrowing which of the company's
+             * subscribed apps they can access. Omit entirely to grant every app the company
+             * subscribes to (the default). A code outside the company's own subscribed apps is
+             * silently ignored.
+             *
+             * @example ["ecommerce", "hr"]
+             */
+            'app_codes' => ['nullable', 'array'],
+            'app_codes.*' => ['string'],
         ];
     }
 }

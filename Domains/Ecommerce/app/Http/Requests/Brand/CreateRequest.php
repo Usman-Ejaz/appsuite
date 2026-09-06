@@ -53,6 +53,15 @@ class CreateRequest extends FormRequest
              * @default true
              */
             'is_active' => ['nullable', 'boolean'],
+
+            /**
+             * Whether the brand is featured.
+             *
+             * @example true
+             *
+             * @default true
+             */
+            'is_featured' => ['nullable', 'boolean'],
         ];
     }
 }

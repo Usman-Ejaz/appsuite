@@ -13,7 +13,6 @@ use Domains\Ecommerce\Enums\EcommercePermission;
 use Domains\Ecommerce\Http\Requests\Order\ApplyCouponRequest;
 use Domains\Ecommerce\Http\Requests\Order\CreateRequest;
 use Domains\Ecommerce\Http\Requests\Order\UpdateRequest;
-use Domains\Ecommerce\Http\Resources\OrderCollection;
 use Domains\Ecommerce\Http\Resources\OrderResource;
 use Domains\Ecommerce\Repositories\OrderRepository;
 use Illuminate\Http\JsonResponse;
@@ -128,6 +127,8 @@ class OrderController extends Controller
      */
     public function applyCoupon(ApplyCouponRequest $request, int $id): OrderResource
     {
+        $this->authorize('permission', EcommercePermission::ORDER_APPLY_COUPON);
+
         $order = $this->applyCouponToOrder->handle($this->orders->findOrFail($id), $request->validated('code'));
 
         return OrderResource::make($order);

@@ -16,41 +16,43 @@ class CompanyResource extends BaseResource
 
     public function toArray(Request $request): array
     {
-        return array_merge(parent::toArray($request), [
+        return [
+            'id' => $this->id,
+
             /**
              * The company's display name.
              */
-            'name' => $this->name,
+            'name' => $this->whenHas('name'),
 
             /**
              * A url-friendly identifier for the company.
              */
-            'slug' => $this->slug,
+            'slug' => $this->whenHas('slug'),
 
             /**
              * A short description of the company.
              */
-            'description' => $this->description,
+            'description' => $this->whenHas('description'),
 
             /**
              * The company's platform status.
              */
-            'status' => $this->status,
+            'status' => $this->whenHas('status'),
 
             /**
              * The company's mailing or business address.
              */
-            'address' => $this->address,
+            'address' => $this->whenHas('address'),
 
             /**
              * The company's registered business license number.
              */
-            'license_number' => $this->license_number,
+            'license_number' => $this->whenHas('license_number'),
 
             /**
              * When the company joined the platform.
              */
-            'joined_at' => $this->joined_at,
+            'joined_at' => $this->whenHas('joined_at'),
 
             /**
              * The apps this company is subscribed to.
@@ -58,6 +60,8 @@ class CompanyResource extends BaseResource
              * @var AppResource[]
              */
             'apps' => AppResource::collection($this->whenLoaded('apps')),
-        ]);
+
+            $this->merge(parent::toArray($request)),
+        ];
     }
 }

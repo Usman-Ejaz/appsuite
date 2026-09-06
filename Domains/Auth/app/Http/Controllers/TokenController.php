@@ -15,10 +15,13 @@ class TokenController extends Controller
     }
 
     /**
-     * Exchange an API key + secret pair for a Sanctum bearer token, scoped
-     * to the same abilities and expiry as the API key. Intended for
-     * server-to-server integrations that authenticate as the API key
-     * itself rather than as a specific user.
+     * Create Token
+     *
+     * Exchanges an API key and secret for a bearer token that authenticates as the API key
+     * itself rather than a specific user. Intended for server-to-server integrations. The
+     * response includes the `token` string, the `token_type` (always `Bearer`), the
+     * `scopes` granted to the key, and an `expires_at` timestamp (`null` when the token
+     * does not expire).
      */
     public function create(TokenRequest $request): JsonResponse
     {

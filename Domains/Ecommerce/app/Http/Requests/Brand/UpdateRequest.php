@@ -51,6 +51,15 @@ class UpdateRequest extends FormRequest
              * @example true
              */
             'is_active' => ['nullable', 'boolean'],
+
+            /**
+             * Whether the brand is featured.
+             *
+             * @example true
+             *
+             * @default true
+             */
+            'is_featured' => ['nullable', 'boolean'],
         ];
     }
 }
