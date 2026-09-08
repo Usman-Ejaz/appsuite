@@ -21,4 +21,9 @@ enum BlogStatus: string
      * The blog post is no longer publicly visible.
      */
     case ARCHIVED = 'Archived';
+
+    /**
+     * The blog post is Scheduled to be published.
+     */
+    case SCHEDULED = 'Scheduled';
 }

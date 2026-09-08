@@ -4,11 +4,11 @@ namespace Domains\Identity\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
+use Domains\Core\Http\Requests\GetCollectionRequest;
 use Domains\Identity\Actions\IssueApiKey;
-use Domains\Identity\Actions\RevokeApiKey;
 use Domains\Identity\Http\Requests\ApiKey\CreateRequest;
 use Domains\Identity\Http\Resources\ApiKeyResource;
-use Domains\Identity\Models\ApiKey;
+use Domains\Identity\Repositories\ApiKeyRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -17,8 +17,8 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class ApiKeyController extends Controller
 {
     public function __construct(
+        protected ApiKeyRepository $apiKeys,
         protected IssueApiKey $issueApiKey,
-        protected RevokeApiKey $revokeApiKey,
     ) {
         //
     }
@@ -28,14 +28,14 @@ class ApiKeyController extends Controller
      *
      * Returns the API keys belonging to the current user's company.
      */
-    public function list(Request $request): AnonymousResourceCollection
+    public function list(GetCollectionRequest $request): AnonymousResourceCollection
     {
-        $apiKeys = ApiKey::query()
-            ->where('company_id', $request->user()->company_id)
-            ->latest()
-            ->get();
+        $filters = $request->filters();
 
-        return ApiKeyResource::collection($apiKeys);
+        $records = $this->apiKeys
+            ->list($filters);
+
+        return ApiKeyResource::collection($records);
     }
 
     /**
@@ -66,11 +66,8 @@ class ApiKeyController extends Controller
      */
     public function delete(Request $request, int $id): JsonResponse
     {
-        $apiKey = ApiKey::query()
-            ->where('company_id', $request->user()->company_id)
-            ->findOrFail($id);
-
-        $this->revokeApiKey->handle($apiKey);
+        $this->apiKeys
+            ->delete($id);
 
         return response()->json(null, 204);
     }

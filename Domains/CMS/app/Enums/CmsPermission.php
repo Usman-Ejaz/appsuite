@@ -23,6 +23,24 @@ enum CmsPermission: string
     case CATEGORIES_VIEW = 'cms:categories:view';
     case CATEGORIES_MANAGE = 'cms:categories:manage';
 
+    case PAGE_VIEW = 'cms:pages:view';
+    case PAGE_CREATE = 'cms:pages:create';
+    case PAGE_UPDATE = 'cms:pages:update';
+    case PAGE_DELETE = 'cms:pages:delete';
+    case PAGE_PUBLISH = 'cms:pages:publish';
+
+    case TEMPLATE_VIEW = 'cms:templates:view';
+    case TEMPLATE_CREATE = 'cms:templates:create';
+    case TEMPLATE_UPDATE = 'cms:templates:update';
+    case TEMPLATE_DELETE = 'cms:templates:delete';
+
+    case MEDIA_VIEW = 'cms:media:view';
+    case MEDIA_MANAGE = 'cms:media:manage';
+
+    case COMMENT_VIEW = 'cms:comments:view';
+    case COMMENT_MODERATE = 'cms:comments:moderate';
+    case COMMENT_DELETE = 'cms:comments:delete';
+
     public function label(): ?string
     {
         return match ($this) {
@@ -41,6 +59,20 @@ enum CmsPermission: string
             self::FORM_SUBMISSIONS_DELETE => 'Delete Form Submissions',
             self::CATEGORIES_VIEW => 'View Categories',
             self::CATEGORIES_MANAGE => 'Manage Categories',
+            self::PAGE_VIEW => 'View Pages',
+            self::PAGE_CREATE => 'Create Pages',
+            self::PAGE_UPDATE => 'Update Pages',
+            self::PAGE_DELETE => 'Delete Pages',
+            self::PAGE_PUBLISH => 'Publish Pages',
+            self::TEMPLATE_VIEW => 'View Page Templates',
+            self::TEMPLATE_CREATE => 'Create Page Templates',
+            self::TEMPLATE_UPDATE => 'Update Page Templates',
+            self::TEMPLATE_DELETE => 'Delete Page Templates',
+            self::MEDIA_VIEW => 'View Media Library',
+            self::MEDIA_MANAGE => 'Manage Media Library',
+            self::COMMENT_VIEW => 'View Comments',
+            self::COMMENT_MODERATE => 'Moderate Comments',
+            self::COMMENT_DELETE => 'Delete Comments',
             default => null
         };
     }
@@ -63,6 +95,20 @@ enum CmsPermission: string
             self::FORM_SUBMISSIONS_DELETE => 'cms_submissions_delete',
             self::CATEGORIES_VIEW => 'cms_categories_view',
             self::CATEGORIES_MANAGE => 'cms_categories_manage',
+            self::PAGE_VIEW => 'cms_pages_view',
+            self::PAGE_CREATE => 'cms_pages_create',
+            self::PAGE_UPDATE => 'cms_pages_update',
+            self::PAGE_DELETE => 'cms_pages_delete',
+            self::PAGE_PUBLISH => 'cms_pages_publish',
+            self::TEMPLATE_VIEW => 'cms_templates_view',
+            self::TEMPLATE_CREATE => 'cms_templates_create',
+            self::TEMPLATE_UPDATE => 'cms_templates_update',
+            self::TEMPLATE_DELETE => 'cms_templates_delete',
+            self::MEDIA_VIEW => 'cms_media_view',
+            self::MEDIA_MANAGE => 'cms_media_manage',
+            self::COMMENT_VIEW => 'cms_comments_view',
+            self::COMMENT_MODERATE => 'cms_comments_moderate',
+            self::COMMENT_DELETE => 'cms_comments_delete',
             default => null
         };
     }
@@ -85,6 +131,20 @@ enum CmsPermission: string
             self::FORM_SUBMISSIONS_DELETE => 'submissions_delete',
             self::CATEGORIES_VIEW => 'categories_view',
             self::CATEGORIES_MANAGE => 'categories_manage',
+            self::PAGE_VIEW => 'pages_view',
+            self::PAGE_CREATE => 'pages_create',
+            self::PAGE_UPDATE => 'pages_update',
+            self::PAGE_DELETE => 'pages_delete',
+            self::PAGE_PUBLISH => 'pages_publish',
+            self::TEMPLATE_VIEW => 'templates_view',
+            self::TEMPLATE_CREATE => 'templates_create',
+            self::TEMPLATE_UPDATE => 'templates_update',
+            self::TEMPLATE_DELETE => 'templates_delete',
+            self::MEDIA_VIEW => 'media_view',
+            self::MEDIA_MANAGE => 'media_manage',
+            self::COMMENT_VIEW => 'comments_view',
+            self::COMMENT_MODERATE => 'comments_moderate',
+            self::COMMENT_DELETE => 'comments_delete',
             default => null
         };
     }

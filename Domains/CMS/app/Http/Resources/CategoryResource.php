@@ -15,11 +15,13 @@ class CategoryResource extends BaseResource
 
     public function toArray(Request $request): array
     {
-        return array_merge(parent::toArray($request), [
-            'company_id' => $this->company_id,
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'description' => $this->description,
-        ]);
+        return [
+            'id'=> $this->id,
+            'company_id' => $this->whenHas('company_id'),
+            'name' => $this->whenHas('name'),
+            'slug' => $this->whenHas('slug'),
+            'description' => $this->whenHas('description'),
+            $this->merge(parent::toArray($request))
+        ];
     }
 }

@@ -15,45 +15,47 @@ class CategoryResource extends BaseResource
     {
         $this->routeName = "api.{$this->app_code}.categories";
 
-        return array_merge(parent::toArray($request), [
+        return [
+            'id' => $this->id,
+
             /**
              * The identifier of the company the category belongs to.
              */
-            'company_id' => $this->company_id,
+            'company_id' => $this->whenHas('company_id'),
 
             /**
              * The app this category belongs to.
              *
              * @example ecommerce
              */
-            'app_code' => $this->app_code,
+            'app_code' => $this->whenHas('app_code'),
 
             /**
              * The category's display name.
              */
-            'name' => $this->name,
+            'name' => $this->whenHas('name'),
 
             /**
              * A url-friendly identifier for the category, unique per app within a company.
              */
-            'slug' => $this->slug,
+            'slug' => $this->whenHas('slug'),
 
             /**
              * A short description of the category.
              */
-            'description' => $this->description,
+            'description' => $this->whenHas('description'),
 
             /**
              * Whether the category is highlighted as featured.
              */
-            'is_featured' => $this->is_featured,
+            'is_featured' => $this->whenHas('is_featured'),
 
             /**
              * The category's stage in its publishing lifecycle.
              */
-            'status' => $this->status,
+            'status' => $this->whenHas('status'),
 
-            'parent_id' => $this->parent_id,
+            'parent_id' => $this->whenHas('parent_id'),
 
             /**
              * The parent category, if any.
@@ -64,6 +66,8 @@ class CategoryResource extends BaseResource
              * The direct child categories, if loaded.
              */
             'children' => static::collection($this->whenLoaded('children')),
-        ]);
+
+            $this->merge(parent::toArray($request))
+        ];
     }
 }
