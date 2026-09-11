@@ -3,7 +3,7 @@
 namespace Domains\Storage\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Domains\Storage\Repsoitories\StorageControllerRepository;
+use Domains\Storage\Repsoitories\StorageRepository;
 use Illuminate\Http\Request;
 
 class StorageController extends Controller
@@ -11,9 +11,9 @@ class StorageController extends Controller
     /**
      * Create the controller instance.
      */
-    public function __construct(protected StorageControllerRepository $repo)
+    public function __construct(protected StorageRepository $repo)
     {
-        // 
+        //
     }
 
     /**
@@ -21,7 +21,7 @@ class StorageController extends Controller
      */
     public function index()
     {
-        // 
+        //
     }
 
     /**
@@ -29,7 +29,7 @@ class StorageController extends Controller
      */
     public function create()
     {
-        // 
+        //
     }
 
     /**
@@ -37,7 +37,7 @@ class StorageController extends Controller
      */
     public function store(Request $request)
     {
-        // 
+        //
     }
 
     /**
@@ -45,7 +45,7 @@ class StorageController extends Controller
      */
     public function show($id)
     {
-        // 
+        //
     }
 
     /**
@@ -53,7 +53,7 @@ class StorageController extends Controller
      */
     public function edit($id)
     {
-        // 
+        //
     }
 
     /**
@@ -61,7 +61,7 @@ class StorageController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // 
+        //
     }
 
     /**
@@ -69,6 +69,6 @@ class StorageController extends Controller
      */
     public function destroy($id)
     {
-        // 
+        //
     }
 }

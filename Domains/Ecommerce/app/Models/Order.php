@@ -7,12 +7,15 @@ use Domains\Ecommerce\Database\Factories\OrderFactory;
 use Domains\Ecommerce\Enums\OrderStatus;
 use Domains\Identity\Models\Customer;
 use Domains\Shared\Models\PaymentMethod;
+use Domains\Shared\Traits\HasSites;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Order extends BaseModel
 {
+    use HasSites;
+
     /**
      * The attributes that are mass assignable.
      */

@@ -5,10 +5,13 @@ namespace Domains\Ecommerce\Models;
 use Domains\Core\Models\BaseModel;
 use Domains\Ecommerce\Database\Factories\CollectionFactory;
 use Domains\Shared\Models\Product;
+use Domains\Shared\Traits\HasSites;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Collection extends BaseModel
 {
+    use HasSites;
+
     /**
      * The attributes that are mass assignable.
      */

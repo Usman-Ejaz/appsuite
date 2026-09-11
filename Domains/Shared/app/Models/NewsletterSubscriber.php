@@ -3,9 +3,12 @@
 namespace Domains\Shared\Models;
 
 use Domains\Core\Models\BaseModel;
+use Domains\Shared\Traits\HasSites;
 
 class NewsletterSubscriber extends BaseModel
 {
+    use HasSites;
+
     /**
      * The attributes that are mass assignable.
      */

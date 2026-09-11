@@ -3,10 +3,13 @@
 namespace Domains\CMS\Models;
 
 use Domains\Core\Models\BaseModel;
+use Domains\Shared\Traits\HasSites;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Form extends BaseModel
 {
+    use HasSites;
+
     /**
      * The attributes that are mass assignable.
      */

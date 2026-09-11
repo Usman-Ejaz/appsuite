@@ -1,5 +1,6 @@
 <?php
 
+use Domains\CMS\Enums\BlogStatus;
 use Domains\Identity\Models\User;
 use Domains\Shared\Models\Category;
 use Illuminate\Database\Migrations\Migration;
@@ -23,7 +24,8 @@ return new class extends Migration
             $table->string('featured_image')->nullable();
             $table->foreignIdFor(User::class, 'author_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignIdFor(Category::class)->nullable()->constrained()->nullOnDelete();
-            $table->string('status', 20)->default('Draft');
+            $table->string('status', 20)->default(BlogStatus::DRAFT->value);
+            $table->boolean('allow_comments')->default(true);
             $table->timestamp('published_at')->nullable();
             $table->string('meta_title')->nullable();
             $table->string('meta_description', 500)->nullable();

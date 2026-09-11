@@ -4,10 +4,13 @@ namespace Domains\CMS\Models;
 
 use Domains\CMS\Enums\FormSubmissionStatus;
 use Domains\Core\Models\BaseModel;
+use Domains\Shared\Traits\HasSites;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FormSubmission extends BaseModel
 {
+    use HasSites;
+
     /**
      * The attributes that are mass assignable.
      */

@@ -3,9 +3,12 @@
 namespace Domains\Shared\Models;
 
 use Domains\Core\Models\BaseModel;
+use Domains\Shared\Traits\HasSites;
 
 class Page extends BaseModel
 {
+    use HasSites;
+
     /**
      * The attributes that are mass assignable.
      */
@@ -21,7 +24,7 @@ class Page extends BaseModel
     protected function casts(): array
     {
         return [
-            // 
+            //
         ];
     }
 }

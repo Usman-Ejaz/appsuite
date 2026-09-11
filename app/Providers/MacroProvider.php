@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Domains\Core\Models\App;
 use Domains\Identity\Models\Company;
+use Domains\Shared\Models\Site;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
@@ -52,6 +53,19 @@ class MacroProvider extends ServiceProvider
         Blueprint::macro('dropApp', function () {
             /** @var Blueprint $this */
             $this->dropForeignIdFor(App::class);
+        });
+
+        Blueprint::macro('site', function () {
+            /** @var Blueprint $this */
+            return $this->foreignIdFor(Site::class)
+                ->nullable()
+                ->constrained()
+                ->cascadeOnDelete();
+        });
+
+        Blueprint::macro('dropSite', function () {
+            /** @var Blueprint $this */
+            $this->dropForeignIdFor(Site::class);
         });
 
         Blueprint::macro('creator', function () {

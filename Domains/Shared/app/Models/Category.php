@@ -6,10 +6,11 @@ use Domains\Core\Models\BaseModel;
 use Domains\Core\Traits\HasParentChild;
 use Domains\Shared\Database\Factories\CategoryFactory;
 use Domains\Shared\Enums\CategoryStatus;
+use Domains\Shared\Traits\HasSites;
 
 class Category extends BaseModel
 {
-    use HasParentChild;
+    use HasParentChild, HasSites;
 
     /**
      * The attributes that are mass assignable.

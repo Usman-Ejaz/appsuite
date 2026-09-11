@@ -7,10 +7,13 @@ use Domains\Ecommerce\Database\Factories\ReviewFactory;
 use Domains\Ecommerce\Enums\ReviewStatus;
 use Domains\Identity\Models\Customer;
 use Domains\Shared\Models\Product;
+use Domains\Shared\Traits\HasSites;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Review extends BaseModel
 {
+    use HasSites;
+
     /**
      * The attributes that are mass assignable.
      */
