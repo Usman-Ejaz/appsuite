@@ -20,22 +20,22 @@ return new class extends Migration
             $table->foreignIdFor(Customer::class)->constrained()->restrictOnDelete();
             $table->foreignIdFor(PaymentMethod::class)->nullable()->constrained()->restrictOnDelete();
             $table->foreignIdFor(Coupon::class)->nullable()->constrained()->nullOnDelete();
-            $table->string('code', 40)->index();
+            $table->string('order_number', 40)->index();
             $table->string('status', 20)->default('Pending');
-            $table->string('payment_status', 20)->nullable();
+            $table->string('payment_status')->nullable();
             $table->decimal('subtotal', 10, 2)->default(0);
             $table->decimal('discount_total', 10, 2)->default(0);
             $table->decimal('tax_total', 10, 2)->default(0);
             $table->decimal('shipping_total', 10, 2)->default(0);
             $table->decimal('total', 10, 2)->default(0);
             $table->string('currency', 3)->default('PKR');
+            $table->text('notes')->nullable();
             $table->text('customer_notes')->nullable();
-            $table->text('internal_notes')->nullable();
             $table->timestamp('cancelled_at')->nullable();
             $table->editor();
             $table->timestamps();
 
-            $table->unique(['company_id', 'code']);
+            $table->unique(['company_id', 'order_number']);
             $table->index(['company_id', 'status']);
         });
     }
