@@ -2,10 +2,14 @@
 
 namespace Domains\Core\Models;
 
+use Domains\Core\Database\Factories\IntegrationFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Integration extends BaseModel
 {
+    use HasFactory;
+
     /**
      * The attributes that are mass assignable.
      */
@@ -30,5 +34,10 @@ class Integration extends BaseModel
     public function app(): BelongsTo
     {
         return $this->belongsTo(App::class);
+    }
+
+    protected static function newFactory(): IntegrationFactory
+    {
+        return IntegrationFactory::new();
     }
 }
