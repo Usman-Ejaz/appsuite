@@ -43,13 +43,6 @@ class UpdateRequest extends FormRequest
             'description' => ['nullable', 'string'],
 
             /**
-             * The URL of an image representing the product.
-             *
-             * @example https://example.com/images/wireless-mouse.jpg
-             */
-            'thumbnail' => ['nullable', 'string', 'max:255'],
-
-            /**
              * Whether the product is active and visible.
              *
              * @example true

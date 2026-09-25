@@ -8,10 +8,13 @@ use Domains\Core\Traits\HasCompany;
 use Domains\Core\Traits\HasEditor;
 use Domains\Identity\Contracts\Actor;
 use Domains\Identity\Database\Factories\UserFactory;
+use Domains\Storage\Enums\MediaCategory;
+use Domains\Storage\Traits\HasMedia;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -37,7 +40,7 @@ use Spatie\Permission\Traits\HasRoles;
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements Actor, PasskeyUser
 {
-    use HasApiTokens, HasCompany, HasEditor, HasFactory, HasRoles, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasApiTokens, HasCompany, HasEditor, HasFactory, HasMedia, HasRoles, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     protected $fillable = [
         'name', 'email', 'password', 'phone', 'whatsapp', 'last_app', 'is_root', 'is_owner', 'last_activity_at', 'company_id',
@@ -101,6 +104,14 @@ class User extends Authenticatable implements Actor, PasskeyUser
     public function hasApp(string $code): bool
     {
         return $this->apps->contains('code', $code);
+    }
+
+    /**
+     * The user's avatar image.
+     */
+    public function avatar(): MorphOne
+    {
+        return $this->singleMediaOfCategory(MediaCategory::AVATAR);
     }
 
     protected static function newFactory(): UserFactory

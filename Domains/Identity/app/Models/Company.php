@@ -6,11 +6,16 @@ use Domains\Core\Models\App;
 use Domains\Core\Models\BaseModel;
 use Domains\Identity\Database\Factories\CompanyFactory;
 use Domains\Identity\Enums\CompanyStatus;
+use Domains\Storage\Enums\MediaCategory;
+use Domains\Storage\Traits\HasMedia;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Company extends BaseModel
 {
+    use HasMedia;
+
     /**
      * The attributes that are mass assignable.
      */
@@ -69,6 +74,14 @@ class Company extends BaseModel
     public function hasApp(string $code): bool
     {
         return $this->apps->contains('code', $code);
+    }
+
+    /**
+     * The company's branding logo.
+     */
+    public function logo(): MorphOne
+    {
+        return $this->singleMediaOfCategory(MediaCategory::LOGO);
     }
 
     protected static function newFactory(): CompanyFactory

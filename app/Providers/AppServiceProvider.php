@@ -3,7 +3,12 @@
 namespace App\Providers;
 
 use Carbon\CarbonImmutable;
+use Domains\Core\Models\App;
 use Domains\Identity\Contracts\Actor;
+use Domains\Identity\Models\Company;
+use Domains\Identity\Models\User;
+use Domains\Shared\Models\Product;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
 
         $this->registerGates();
+
+        $this->registerMorphMap();
     }
 
     /**
@@ -75,5 +82,21 @@ class AppServiceProvider extends ServiceProvider
 
             return $actor->can($permissions);
         });
+    }
+
+    /**
+     * Short, stable aliases for every model that can have media attached, so a
+     * polymorphic `resource_type` round-trips as e.g. "product" rather than its full
+     * class name. Only registers the alias translation for these models — it does not
+     * affect any other polymorphic relation in the app.
+     */
+    protected function registerMorphMap(): void
+    {
+        Relation::morphMap([
+            'Product' => Product::class,
+            'Company' => Company::class,
+            'App' => App::class,
+            'User' => User::class,
+        ]);
     }
 }

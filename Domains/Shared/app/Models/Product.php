@@ -4,10 +4,16 @@ namespace Domains\Shared\Models;
 
 use Domains\Core\Models\BaseModel;
 use Domains\Shared\Database\Factories\ProductFactory;
+use Domains\Storage\Enums\MediaCategory;
+use Domains\Storage\Traits\HasMedia;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Product extends BaseModel
 {
+    use HasMedia;
+
     /**
      * The attributes that are mass assignable.
      */
@@ -16,7 +22,6 @@ class Product extends BaseModel
         'name',
         'slug',
         'description',
-        'thumbnail',
         'is_active',
         'is_featured',
         'meta_title',
@@ -78,6 +83,49 @@ class Product extends BaseModel
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * The categories of media a product accepts. Checked by Domains\Storage's generic
+     * upload endpoint when creating media against a product.
+     *
+     * @return array<int, MediaCategory>
+     */
+    public function allowedMediaCategories(): array
+    {
+        return [MediaCategory::GALLERY, MediaCategory::THUMBNAIL, MediaCategory::BANNER, MediaCategory::DOCUMENT];
+    }
+
+    /**
+     * The product's gallery images.
+     */
+    public function images(): MorphMany
+    {
+        return $this->mediaOfCategory(MediaCategory::GALLERY);
+    }
+
+    /**
+     * The product's documents (spec sheets, manuals, etc).
+     */
+    public function documents(): MorphMany
+    {
+        return $this->mediaOfCategory(MediaCategory::DOCUMENT);
+    }
+
+    /**
+     * The product's thumbnail image.
+     */
+    public function thumbnail(): MorphOne
+    {
+        return $this->singleMediaOfCategory(MediaCategory::THUMBNAIL);
+    }
+
+    /**
+     * The product's banner image.
+     */
+    public function banner(): MorphOne
+    {
+        return $this->singleMediaOfCategory(MediaCategory::BANNER);
     }
 
     protected static function newFactory(): ProductFactory

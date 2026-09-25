@@ -4,6 +4,7 @@ namespace Domains\Shared\Http\Resources;
 
 use Domains\Core\Http\Resources\BaseResource;
 use Domains\Shared\Models\Product;
+use Domains\Storage\Http\Resources\MediaResource;
 use Illuminate\Http\Request;
 
 /**
@@ -41,13 +42,6 @@ class ProductResource extends BaseResource
              * A longer description of the product.
              */
             'description' => $this->whenHas('description'),
-
-            /**
-             * The URL of an image representing the product.
-             *
-             * @example https://example.com/images/wireless-mouse.jpg
-             */
-            'thumbnail' => $this->whenHas('thumbnail'),
 
             /**
              * Whether the product is active and visible.
@@ -156,7 +150,27 @@ class ProductResource extends BaseResource
              */
             'tags' => $this->whenHas('tags'),
 
-            $this->merge(parent::toArray($request))
+            /**
+             * The product's gallery images, if loaded.
+             */
+            'images' => MediaResource::collection($this->whenLoaded('images')),
+
+            /**
+             * The product's documents (spec sheets, manuals, etc), if loaded.
+             */
+            'documents' => MediaResource::collection($this->whenLoaded('documents')),
+
+            /**
+             * The product's thumbnail image, if loaded.
+             */
+            'thumbnail' => MediaResource::make($this->whenLoaded('thumbnail')),
+
+            /**
+             * The product's banner image, if loaded.
+             */
+            'banner' => MediaResource::make($this->whenLoaded('banner')),
+
+            $this->merge(parent::toArray($request)),
         ];
     }
 }
