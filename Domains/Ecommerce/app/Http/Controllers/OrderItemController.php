@@ -12,7 +12,6 @@ use Domains\Ecommerce\Actions\UpdateOrderItemQuantity;
 use Domains\Ecommerce\Enums\EcommercePermission;
 use Domains\Ecommerce\Http\Requests\OrderItem\CreateRequest;
 use Domains\Ecommerce\Http\Requests\OrderItem\UpdateRequest;
-use Domains\Ecommerce\Http\Resources\OrderItemCollection;
 use Domains\Ecommerce\Http\Resources\OrderItemResource;
 use Domains\Ecommerce\Repositories\OrderItemRepository;
 use Domains\Ecommerce\Repositories\OrderRepository;
@@ -40,7 +39,7 @@ class OrderItemController extends Controller
     public function list(GetCollectionRequest $request, int $order_id)
     {
         $this->authorize('permission', EcommercePermission::ORDER_VIEW);
-        
+
         $this->orders->findOrFail($order_id);
 
         $filters = $request->filters();
@@ -117,7 +116,7 @@ class OrderItemController extends Controller
         $this->authorize('permission', EcommercePermission::ORDER_UPDATE);
 
         $this->orders->findOrFail($order_id);
-        
+
         $item = $this->items->findOrFail($id);
 
         $this->removeOrderItem->handle($item);

@@ -9,7 +9,6 @@ use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Ecommerce\Enums\EcommercePermission;
 use Domains\Ecommerce\Http\Requests\Customer\CreateRequest;
 use Domains\Ecommerce\Http\Requests\Customer\UpdateRequest;
-use Domains\Ecommerce\Http\Resources\CustomerCollection;
 use Domains\Ecommerce\Http\Resources\CustomerResource;
 use Domains\Ecommerce\Repositories\CustomerRepository;
 use Illuminate\Http\JsonResponse;

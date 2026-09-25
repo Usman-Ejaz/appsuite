@@ -12,7 +12,6 @@ use Domains\Ecommerce\Enums\ReviewStatus;
 use Domains\Ecommerce\Http\Requests\Review\CreateRequest;
 use Domains\Ecommerce\Http\Requests\Review\ModerateRequest;
 use Domains\Ecommerce\Http\Requests\Review\UpdateRequest;
-use Domains\Ecommerce\Http\Resources\ReviewCollection;
 use Domains\Ecommerce\Http\Resources\ReviewResource;
 use Domains\Ecommerce\Repositories\ReviewRepository;
 use Illuminate\Http\JsonResponse;

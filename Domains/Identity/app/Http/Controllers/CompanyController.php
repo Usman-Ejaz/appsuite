@@ -4,10 +4,10 @@ namespace Domains\Identity\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
-use Domains\Identity\Enums\CompanyStatus;
-use Domains\Identity\Http\Requests\Company\CreateRequest;
 use Domains\Core\Http\Requests\GetCollectionRequest;
 use Domains\Core\Http\Requests\GetResourceRequest;
+use Domains\Identity\Enums\CompanyStatus;
+use Domains\Identity\Http\Requests\Company\CreateRequest;
 use Domains\Identity\Http\Requests\Company\UpdateRequest;
 use Domains\Identity\Http\Resources\CompanyCollection;
 use Domains\Identity\Http\Resources\CompanyResource;

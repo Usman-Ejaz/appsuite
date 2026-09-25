@@ -67,7 +67,7 @@ class CategoryResource extends BaseResource
              */
             'children' => static::collection($this->whenLoaded('children')),
 
-            $this->merge(parent::toArray($request))
+            $this->merge(parent::toArray($request)),
         ];
     }
 }

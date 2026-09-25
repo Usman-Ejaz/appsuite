@@ -18,7 +18,7 @@ class CollectionResource extends BaseResource
     {
         return [
             'id' => $this->id,
-            
+
             'company_id' => $this->whenHas('company_id'),
 
             /**

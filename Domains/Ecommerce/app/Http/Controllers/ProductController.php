@@ -8,7 +8,6 @@ use Domains\Core\Http\Requests\GetCollectionRequest;
 use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Shared\Http\Requests\Product\CreateRequest;
 use Domains\Shared\Http\Requests\Product\UpdateRequest;
-use Domains\Shared\Http\Resources\ProductCollection;
 use Domains\Shared\Http\Resources\ProductResource;
 use Domains\Shared\Repositories\ProductRepository;
 use Illuminate\Http\JsonResponse;

@@ -97,7 +97,7 @@ class BlogResource extends BaseResource
              */
             'tags' => $this->whenHas('tags'),
 
-            $this->merge(parent::toArray($request))
+            $this->merge(parent::toArray($request)),
         ];
     }
 }

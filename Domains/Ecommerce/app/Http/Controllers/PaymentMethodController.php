@@ -9,7 +9,6 @@ use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Ecommerce\Enums\EcommercePermission;
 use Domains\Ecommerce\Http\Requests\PaymentMethod\CreateRequest;
 use Domains\Ecommerce\Http\Requests\PaymentMethod\UpdateRequest;
-use Domains\Ecommerce\Http\Resources\PaymentMethodCollection;
 use Domains\Ecommerce\Http\Resources\PaymentMethodResource;
 use Domains\Ecommerce\Repositories\PaymentMethodRepository;
 use Illuminate\Http\JsonResponse;
