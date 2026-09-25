@@ -13,7 +13,7 @@ uses(TestCase::class, RefreshDatabase::class);
 test('a root user can create, list, view, update, and delete an app', function () {
     Sanctum::actingAs(User::factory()->create(['is_root' => true]));
 
-    $response = $this->postJson('/api/v1/apps', ['name' => 'CRM', 'slug' => 'crm', 'code' => 'crm']);
+    $response = $this->postJson('/api/v1/apps', ['name' => 'CRM', 'slug' => 'crm', 'code' => 'crm', 'site_mode' => 'Multi']);
     $response->assertCreated()
         ->assertJsonPath('data.name', 'CRM')
         ->assertJsonPath('data.code', 'crm');
@@ -31,12 +31,12 @@ test('a root user can create, list, view, update, and delete an app', function (
     $this->assertDatabaseMissing('apps', ['id' => $id]);
 });
 
-test('creating an app requires a name, slug, and code', function () {
+test('creating an app requires a name, slug, code, and site_mode', function () {
     Sanctum::actingAs(User::factory()->create(['is_root' => true]));
 
     $this->postJson('/api/v1/apps', [])
         ->assertUnprocessable()
-        ->assertJsonValidationErrors(['name', 'slug', 'code'], responseKey: 'data');
+        ->assertJsonValidationErrors(['name', 'slug', 'code', 'site_mode'], responseKey: 'data');
 });
 
 test('an app slug and code must each be unique across the platform', function () {
@@ -44,11 +44,11 @@ test('an app slug and code must each be unique across the platform', function ()
 
     App::factory()->create(['slug' => 'crm', 'code' => 'crm']);
 
-    $this->postJson('/api/v1/apps', ['name' => 'CRM Again', 'slug' => 'crm', 'code' => 'crm-2'])
+    $this->postJson('/api/v1/apps', ['name' => 'CRM Again', 'slug' => 'crm', 'code' => 'crm-2', 'site_mode' => 'Multi'])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['slug'], responseKey: 'data');
 
-    $this->postJson('/api/v1/apps', ['name' => 'CRM Again', 'slug' => 'crm-2', 'code' => 'crm'])
+    $this->postJson('/api/v1/apps', ['name' => 'CRM Again', 'slug' => 'crm-2', 'code' => 'crm', 'site_mode' => 'Multi'])
         ->assertUnprocessable()
         ->assertJsonValidationErrors(['code'], responseKey: 'data');
 });

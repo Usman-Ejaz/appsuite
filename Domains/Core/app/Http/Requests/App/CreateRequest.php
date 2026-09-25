@@ -2,6 +2,7 @@
 
 namespace Domains\Core\Http\Requests\App;
 
+use Domains\Core\Enums\AppSiteMode;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -35,6 +36,13 @@ class CreateRequest extends FormRequest
              * @example crm
              */
             'slug' => ['required', 'string', 'max:255', Rule::unique('apps')],
+
+            /**
+             * Whether the app operates in single-tenant or multi-tenant mode.
+             *
+             * @example Multi
+             */
+            'site_mode' => ['required', Rule::enum(AppSiteMode::class)],
 
             /**
              * A short description of the app.

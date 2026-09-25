@@ -3,6 +3,7 @@
 namespace Domains\CMS\Database\Seeders;
 
 use Domains\CMS\Enums\CmsPermission;
+use Domains\Core\Enums\AppSiteMode;
 use Domains\Core\Models\App;
 use Domains\Identity\Models\Permission;
 use Illuminate\Database\Seeder;
@@ -18,6 +19,7 @@ class CMSDatabaseSeeder extends Seeder
             'name' => 'CMS',
             'label' => 'CMS',
             'slug' => 'cms',
+            'site_mode' => AppSiteMode::MULTI,
             'category' => 'Content',
             'icon' => 'file-text',
             'is_active' => true,

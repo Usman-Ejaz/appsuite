@@ -2,6 +2,7 @@
 
 namespace Domains\Core\Database\Seeders;
 
+use Domains\Core\Enums\AppSiteMode;
 use Domains\Core\Models\App;
 use Illuminate\Database\Seeder;
 
@@ -30,6 +31,7 @@ class CoreDatabaseSeeder extends Seeder
                 'name' => $attributes['name'],
                 'label' => $attributes['name'],
                 'slug' => str($attributes['name'])->slug(),
+                'site_mode' => AppSiteMode::MULTI,
                 'category' => $attributes['category'],
                 'icon' => $attributes['icon'],
                 'is_active' => true,
