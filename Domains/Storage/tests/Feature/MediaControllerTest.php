@@ -27,7 +27,7 @@ test('a media item can be created, listed, updated, and deleted for a resource',
     Storage::fake('public');
 
     $response = $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',
@@ -35,7 +35,7 @@ test('a media item can be created, listed, updated, and deleted for a resource',
     ]);
 
     $response->assertCreated()
-        ->assertJsonPath('data.0.resource_type', 'product')
+        ->assertJsonPath('data.0.resource_type', 'Product')
         ->assertJsonPath('data.0.resource_id', $this->product->id)
         ->assertJsonPath('data.0.category', 'Gallery')
         ->assertJsonPath('data.0.file_name', 'product.png');
@@ -58,7 +58,7 @@ test('creating media accepts multiple files in one request', function () {
     Storage::fake('public');
 
     $response = $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',
@@ -83,7 +83,7 @@ test('creating media accepts an array of urls', function () {
     ]);
 
     $response = $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',
@@ -104,7 +104,7 @@ test('a batch containing an invalid file is rejected entirely, nothing is persis
     $badFile = UploadedFile::fake()->create('bad.pdf', 100);
 
     $response = $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',
@@ -121,7 +121,7 @@ test('creating media accepts a folder, title, and starred flag', function () {
     $folder = Folder::factory()->create(['company_id' => $this->company->id]);
 
     $response = $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',
@@ -151,7 +151,7 @@ test('creating media rejects a folder_id belonging to another company', function
     $otherFolder = Folder::factory()->create(['company_id' => $otherCompany->id]);
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',
@@ -175,7 +175,7 @@ test('creating media rejects a resource_id that does not exist for the given typ
     Storage::fake('public');
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => 999999,
         'files' => [UploadedFile::fake()->image('product.png')],
@@ -189,7 +189,7 @@ test('creating media rejects a resource belonging to another company', function 
     $otherProduct = Product::factory()->ecommerce()->create(['company_id' => $otherCompany->id]);
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $otherProduct->id,
         'files' => [UploadedFile::fake()->image('product.png')],
@@ -198,7 +198,7 @@ test('creating media rejects a resource belonging to another company', function 
 
 test('creating media requires at least one file or url', function () {
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',
@@ -209,7 +209,7 @@ test('creating media enforces per-category file validation', function () {
     Storage::fake('public');
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',

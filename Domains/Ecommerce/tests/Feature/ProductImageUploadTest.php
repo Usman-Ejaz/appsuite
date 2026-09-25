@@ -18,7 +18,7 @@ use Tests\TestCase;
  * for it. Products just declare category-filtered relations (images(), documents(),
  * thumbnail(), banner(), see Domains\Shared\Models\Product) and accept media through the
  * generic Domains\Storage media API instead:
- *   POST /api/v1/media  { resource_type: "product", resource_id: <id>, ... }
+ *   POST /api/v1/media  { resource_type: "Product", resource_id: <id>, ... }
  * These tests exercise that exact flow against a real Product.
  */
 uses(TestCase::class, RefreshDatabase::class);
@@ -59,7 +59,7 @@ test('uploading a product image via the generic media endpoint attaches it to th
     Storage::fake('public');
 
     $response = $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',
@@ -67,7 +67,7 @@ test('uploading a product image via the generic media endpoint attaches it to th
     ]);
 
     $response->assertCreated()
-        ->assertJsonPath('data.0.resource_type', 'product')
+        ->assertJsonPath('data.0.resource_type', 'Product')
         ->assertJsonPath('data.0.resource_id', $this->product->id)
         ->assertJsonPath('data.0.category', 'Gallery')
         ->assertJsonPath('data.0.file_name', 'product.png');
@@ -76,7 +76,7 @@ test('uploading a product image via the generic media endpoint attaches it to th
 
     $this->assertDatabaseHas('media', [
         'resource_id' => $this->product->id,
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'category' => 'Gallery',
     ]);
@@ -89,7 +89,7 @@ test('the stored file path follows company_slug/resource_slug/category', functio
     Storage::fake('public');
 
     $response = $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',
@@ -105,7 +105,7 @@ test('a product with uploaded images returns them nested when included', functio
     Storage::fake('public');
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',
@@ -113,7 +113,7 @@ test('a product with uploaded images returns them nested when included', functio
     ])->assertCreated();
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',
@@ -138,7 +138,7 @@ test('a product image is not returned in the media list without the include', fu
     Storage::fake('public');
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',
@@ -154,7 +154,7 @@ test('uploading a product image accepts an optional title and starred flag', fun
     Storage::fake('public');
 
     $response = $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',
@@ -173,7 +173,7 @@ test('a product can have a thumbnail and a banner uploaded independently', funct
     Storage::fake('public');
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Thumbnail',
@@ -181,7 +181,7 @@ test('a product can have a thumbnail and a banner uploaded independently', funct
     ])->assertCreated();
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Banner',
@@ -198,7 +198,7 @@ test('a category not allowed for products is rejected', function () {
     Storage::fake('public');
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Avatar',
@@ -210,7 +210,7 @@ test('a non-image file is rejected for the Gallery category', function () {
     Storage::fake('public');
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',
@@ -222,7 +222,7 @@ test('uploading a product image requires a category', function () {
     Storage::fake('public');
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'files' => [UploadedFile::fake()->image('product.png')],
@@ -236,7 +236,7 @@ test('a product image cannot be uploaded against a product belonging to another 
     $otherProduct = Product::factory()->ecommerce()->create(['company_id' => $otherCompany->id]);
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $otherProduct->id,
         'category' => 'Gallery',
@@ -248,7 +248,7 @@ test('deleting a product image removes it from the product and disk', function (
     Storage::fake('public');
 
     $response = $this->postJson('/api/v1/media', [
-        'resource_type' => 'product',
+        'resource_type' => 'Product',
         'disk' => 'public',
         'resource_id' => $this->product->id,
         'category' => 'Gallery',

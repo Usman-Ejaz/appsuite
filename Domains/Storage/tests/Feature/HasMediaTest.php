@@ -26,14 +26,14 @@ test('a company logo can be uploaded and retrieved via its logo relation', funct
     Storage::fake('public');
 
     $response = $this->postJson('/api/v1/media', [
-        'resource_type' => 'company',
+        'resource_type' => 'Company',
         'disk' => 'public',
         'resource_id' => $this->company->id,
         'category' => 'Logo',
         'files' => [UploadedFile::fake()->image('logo.png')],
     ]);
 
-    $response->assertCreated()->assertJsonPath('data.0.resource_type', 'company');
+    $response->assertCreated()->assertJsonPath('data.0.resource_type', 'Company');
 
     expect($this->company->logo?->file_name)->toBe('logo.png');
 });
@@ -44,14 +44,14 @@ test('an app logo can be uploaded and retrieved via its logo relation', function
     $app = App::factory()->create();
 
     $response = $this->postJson('/api/v1/media', [
-        'resource_type' => 'app',
+        'resource_type' => 'App',
         'disk' => 'public',
         'resource_id' => $app->id,
         'category' => 'Logo',
         'files' => [UploadedFile::fake()->image('app-logo.png')],
     ]);
 
-    $response->assertCreated()->assertJsonPath('data.0.resource_type', 'app');
+    $response->assertCreated()->assertJsonPath('data.0.resource_type', 'App');
 
     expect($app->logo?->file_name)->toBe('app-logo.png');
 });
@@ -60,14 +60,14 @@ test('a user avatar can be uploaded and retrieved via its avatar relation', func
     Storage::fake('public');
 
     $response = $this->postJson('/api/v1/media', [
-        'resource_type' => 'user',
+        'resource_type' => 'User',
         'disk' => 'public',
         'resource_id' => $this->user->id,
         'category' => 'Avatar',
         'files' => [UploadedFile::fake()->image('avatar.png')],
     ]);
 
-    $response->assertCreated()->assertJsonPath('data.0.resource_type', 'user');
+    $response->assertCreated()->assertJsonPath('data.0.resource_type', 'User');
 
     expect($this->user->avatar?->file_name)->toBe('avatar.png');
 });
@@ -76,7 +76,7 @@ test('uploading a second avatar replaces which one is returned as the current av
     Storage::fake('public');
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'user',
+        'resource_type' => 'User',
         'disk' => 'public',
         'resource_id' => $this->user->id,
         'category' => 'Avatar',
@@ -84,7 +84,7 @@ test('uploading a second avatar replaces which one is returned as the current av
     ])->assertCreated();
 
     $this->postJson('/api/v1/media', [
-        'resource_type' => 'user',
+        'resource_type' => 'User',
         'disk' => 'public',
         'resource_id' => $this->user->id,
         'category' => 'Avatar',
