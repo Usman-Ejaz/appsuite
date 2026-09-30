@@ -61,6 +61,12 @@ class CompanyResource extends BaseResource
              */
             'apps' => AppResource::collection($this->whenLoaded('apps')),
 
+            /**
+             * The company's primary owner user, if one has been provisioned. Only present when
+             * eager-loaded, e.g. via `?include=[{"name":"owner"}]`.
+             */
+            'owner' => UserResource::make($this->whenLoaded('owner')),
+
             $this->merge(parent::toArray($request)),
         ];
     }

@@ -16,7 +16,9 @@ class CompanyRepository extends BaseRepository
     protected string $model = Company::class;
 
     /**
-     * Create a new company along with the apps it's subscribed to from the start.
+     * Create a new company along with the apps it's subscribed to and its primary owner user,
+     * all in the one transaction — a company can't exist without an owner, so a failure
+     * provisioning the owner (e.g. a duplicate email) rolls back the company too.
      *
      * @param  array  $data  The data to create a new record with.
      */
@@ -24,6 +26,7 @@ class CompanyRepository extends BaseRepository
     {
         return $this->dbTransaction(function () use ($data) {
             $appIds = Arr::pull($data, 'apps', []);
+            $owner = Arr::pull($data, 'owner');
 
             $company = parent::create($data);
 
@@ -32,7 +35,13 @@ class CompanyRepository extends BaseRepository
                 'assigned_at' => now(),
             ]);
 
-            return $company->load('apps');
+            $company->users()->create([
+                ...$owner,
+                'is_owner' => true,
+                'is_root' => false,
+            ]);
+
+            return $company->load(['apps', 'owner']);
         });
     }
 

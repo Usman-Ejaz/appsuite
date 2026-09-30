@@ -4,6 +4,7 @@ namespace Domains\Identity\Http\Requests\Company;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class CreateRequest extends FormRequest
 {
@@ -62,6 +63,48 @@ class CreateRequest extends FormRequest
              * An app ID within the apps list.
              */
             'apps.*' => ['distinct', 'integer', Rule::exists('apps', 'id')],
+
+            /**
+             * The primary owner user to provision for this company. Every company must have an
+             * owner from the moment it's created.
+             */
+            'owner' => ['required', 'array'],
+
+            /**
+             * The owner's full name.
+             *
+             * @example Aria Steinberg
+             */
+            'owner.name' => ['required', 'string', 'max:255'],
+
+            /**
+             * The owner's email address. Used to sign in.
+             *
+             * @example aria@acme-inc.com
+             */
+            'owner.email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
+
+            /**
+             * The owner's phone number.
+             *
+             * @example +1 555-0100
+             */
+            'owner.phone' => ['nullable', 'string', 'max:50'],
+
+            /**
+             * The owner's WhatsApp number.
+             *
+             * @example +1 555-0100
+             */
+            'owner.whatsapp' => ['nullable', 'string', 'max:50'],
+
+            /**
+             * The owner's initial password. Not required to be confirmed since it's set by the
+             * provisioning root user on the owner's behalf, not typed by the owner themself.
+             *
+             * @example correct-horse-battery-staple
+             */
+            'owner.password' => ['required', 'string', Password::default()],
         ];
     }
 }

@@ -10,6 +10,7 @@ use Domains\Storage\Enums\MediaCategory;
 use Domains\Storage\Traits\HasMedia;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Company extends BaseModel
@@ -74,6 +75,22 @@ class Company extends BaseModel
     public function hasApp(string $code): bool
     {
         return $this->apps->contains('code', $code);
+    }
+
+    /**
+     * Every user belonging to this company.
+     */
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
+
+    /**
+     * This company's primary owner user, if one has been provisioned.
+     */
+    public function owner(): HasOne
+    {
+        return $this->hasOne(User::class)->where('is_owner', true);
     }
 
     /**

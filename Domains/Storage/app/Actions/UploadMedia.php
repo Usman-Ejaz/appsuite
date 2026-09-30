@@ -100,7 +100,7 @@ class UploadMedia
     protected function directory(Model $resource, ?MediaCategory $category): string
     {
         $companySlug = $resource->company?->slug ?? 'company_'.$resource->company_id;
-        $categorySlug = Str::slug($category?->value ?? 'uncategorized');
+        $categorySlug = Str::slug($category?->value ?? 'general');
         $resourceSlug = $resource->slug ?? class_basename($resource).'_'.$resource->getKey();
 
         return "{$companySlug}/{$resourceSlug}/{$categorySlug}";
