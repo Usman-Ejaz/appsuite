@@ -12,6 +12,14 @@ use Illuminate\Support\Facades\Schema;
 class CompanyScope implements Scope
 {
     /**
+     * True while Auth::user() is resolving the actor. A session login resolves its user by
+     * querying the User model, which carries this scope, which calls Auth::user() again before
+     * the guard has stored the user — endless recursion. Queries made during that resolution
+     * (the guard's own lookup by id) are therefore left unscoped.
+     */
+    private static bool $resolvingActor = false;
+
+    /**
      * Apply the scope to a given Eloquent query builder.
      *
      * Resolves the current actor via Auth::user() at query time rather than
@@ -32,7 +40,18 @@ class CompanyScope implements Scope
             return;
         }
 
-        $actor = Auth::user();
+        if (self::$resolvingActor) {
+            return;
+        }
+
+        self::$resolvingActor = true;
+
+        try {
+            $actor = Auth::user();
+        } finally {
+            self::$resolvingActor = false;
+        }
+
         $companyId = $actor instanceof Actor ? $actor->getCompanyId() : null;
 
         if ($companyId) {
