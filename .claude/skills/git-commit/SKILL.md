@@ -1,189 +1,122 @@
 ---
 name: git-commit
-description: >
-  Commit the currently uncommitted changes in this repo, automatically splitting unrelated
-  logical changes into separate commits instead of one giant commit, and asking specific
-  questions only when the grouping is genuinely ambiguous. Use this whenever the user explicitly
-  asks to commit — phrasing like "commit this", "commit the changes", "let's commit", "commit
-  what we just did", "go ahead and commit that", or "/git-commit" — never proactively and never
-  as a silent follow-on to any other task without that explicit ask, matching this project's
-  standing rule that a prior "commit this" earlier in the session never authorizes committing
-  later, unrelated changes on its own. Reads the actual diff/content of every changed and
-  untracked file before grouping (not just file names), stages files explicitly (never
-  `git add -A`/`git add .`), screens for anything that looks like a secret or stray scratch/debug
-  output before it's staged, matches this repo's real commit-message tone from its own `git log`
-  once one exists, and never pushes or amends an existing commit unless separately, explicitly
-  asked.
+description: Commits the current uncommitted changes in appsuite as one or more logical commits, split by concern, after a gitleaks secret check, with messages in the repo's style (imperative subject, optional ticket suffix, why-focused body). Use only when the developer explicitly asks to commit in this turn, e.g. "commit this", "commit the changes", "/git-commit". Does not push or open PRs; that is git-open-pr.
 ---
 
-# Git Commit: Group and Commit by Logical Concern
+# Git Commit
 
-You are committing whatever is currently uncommitted in this repo. Its whole job is recognizing
-when the working tree holds more than one logical change and never flattening them into a single
-commit just because they happened in the same session.
+Turn the working tree into one or more clean commits, one per logical change. Never flatten unrelated changes into one commit because they happened in the same session.
 
----
+Follow [Working Agreement](../shared/working-agreement.md) (this skill is the only place that stages or commits) and [Presentation](../shared/presentation.md) for how the plan is shown. Lessons go through [Auto Learning](../shared/auto-learning.md); read `references/gotchas.md` at Step 1 if it exists.
 
-## Auto Learning
+## Rules
 
-See [Auto Learning](../shared/auto-learning.md) for the shared mechanism (active throughout every
-step below, not a one-time phase). Specific to this skill:
+1. **A fresh, explicit ask triggers this skill, every time.** An earlier "commit this" does not cover later changes. When another skill (for example `tech-implementation`) hands off, the trigger is the developer's own "commit" answer in this turn; if you cannot see one, ask. Commit only what the ask covers.
+   - **One standing exception:** a `tech-engineering` run's tracking file. The developer pre-approved its change and its commit, so commit it without asking whenever it differs from `HEAD`, and never put it in a question (rule 9). This covers that one file only, never a push and never another file.
+2. **Stage by explicit path.** Never `git add -A`, `git add .` or another blanket stage, so a stray `.env`, dump or scratch file never rides along.
+3. **Read content, not just file names**, before staging. A harmless-looking name can hold a credential or customer data.
+4. **Gitleaks gate.** A file that breaks the gitleaks default rules is never committed, and no code changes to fix a finding until the developer picks a fix. Clean groups can still be committed. Procedure: [references/gitleaks-gate.md](references/gitleaks-gate.md).
+5. **Whole files only.** No hunk staging (`git add -p` or a scripted equivalent). A file that mixes two concerns is a question for the developer (Step 3).
+6. **New commits only.** No `--amend`, `--no-verify`, `--no-gpg-sign` or `-c commit.gpgsign=false`, unless the developer asks for that exact exception on that exact commit.
+7. **A failing pre-commit hook means fix the cause**, re-stage, and make a new commit. Bypassing it would commit unformatted code.
+8. **Committing and pushing are separate approvals.** This skill ends with local commits. Never push, and do not offer to.
+9. **A run's tracking file is never left behind.** When a `tech-engineering` state file exists for this branch or ticket (`.claude/knowledge-base/tech-engineering/<slug>.md`, named in the hand-off), it is part of your commits.
+   - Always stage it in the run-record group (Step 2, group 2). Never hold it back, never ask whether to include it, never ask for approval to commit it, never leave it untracked or modified. The standing exception in rule 1 covers it.
+   - The parent writes the phase and status update into the file **before** it calls you, so the commit carries the current state. If it did not, say so and ask it to update the file first. Do not edit the file yourself.
+   - The file records the hashes of the other commits, so make the run-record commit **last**. Its own hash is not written in it; the next record names it.
+   - At the end, the file must not appear in `git status --short`.
 
-- **Wider means:** a grouping pattern that worked once (e.g. "split by domain when the diff spans
-  `Domains/*`", "docs land in their own commit separate from the code they describe") is likely to
-  recur on the next multi-change commit, not a one-off judgment call to re-derive from scratch.
-- **Unfamiliar means:** whether this repo/account uses a specific commit-message convention (a
-  ticket-id prefix, Conventional Commits, a particular trailer) — check the real `git log` output
-  in Step 1 rather than assuming a style from general habit. This repo has no git history at all
-  until its first commit; don't assume a convention exists before there's evidence of one.
-- **Learnings file:** `.claude/knowledge-base/skills/git-commit.md` — recurring grouping calls,
-  file-to-group judgment calls that came up more than once, phrasing patterns for commit messages
-  the user has approved, and any project-specific message convention confirmed from real history.
-- **Propose, don't silently apply a new heuristic:** if a grouping rule not covered below comes up
-  and seems likely to recur, propose adding it to this skill rather than deciding it ad hoc every
-  time the same shape of ambiguity appears.
+## Formatting: no pre-commit hook in this repo
 
----
+This repo has no `core.hooksPath` and no pre-commit hook, so nothing formats or re-stages files at commit time. This skill does that job:
 
-## Rules (non-negotiable)
+- Before staging a group, run Pint on **that group's PHP files only**: `vendor/bin/pint <paths> --format agent`. Never `pint --dirty`: it also reformats the developer's unrelated work in progress.
+- `.claude/skills/git-commit/scripts/commit-survey.sh --pint` lists the files Pint will change; mention them in the plan, since Pint changes content after the developer reviewed it.
+- Git commits the **staged** version. A file edited again after `git add` must be re-staged, or the newer edits stay behind (the survey lists these).
+- If a pre-commit hook is added later (check `git config core.hooksPath` and `.git/hooks/pre-commit`), rule 7 applies to it.
 
-1. **Only commit what was actually asked for.** This skill firing at all means the user just
-   explicitly asked to commit — never expand that into committing additional changes made after
-   the request, or changes the user didn't mean to include.
-2. **Stage files explicitly, by path.** Never `git add -A`, `git add .`, or any other blanket
-   stage — each `git add` names the specific files belonging to the commit currently being built,
-   so an unrelated untracked file, a stray `.env`, or scratch output never rides along by accident.
-3. **Read content, not just filenames, before staging anything unfamiliar.** A filename can look
-   innocuous while its contents hold a credential, a token, or a customer-identifying value that
-   shouldn't be committed. Check before `git add`, not after.
-4. **Whole-file granularity — never split one file's changes across commits.** No patch/hunk-level
-   staging (`git add -p` or a scripted equivalent). If a single file's diff genuinely mixes two
-   unrelated concerns, that's a flagged case for Step 3, not something to silently resolve by
-   picking hunks.
-5. **Always create new commits.** Never `--amend` an existing commit, never `--no-verify`,
-   `--no-gpg-sign`, or `-c commit.gpgsign=false`, unless the user explicitly asks for that specific
-   exception on that specific commit.
-6. **Committing and pushing are two different approvals.** Never run `git push` as a continuation
-   of this skill unless the user separately, explicitly asks to push — a completed commit sequence
-   ends with local commits, not a push.
-7. **A failing pre-commit hook means fix the cause, not bypass the hook.** Fix the underlying
-   issue, re-stage, and create a new commit. Never add `--no-verify` to force it through.
-
----
-
-## Step 1: Survey what's actually uncommitted
-
-Run in parallel:
+## Step 1: Survey
 
 ```bash
-git status --short
-git diff --stat
-git diff --staged --stat
-git log --oneline -10
+.claude/skills/git-commit/scripts/commit-survey.sh --pint
 ```
 
-If `git log` fails or returns nothing (no commits yet — a real possibility here, since this repo
-may not have an initial commit), there's no tone to match yet: write a short imperative subject and
-a body explaining *why*, following this project's general conventions (see
-`/home/usmanejaz/usman/projects/personal/appsuite/CLAUDE.md`) rather than inferring a style from
-history that doesn't exist. Once real history exists, always read it fresh rather than assuming a
-style carried over from a previous run.
+It prints: the branch and its ticket ID, merge-in-progress state, every changed, staged and untracked file (untracked folders expanded) with a group hint, files staged and edited again, red flags, whether gitleaks is installed, Pint's preview, and the last 8 commit messages.
 
-If anything is already staged, treat that as a hint the user (or an earlier step this session) may
-have already started grouping, not as the final, correct grouping — re-derive the grouping in
-Step 2/3 regardless, and reconcile against what's pre-staged rather than trusting it blindly.
+- Read the last commits for tone. Do not assume a style.
+- **Tests for the changed code**: the survey's automatic check needs `scripts/test-changed.php`, which this repo does not have, so check by hand. A source file changed without a changed test for it goes into the plan under `### Needs your decision` (write the tests, or the developer says why none are needed). It never blocks the commit, because a pure refactor needs no new test.
+- **"Scripts not recorded as executable"**: run the printed `git update-index --add --chmod=+x ...` as part of staging that file's group (Step 4), so the script does not fail with "Permission denied" on a fresh checkout.
+- Something already staged is a hint that grouping started, not the final grouping. Re-derive it in Step 2 and reconcile.
+- **Merge in progress** (`MERGE_HEAD` exists): the first commit concludes the merge. It must hold every resolved file and keeps git's default subject (`Merge branch '<x>' into <y>`, plus the ticket suffix if the branch has one). Unresolved files block it. Follow-up cleanup goes into later commits.
 
----
+## Step 2: Read every change, then group
 
-## Step 2: Read every change before grouping
+Read the diff or content of every file. Group by real cause, not by folder:
 
-For every changed and untracked file, look at its actual diff or content, not just its path or
-filename. Group by genuine causal relationship, not superficial similarity:
+- Files changed for the same reason belong together, even across domains (a shared enum plus the one controller that now uses it).
+- Files in the same folder changed for different reasons are different commits.
+- A fix and its regression test go in the same commit.
+- Default split:
+  1. Code + its tests: `<Imperative summary>` (plus ` (ENG-12)` when the branch has a ticket)
+  2. Run records and knowledge base (`.claude/knowledge-base/**`, `.claude/specs/**`): `Record the <topic> engineering run`, `Close out the <topic> engineering run`. Always the last commit, and always present when a state file exists (rule 9).
+  3. Skill files and skill lessons (`.claude/skills/**`): `Record skill learnings from the <topic> run`, or a plain summary
+  4. Project rules (`.ai/rules/**`, `CLAUDE.md`, `AGENTS.md`): their own commit unless they describe exactly the code change in the same group.
+  Ask only when a file fits none of these, or fits two.
+- Work the developer did not ask to commit (other in-progress changes in the tree) stays out. List it under `### Held back` with reason `not part of this ask`, never fold it into a group.
+- Flag generated files, caches and scratch or debug output on their own; never fold them into a group.
+- Run the gitleaks scan (rule 4) on every file you plan to commit now, so a violation shows up in the plan, not halfway through.
 
-- Files touched for the same underlying reason belong together, even across different domains or
-  directories — a shared enum in `Domains/Shared` plus the one controller in `Domains/Ecommerce`
-  that now uses it is one change, not two.
-- Files that merely sit in the same directory but were changed for unrelated reasons are
-  different commits, even though they look alike in a file listing.
-- A fix and its own regression test belong in the same commit as the fix.
-- A docs update describing a specific code change usually belongs with that change — but check
-  `git log` for this repo's own recent precedent first once one exists; match whichever pattern the
-  actual recent history shows, and if it's genuinely unclear which applies, that's a Step 3
-  question. Remember: this project's CLAUDE.md says not to create documentation files unless
-  explicitly requested, so an unexpected new `.md` file is itself worth a second look, not just a
-  grouping question.
-- Anything that looks like a generated artifact, a cache file, or stray scratch/debug output that
-  was likely never meant to be committed gets flagged on its own, not folded into any group.
-- While reading, watch for anything matching Rule 3 (secrets/credentials) — flag it immediately
-  rather than continuing to build a plan around a file that shouldn't be staged at all.
+## Step 3: Show the plan, then proceed
 
----
+Show the plan every time, even when it looks obvious. It is the checkpoint that catches a wrong split before it is in history. Shape (per [Presentation](../shared/presentation.md)):
 
-## Step 3: Propose the grouping, then proceed unless something is genuinely ambiguous
+- Headline: `## ⏸️ Commit plan: N commits` (or `## ❌ Commit plan: blocked by gitleaks` when a group is held).
+- One table: `# | Subject | Files | Why`. Files as `inline code`, several per cell separated by `<br>` when needed.
+- `### Held back` table (`File | Reason`) for gitleaks, unclear or out-of-scope files, only if any.
+- `### Needs your decision` numbered list, only if something is unclear.
 
-Present a short, concrete plan: N commits, each listing its files and a one-line reason. This is
-the checkpoint that lets a skimming user catch a wrong split before anything is written to
-history — always show it, even when the grouping seems obvious.
+- **Everything clear:** go on to Step 4 right after showing it. No extra "go ahead?".
+- **Something unclear** (a file that fits two groups, a cause the diff does not show, a red flag, a gitleaks finding): ask one specific question per item (not "does this look right?"). Hold only the affected files; clear groups can proceed.
+- **Order:** foundations first (migration or shared enum before the feature that uses it). With no dependency, order so `git log` reads naturally.
+- When in doubt, split further. Two small correct commits beat one mixed one.
 
-- If every file's group is clear, proceed straight to Step 4 once the plan is shown; don't wait
-  for a separate "yes, go ahead" on top of the plan itself.
-- If something is genuinely unclear — a file that could plausibly belong to more than one group,
-  a causal relationship that isn't obvious from the diff alone, or a flagged artifact/secret from
-  Step 2 — ask a specific, concrete question about that item via `AskUserQuestion` (not a vague
-  "does this look right?"), and hold only the affected file/group until answered; unambiguous
-  groups can proceed without waiting on it.
+## Step 4: Stage and commit each group
 
-**Decide commit order** as part of the same plan: if one group's change only makes sense applied
-on top of another (a migration or shared enum before the feature code that uses it), order the
-foundational one first. With no real dependency, order however reads most naturally in `git log`
-afterward — typically shared/foundational changes before the features built on them.
+For each group, in order:
 
----
-
-## Step 4: Stage and commit each group, in order
-
-For each group, in the order decided in Step 3:
-
-1. `git add <explicit paths for this group only>` — never a blanket flag.
-2. `git status --short` to confirm exactly what's staged matches this group, nothing more and
-   nothing less, before writing the message.
-3. Write the commit message to match the real tone/length observed in Step 1 (or, if there's no
-   history yet, a short imperative subject plus a body explaining *why*): a short imperative
-   subject, then a body that explains *why* the change exists, not a restatement of the diff.
-   Always via a heredoc to avoid shell-escaping issues:
+1. Pint on the group's PHP files: `vendor/bin/pint <php paths> --format agent` (skip when the group has none).
+2. `git add <explicit paths of this group>`.
+3. `git status --short`: what is staged must match the group exactly.
+4. Staged gitleaks check (see the reference). On a finding: `git restore --staged <paths>`, then the violation steps.
+5. Commit with a heredoc:
 
 ```bash
 git commit -m "$(cat <<'EOF'
-<subject line>
+<Imperative, sentence-case subject>
 
-<body — the why, not the what>
+<Body: why the change exists and what it changes in behavior, not a
+restatement of the diff. Wrapped at about 72 characters.>
+
+<attribution trailer from the session instructions, if any>
 EOF
 )"
 ```
 
-4. If a pre-commit hook fails (this project runs Pint via `vendor/bin/pint --dirty --format
-   agent` on PHP changes per its CLAUDE.md conventions, and may add a real pre-commit hook later),
-   fix the underlying issue, re-stage, and commit again per Rule 7 — never skip it.
+Message format:
 
----
+- Subject: imperative, sentence case, no trailing period, about 50-72 characters.
+- Ticket suffix ` (ENG-12)`: only when the branch name carries a ticket ID (the survey prints it). This repo's history has no ticket suffixes, so with none in the branch, leave it off; do not ask.
+- Body: the why. Short paragraphs.
+
+6. Hook failure (if a hook exists): fix the cause, re-stage, commit again (rule 7).
 
 ## Step 5: Confirm and report
 
-Once every group is committed, run `git log --oneline -N` (N = the number of commits just made)
-and `git status --short` to confirm the working tree now matches expectations — nothing left
-uncommitted except anything deliberately excluded in Step 2/3. Report the resulting commit list
-to the user. Don't push, and don't offer to — that's always a separate, explicit request per
-Rule 6, not a natural next step this skill proposes on its own.
-
----
-
-## Principles
-
-- A commit that bundles two unrelated concerns is worse than two smaller, correct commits — when
-  genuinely in doubt, split further rather than merge for convenience.
-- Never guess at a file's purpose when its actual content would settle the question outright —
-  read before grouping, every time, not just for the files that look suspicious at a glance.
-- Silence isn't neutral. An unasked question about a genuinely ambiguous file is a confident-
-  sounding guess wearing the plan's authority; ask instead.
-- The plan in Step 3 is not a formality to rush past — it exists so a wrong split gets caught
-  before it's written into history, not after.
+- `git log --oneline -<N>` and `git status --short`: only deliberately excluded files may be left. A run's tracking file is never one of them (rule 9).
+- Report, per [Presentation](../shared/presentation.md):
+  - Headline: `## ✅ Committed N commits on <branch>` (or `## ⚠️ Committed N of M groups` when some were held back).
+  - Table: `# | Hash | Subject | Files`.
+  - `### Pint reformatted` (bullet list of files), only if Pint changed any.
+  - `### Held back` table (`File | Reason`), only if any.
+  - End with: **The commits are local; nothing was pushed.** Don't offer to push or open a PR (rule 8): delivery is a separate request from the developer.
+- Stop there. No push.

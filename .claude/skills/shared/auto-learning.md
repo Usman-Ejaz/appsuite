@@ -1,38 +1,36 @@
-# Auto Learning (shared capability)
+# Auto Learning
 
-Referenced by every skill under `.claude/skills/`. Each skill's own `## Auto Learning` section
-is short: a pointer to this file, plus 2-4 bullets of what's specific to that skill (what
-"wider" means for it, what's typically unfamiliar and worth verifying, its own learnings-file
-name, what a proposed change would look like). This file holds the mechanism that's identical
-across all of them, so it's written once and doesn't drift out of sync between skills as it gets
-tuned.
+How a skill gets better from its own runs. Every skill links here from one line in its body.
 
-A standing capability, active throughout every step of whichever skill references it. Not a
-one-time phase done once and then moved past.
+## During a run
 
-**Read/look wider than the immediate task when a pattern looks reusable.** Don't treat something
-as private to the current diff, PR, ticket, endpoint, or domain if it's actually a project-wide
-convention, a shared base class, a recurring incident shape, or a naming pattern used everywhere.
-Recognizing "this is shared, not local to what I'm looking at right now" the first time saves
-re-deriving it, and re-explaining it as if it were novel, on every future run of that skill.
+- **Look wider when a pattern looks reusable.** If something is a project-wide convention, a shared base class or a recurring shape, treat it as shared, not as private to this diff or domain.
+- **Look things up when they are really unfamiliar** (see "Verify what is uncertain" in [Working Agreement](working-agreement.md)). An unverified guess that becomes a rule misleads every later run.
+- **Read the skill's `references/gotchas.md`** at the step its `SKILL.md` names, if the file exists.
+  - Skills not yet synced with this version still name a learnings file at `.claude/knowledge-base/skills/<skill>.md`. Read it the same way if it exists; new lessons for those skills go to their `references/gotchas.md`.
 
-**Look things up when something is genuinely unfamiliar, rather than guessing.** A third-party
-API's actual rules, an industry or compliance term, a package's real documented behaviour, a fact
-about this repo you're not confident about: verify it before it becomes a Fact, Constraint,
-Convention, or Finding in the output. Something built on a plausible-sounding assumption is worse
-than an admitted gap, because nothing signals to the reader that it needs re-checking, and a wrong
-one poisons every future run that trusts the earlier output without re-verifying it.
+## Recording a lesson
 
-**Keep a running note of durable, cross-cutting learnings in this skill's own learnings file.**
-Each skill maintains `.claude/knowledge-base/skills/<skill-name>.md` (one file per skill, named for it,
-living in this shared folder rather than published anywhere product-facing) as working memory
-across runs. Read it at the start of a pass if it exists. Create it lazily, only once there's an
-actual learning worth recording; don't scaffold an empty file up front just because this
-capability exists. Keep entries to a line or two each; it's a running list, not a report. *What*
-belongs in it is skill-specific, defined in that skill's own Auto Learning section, not here.
+When a run teaches something durable, route it to exactly one place:
 
-**Ask when you think there's a better way to do the specific task, rather than silently
-deviating or silently staying quiet.** Bring a concrete before/after or a specific proposed
-alternative, not just "should I change this?". Don't act on a structural change to how the skill
-itself works without the user agreeing first, since it affects every future run of that skill,
-not just the current one.
+| The lesson is ... | It goes to ... |
+|---|---|
+| A change to how a step works (new step, changed order, new check) | A proposed `SKILL.md` edit, shown as before/after for the developer to approve. Never a gotcha. |
+| A narrow trap inside a step | `<skill>/references/gotchas.md` |
+| A fact about one domain (a locked decision, a "not a bug") | That domain's brief in `.claude/knowledge-base/domains/` (via `learn-domain`) |
+| A team-wide working rule or coding convention | A proposed edit to the right `shared/` file, or a `.ai/rules` entry via Boost's `record-rule` (see the project `CLAUDE.md`) |
+| A personal preference of one developer | Not a skill file. It stays in that developer's own memory. |
+
+## `references/gotchas.md` format
+
+- Create it lazily, only when there is a first real entry.
+- One heading per entry, 1-3 lines: the trap and what to do instead. Add a pointer to an example file if useful.
+- Keep the lesson only: no dates, ticket IDs, commit hashes, PR numbers or incident stories.
+- Cap about 40 lines. When it grows past that, propose folding the entries into the `SKILL.md` body and empty the file.
+- Name the step it applies to, so the `SKILL.md` pointer stays accurate.
+
+## Proposing changes
+
+- Bring a concrete before/after, not "should I change this?".
+- Never change how a skill works without the developer agreeing first. It affects every future run.
+- If a developer's correction in this session names a skill and applies to the whole team, propose moving it into that skill or into `shared/`.
