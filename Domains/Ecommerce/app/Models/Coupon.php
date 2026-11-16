@@ -5,13 +5,13 @@ namespace Domains\Ecommerce\Models;
 use Domains\Core\Models\BaseModel;
 use Domains\Ecommerce\Database\Factories\CouponFactory;
 use Domains\Ecommerce\Enums\CouponType;
-use Domains\Shared\Traits\HasSites;
+use Domains\Shared\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Coupon extends BaseModel
 {
-    use HasSites;
+    use BelongsToSite;
 
     /**
      * The attributes that are mass assignable.

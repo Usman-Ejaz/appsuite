@@ -5,12 +5,12 @@ namespace Domains\Ecommerce\Models;
 use Domains\Core\Models\BaseModel;
 use Domains\Ecommerce\Database\Factories\OrderItemFactory;
 use Domains\Shared\Models\Product;
-use Domains\Shared\Traits\HasSites;
+use Domains\Shared\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OrderItem extends BaseModel
 {
-    use HasSites;
+    use BelongsToSite;
 
     /**
      * The attributes that are mass assignable.

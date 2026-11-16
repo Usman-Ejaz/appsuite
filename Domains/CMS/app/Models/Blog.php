@@ -6,13 +6,13 @@ use Domains\CMS\Enums\BlogStatus;
 use Domains\Core\Models\BaseModel;
 use Domains\Identity\Models\User;
 use Domains\Shared\Models\Category;
-use Domains\Shared\Traits\HasSites;
+use Domains\Shared\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Blog extends BaseModel
 {
-    use HasSites;
+    use BelongsToSite;
 
     /**
      * The attributes that are mass assignable.

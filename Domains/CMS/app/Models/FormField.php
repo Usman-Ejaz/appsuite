@@ -4,12 +4,12 @@ namespace Domains\CMS\Models;
 
 use Domains\CMS\Enums\FormFieldType;
 use Domains\Core\Models\BaseModel;
-use Domains\Shared\Traits\HasSites;
+use Domains\Shared\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FormField extends BaseModel
 {
-    use HasSites;
+    use BelongsToSite;
 
     /**
      * The attributes that are mass assignable.

@@ -3,11 +3,11 @@
 namespace Domains\Shared\Models;
 
 use Domains\Core\Models\BaseModel;
-use Domains\Shared\Traits\HasSites;
+use Domains\Shared\Traits\BelongsToSite;
 
 class Page extends BaseModel
 {
-    use HasSites;
+    use BelongsToSite;
 
     /**
      * The attributes that are mass assignable.

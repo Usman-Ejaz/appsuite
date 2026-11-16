@@ -19,8 +19,10 @@ return new class extends Migration
             $table->string('tag_line')->nullable();
             $table->string('url');
             $table->string('status');
+            $table->string('app_code');
+            $table->string('type')->nullable();
             $table->json('setting')->nullable();
-            $table->boolean('allow_comments_on_blogs')->default(true);
+            $table->boolean('allow_comments')->default(true);
             $table->boolean('requires_comment_approval')->default(true);
             $table->boolean('notify_on_comments')->default(true);
             $table->boolean('spam_filtering')->default(true);
