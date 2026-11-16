@@ -7,6 +7,7 @@ use Domains\Core\Database\Seeders\CoreDatabaseSeeder;
 use Domains\Ecommerce\Database\Seeders\EcommerceDatabaseSeeder;
 use Domains\Identity\Database\Seeders\IdentityDatabaseSeeder;
 use Domains\Identity\Models\User;
+use Domains\Notification\Database\Seeders\NotificationDatabaseSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -33,6 +34,7 @@ class DatabaseSeeder extends Seeder
             CoreDatabaseSeeder::class,
             CMSDatabaseSeeder::class,
             EcommerceDatabaseSeeder::class,
+            NotificationDatabaseSeeder::class,
             IdentityDatabaseSeeder::class,
         ]);
     }

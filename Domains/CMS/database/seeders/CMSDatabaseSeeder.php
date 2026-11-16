@@ -3,7 +3,7 @@
 namespace Domains\CMS\Database\Seeders;
 
 use Domains\CMS\Enums\CmsPermission;
-use Domains\Core\Enums\AppSiteMode;
+use Domains\Core\Enums\SiteMode;
 use Domains\Core\Models\App;
 use Domains\Identity\Models\Permission;
 use Illuminate\Database\Seeder;
@@ -19,7 +19,7 @@ class CMSDatabaseSeeder extends Seeder
             'name' => 'CMS',
             'label' => 'CMS',
             'slug' => 'cms',
-            'site_mode' => AppSiteMode::MULTI,
+            'site_mode' => SiteMode::MULTI,
             'category' => 'Content',
             'icon' => 'file-text',
             'is_active' => true,
@@ -28,9 +28,11 @@ class CMSDatabaseSeeder extends Seeder
 
         foreach (CmsPermission::cases() as $permission) {
             Permission::firstOrCreate(
-                ['app_id' => $cmsApp->id, 'name' => $permission->value, 'guard_name' => 'web'],
-                ['label' => $permission->label(), 'code' => $permission->code()],
+                ['app_id' => $cmsApp->id, 'name' => $permission->label(), 'guard_name' => 'web'],
+                ['label' => $permission->label(), 'code' => $permission->value],
             );
         }
+
+        $this->call(CMSTriggerSeeder::class);
     }
 }

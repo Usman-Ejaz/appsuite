@@ -2,9 +2,11 @@
 
 namespace Domains\CMS\Actions;
 
+use Domains\CMS\Enums\CMSTrigger;
 use Domains\CMS\Enums\FormSubmissionStatus;
 use Domains\CMS\Models\Form;
 use Domains\CMS\Models\FormSubmission;
+use Domains\Notification\Actions\TriggerFormSubmissionAction;
 
 class SubmitForm
 {
@@ -19,12 +21,10 @@ class SubmitForm
             'user_agent' => $userAgent,
         ]);
 
-        // TODO(form-actions): execute this form's active FormAction rows against $submission.
-        // Deferred pending a follow-up design session — expected shape: a handler registry
-        // keyed by FormAction::type (e.g. send_email, call_webhook), dispatched via a queued
-        // job so a slow/broken third-party call never blocks this response, with a
-        // run-tracking table so failures are diagnosable rather than silent. Do not run
-        // handlers inline/synchronously here once they exist.
+        // Notifications run as a queued trigger action, never inline here. TODO(form-actions):
+        // this form's FormAction rows still aren't executed — they move onto `Cms:Form:Submitted`
+        // trigger actions with a form condition.
+        TriggerFormSubmissionAction::dispatch($submission, CMSTrigger::FORM_SUBMITTED);
 
         return $submission;
     }

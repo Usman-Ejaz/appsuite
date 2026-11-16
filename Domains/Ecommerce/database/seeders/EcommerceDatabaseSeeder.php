@@ -2,7 +2,7 @@
 
 namespace Domains\Ecommerce\Database\Seeders;
 
-use Domains\Core\Enums\AppSiteMode;
+use Domains\Core\Enums\SiteMode;
 use Domains\Core\Models\App;
 use Domains\Ecommerce\Enums\EcommercePermission;
 use Domains\Identity\Models\Permission;
@@ -19,7 +19,7 @@ class EcommerceDatabaseSeeder extends Seeder
             'name' => 'Ecommerce',
             'label' => 'Ecommerce',
             'slug' => 'ecommerce',
-            'site_mode' => AppSiteMode::MULTI,
+            'site_mode' => SiteMode::MULTI,
             'category' => 'Commerce',
             'icon' => 'shopping-cart',
             'is_active' => true,
@@ -32,5 +32,7 @@ class EcommerceDatabaseSeeder extends Seeder
                 ['label' => $permission->label(), 'code' => $permission->code(), 'description' => $permission->description()],
             );
         }
+
+        $this->call(EcommerceTriggerSeeder::class);
     }
 }

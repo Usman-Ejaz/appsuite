@@ -4,17 +4,19 @@ namespace Domains\Ecommerce\Models;
 
 use Domains\Core\Models\BaseModel;
 use Domains\Ecommerce\Database\Factories\OrderFactory;
+use Domains\Ecommerce\Enums\EcommerceTrigger;
 use Domains\Ecommerce\Enums\OrderStatus;
 use Domains\Identity\Models\Customer;
+use Domains\Notification\Actions\TriggerOrderAction;
 use Domains\Shared\Models\PaymentMethod;
-use Domains\Shared\Traits\HasSites;
+use Domains\Shared\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Order extends BaseModel
 {
-    use HasSites;
+    use BelongsToSite;
 
     /**
      * The attributes that are mass assignable.
@@ -75,6 +77,20 @@ class Order extends BaseModel
     {
         static::creating(function (Order $order) {
             $order->order_number ??= 'ORD-'.now()->format('Ymd').'-'.Str::upper(Str::random(6));
+        });
+
+        static::created(function (Order $order) {
+            TriggerOrderAction::dispatch($order, EcommerceTrigger::ORDER_CREATED);
+        });
+
+        static::updated(function (Order $order) {
+            if ($order->wasChanged('status')) {
+                $previous = $order->getOriginal('status');
+
+                TriggerOrderAction::dispatch($order, EcommerceTrigger::ORDER_STATUS_CHANGED, [
+                    'previous' => ['order.status' => $previous instanceof OrderStatus ? $previous->value : $previous],
+                ]);
+            }
         });
     }
 

@@ -5,9 +5,12 @@ namespace Domains\Identity\Models;
 use Domains\Core\Models\BaseModel;
 use Domains\Identity\Database\Factories\CustomerFactory;
 use Domains\Identity\Enums\CustomerType;
+use Illuminate\Notifications\Notifiable;
 
 class Customer extends BaseModel
 {
+    use Notifiable;
+
     /**
      * The attributes that are mass assignable.
      */
