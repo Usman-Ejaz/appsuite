@@ -13,12 +13,12 @@ trait HasParentChild
 
     public function parent(): BelongsTo
     {
-        return $this->belongsTo(static::class, 'parent_id');
+        return $this->belongsTo(static::class, $this->parent_column);
     }
 
     public function children(): HasMany
     {
-        return $this->hasMany(static::class, 'parent_id');
+        return $this->hasMany(static::class, $this->parent_column);
     }
 
     /**
@@ -113,7 +113,7 @@ trait HasParentChild
      */
     public function scopeRoots(Builder $query): Builder
     {
-        return $query->whereNull('parent_id');
+        return $query->whereNull($this->parent_column);
     }
 
     /**
@@ -121,6 +121,6 @@ trait HasParentChild
      */
     public function scopeChildren(Builder $query): Builder
     {
-        return $query->whereNotNull('parent_id');
+        return $query->whereNotNull($this->parent_column);
     }
 }

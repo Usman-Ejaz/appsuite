@@ -8,7 +8,6 @@ use Domains\Core\Http\Requests\GetCollectionRequest;
 use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Shared\Http\Requests\Category\CreateRequest;
 use Domains\Shared\Http\Requests\Category\UpdateRequest;
-use Domains\Shared\Http\Resources\CategoryCollection;
 use Domains\Shared\Http\Resources\CategoryResource;
 use Domains\Shared\Repositories\CategoryRepository;
 use Illuminate\Http\JsonResponse;
@@ -21,7 +20,7 @@ use Illuminate\Http\Request;
 #[Group('Shared')]
 class CategoryController extends Controller
 {
-    public function __construct(protected CategoryRepository $categories)
+    public function __construct(protected CategoryRepository $repo)
     {
         //
     }
@@ -31,15 +30,15 @@ class CategoryController extends Controller
      *
      * Returns the categories that belong to the company.
      */
-    public function list(GetCollectionRequest $request, string $app_code): CategoryCollection
+    public function list(GetCollectionRequest $request, string $app_code): CategoryResource
     {
         $this->authorizeCategories($request, $app_code, 'view');
 
         $filters = $request->filters();
 
-        $records = $this->categories->forAppCode($app_code)->list($filters);
+        $records = $this->repo->forAppCode($app_code)->list($filters);
 
-        return new CategoryCollection($records);
+        return CategoryResource::collection($records);
     }
 
     /**
@@ -48,13 +47,13 @@ class CategoryController extends Controller
      * Creates a new category for the company. The `slug` must be unique among the company's
      * other categories within the same app.
      */
-    public function create(CreateRequest $request, string $app_code): JsonResponse
+    public function create(CreateRequest $request, string $app_code): CategoryResource
     {
         $input = $request->validated();
 
-        $category = $this->categories->forAppCode($app_code)->create($input);
+        $category = $this->repo->forAppCode($app_code)->create($input);
 
-        return response()->json(['data' => CategoryResource::make($category)], 201);
+        return CategoryResource::make($category);
     }
 
     /**
@@ -68,7 +67,7 @@ class CategoryController extends Controller
 
         $filters = $request->filters();
 
-        $record = $this->categories->forAppCode($app_code)->get($id, $filters);
+        $record = $this->repo->forAppCode($app_code)->get($id, $filters);
 
         return CategoryResource::make($record);
     }
@@ -82,7 +81,7 @@ class CategoryController extends Controller
     {
         $input = $request->validated();
 
-        $record = $this->categories->forAppCode($app_code)->update($id, $input);
+        $record = $this->repo->forAppCode($app_code)->update($id, $input);
 
         return CategoryResource::make($record);
     }
@@ -96,7 +95,7 @@ class CategoryController extends Controller
     {
         $this->authorizeCategories($request, $app_code, 'manage');
 
-        $this->categories->forAppCode($app_code)->delete($id);
+        $this->repo->forAppCode($app_code)->delete($id);
 
         return response()->json(null, 204);
     }

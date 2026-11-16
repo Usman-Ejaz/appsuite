@@ -5,6 +5,8 @@ namespace Domains\Shared\Routing;
 use Domains\Shared\Http\Controllers\CategoryController;
 use Illuminate\Support\Facades\Route;
 
+use function Illuminate\Support\enum_value;
+
 /**
  * Registers the shared category CRUD routes for one app. Call once per app
  * from inside that domain's own `Route::prefix('v1/{app}')
@@ -27,5 +29,12 @@ class CategoryRoutes
                 Route::put('/{id}', 'update')->name('update')->defaults('app_code', $appCode);
                 Route::delete('/{id}', 'delete')->name('delete')->defaults('app_code', $appCode);
             });
+    }
+
+    public static function registerFor(string|\BackedEnum $app)
+    {
+        $app_code = enum_value($app);
+
+        static::register($app_code);
     }
 }

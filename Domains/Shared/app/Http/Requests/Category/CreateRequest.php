@@ -20,6 +20,7 @@ class CreateRequest extends FormRequest
     public function rules(): array
     {
         $companyId = $this->user()?->getCompanyId();
+
         $appCode = $this->route('app_code');
 
         return [

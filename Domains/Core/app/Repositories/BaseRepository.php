@@ -152,7 +152,7 @@ class BaseRepository
 
             $record->update($data);
 
-            return $record->refresh();
+            return $record->fresh();
         });
     }
 
@@ -204,7 +204,7 @@ class BaseRepository
             return $id;
         }
 
-        return $this->model::find($id);
+        return $this->query()->find($id);
     }
 
     /**
