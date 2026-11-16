@@ -14,4 +14,9 @@ enum AppCode: string
     case INVENTORY = 'inventory';
     case FRONT_DESK = 'front-desk';
     case SUPPORT = 'support';
+
+    public function name(): string
+    {
+        return '';
+    }
 }
