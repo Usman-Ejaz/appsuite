@@ -82,7 +82,7 @@ class Company extends BaseModel
      */
     public function users(): HasMany
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(User::class)->where('is_owner', false);
     }
 
     /**
