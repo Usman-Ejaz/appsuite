@@ -2,6 +2,7 @@
 
 use Domains\Core\Models\App;
 use Domains\Ecommerce\Enums\EcommercePermission;
+use Domains\Identity\Models\ApiKey;
 use Domains\Identity\Models\Company;
 use Domains\Identity\Models\Permission;
 use Domains\Identity\Models\User;
@@ -46,4 +47,20 @@ test('permission gate allows any actor when they are an owner, regardless of gra
     $owner = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => true]);
 
     expect(Gate::forUser($owner)->allows('permission', EcommercePermission::PRODUCT_DELETE))->toBeTrue();
+});
+
+test('permission gate allows an api key holding the ability', function () {
+    $apiKey = ApiKey::factory()->create([
+        'company_id' => $this->company->id,
+        'abilities' => [EcommercePermission::PRODUCT_VIEW->value],
+    ]);
+
+    expect(Gate::forUser($apiKey)->allows('permission', EcommercePermission::PRODUCT_VIEW))->toBeTrue()
+        ->and(Gate::forUser($apiKey)->allows('permission', EcommercePermission::PRODUCT_DELETE))->toBeFalse();
+});
+
+test('permission gate denies an api key without abilities', function () {
+    $apiKey = ApiKey::factory()->create(['company_id' => $this->company->id, 'abilities' => null]);
+
+    expect(Gate::forUser($apiKey)->allows('permission', EcommercePermission::PRODUCT_VIEW))->toBeFalse();
 });

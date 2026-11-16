@@ -8,6 +8,9 @@ use Domains\Identity\Models\Company;
 class IssueApiKey
 {
     /**
+     * Omitted or null abilities mean "full access" and are stored explicitly as `['*']`, so
+     * the stored value is the single source of truth (a null stored value grants nothing).
+     *
      * @param  array{name: string, abilities?: array|null, expires_at?: string|null}  $data
      * @return array{apiKey: ApiKey, plainSecret: string}
      */
@@ -18,7 +21,7 @@ class IssueApiKey
         $apiKey = ApiKey::make([
             'company_id' => $company->id,
             'name' => $data['name'],
-            'abilities' => $data['abilities'] ?? null,
+            'abilities' => $data['abilities'] ?? ['*'],
             'expires_at' => $data['expires_at'] ?? null,
         ]);
 
