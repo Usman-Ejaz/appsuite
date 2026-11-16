@@ -77,42 +77,6 @@ enum CmsPermission: string
         };
     }
 
-    public function code(): ?string
-    {
-        return match ($this) {
-            self::BLOG_VIEW => 'cms_blogs_view',
-            self::BLOG_CREATE => 'cms_blogs_create',
-            self::BLOG_UPDATE => 'cms_blogs_update',
-            self::BLOG_DELETE => 'cms_blogs_delete',
-            self::BLOG_PUBLISH => 'cms_blogs_publish',
-            self::FORM_VIEW => 'cms_forms_view',
-            self::FORM_CREATE => 'cms_forms_create',
-            self::FORM_UPDATE => 'cms_forms_update',
-            self::FORM_DELETE => 'cms_forms_delete',
-            self::FORM_SUBMIT => 'cms_forms_submit',
-            self::FORM_SUBMISSIONS_VIEW => 'cms_submissions_view',
-            self::FORM_SUBMISSIONS_UPDATE => 'cms_submissions_update',
-            self::FORM_SUBMISSIONS_DELETE => 'cms_submissions_delete',
-            self::CATEGORIES_VIEW => 'cms_categories_view',
-            self::CATEGORIES_MANAGE => 'cms_categories_manage',
-            self::PAGE_VIEW => 'cms_pages_view',
-            self::PAGE_CREATE => 'cms_pages_create',
-            self::PAGE_UPDATE => 'cms_pages_update',
-            self::PAGE_DELETE => 'cms_pages_delete',
-            self::PAGE_PUBLISH => 'cms_pages_publish',
-            self::TEMPLATE_VIEW => 'cms_templates_view',
-            self::TEMPLATE_CREATE => 'cms_templates_create',
-            self::TEMPLATE_UPDATE => 'cms_templates_update',
-            self::TEMPLATE_DELETE => 'cms_templates_delete',
-            self::MEDIA_VIEW => 'cms_media_view',
-            self::MEDIA_MANAGE => 'cms_media_manage',
-            self::COMMENT_VIEW => 'cms_comments_view',
-            self::COMMENT_MODERATE => 'cms_comments_moderate',
-            self::COMMENT_DELETE => 'cms_comments_delete',
-            default => null
-        };
-    }
-
     public function description(): ?string
     {
         return match ($this) {
