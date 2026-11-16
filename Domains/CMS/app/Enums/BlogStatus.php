@@ -20,6 +20,11 @@ enum BlogStatus: string
     /**
      * The blog post is no longer publicly visible.
      */
+    case UN_PUBLISHED = 'Un Published';
+
+    /**
+     * The blog post is no longer publicly visible.
+     */
     case ARCHIVED = 'Archived';
 
     /**

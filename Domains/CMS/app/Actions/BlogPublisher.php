@@ -20,7 +20,7 @@ class BlogPublisher
     public static function unpublish(Blog $blog): Blog
     {
         $blog->update([
-            'status' => BlogStatus::DRAFT,
+            'status' => BlogStatus::UN_PUBLISHED,
             'unpublished_at' => now(),
         ]);
 
