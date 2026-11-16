@@ -2,7 +2,7 @@
 
 namespace Domains\Core\Http\Requests\App;
 
-use Domains\Core\Enums\AppSiteMode;
+use Domains\Core\Enums\SiteMode;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -42,7 +42,7 @@ class CreateRequest extends FormRequest
              *
              * @example Multi
              */
-            'site_mode' => ['required', Rule::enum(AppSiteMode::class)],
+            'site_mode' => ['required', Rule::enum(SiteMode::class)],
 
             /**
              * A short description of the app.

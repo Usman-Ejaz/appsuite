@@ -2,7 +2,7 @@
 
 namespace Domains\Core\Enums;
 
-enum AppSiteMode: string
+enum SiteMode: string
 {
     case SINGLE = 'Single';
     case MULTI = 'Multi';

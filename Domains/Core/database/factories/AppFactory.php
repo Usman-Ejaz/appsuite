@@ -3,7 +3,7 @@
 namespace Domains\Core\Database\Factories;
 
 use Domains\Core\Enums\AppCode;
-use Domains\Core\Enums\AppSiteMode;
+use Domains\Core\Enums\SiteMode;
 use Domains\Core\Models\App;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -33,7 +33,7 @@ class AppFactory extends Factory
             'name' => $name,
             'label' => $name,
             'slug' => fake()->unique()->slug(),
-            'site_mode' => fake()->randomElement(AppSiteMode::cases())->value,
+            'site_mode' => fake()->randomElement(SiteMode::cases())->value,
             'description' => fake()->sentence(),
             'category' => fake()->randomElement(['Sales', 'Marketing']),
             'code' => $code,

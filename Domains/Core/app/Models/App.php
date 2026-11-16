@@ -4,7 +4,7 @@ namespace Domains\Core\Models;
 
 use Domains\Core\Database\Factories\AppFactory;
 use Domains\Core\Enums\AppCode;
-use Domains\Core\Enums\AppSiteMode;
+use Domains\Core\Enums\SiteMode;
 use Domains\Identity\Models\Permission;
 use Domains\Storage\Enums\MediaCategory;
 use Domains\Storage\Traits\HasMedia;
@@ -33,7 +33,7 @@ class App extends BaseModel
             'is_active' => 'boolean',
             'released_at' => 'datetime',
             'code' => AppCode::class,
-            'site_mode' => AppSiteMode::class,
+            'site_mode' => SiteMode::class,
         ];
     }
 
