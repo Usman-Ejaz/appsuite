@@ -5,5 +5,7 @@
     "CMS": true,
     "Shared": true,
     "Ecommerce": true,
-    "Storage": true
+    "Storage": true,
+    "Notification": true,
+    "Inventory": true
 }
