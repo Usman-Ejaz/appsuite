@@ -2,7 +2,10 @@
 
 namespace Domains\Auth\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class AuthServiceProvider extends ModuleServiceProvider
@@ -33,6 +36,25 @@ class AuthServiceProvider extends ModuleServiceProvider
         EventServiceProvider::class,
         RouteServiceProvider::class,
     ];
+
+    public function boot(): void
+    {
+        parent::boot();
+
+        $this->configureRateLimiting();
+    }
+
+    /**
+     * `POST /api/v1/token` exchanges an API key + secret for a bearer token, so it gets the
+     * same brute-force protection as the email/password `login` limiter: 5 attempts a minute
+     * per key and IP.
+     */
+    protected function configureRateLimiting(): void
+    {
+        RateLimiter::for('token', function (Request $request) {
+            return Limit::perMinute(5)->by($request->input('api_key').'|'.$request->ip());
+        });
+    }
 
     /**
      * Define module schedules.

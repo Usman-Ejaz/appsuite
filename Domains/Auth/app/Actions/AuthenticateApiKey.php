@@ -30,7 +30,7 @@ class AuthenticateApiKey
 
         $record->forceFill(['last_used_at' => now()])->save();
 
-        $token = $record->createToken($record->name, $record->abilities ?? ['*'], $record->expires_at);
+        $token = $record->createToken($record->name, $record->abilities ?? [], $record->expires_at);
 
         return [
             'token' => $token->plainTextToken,

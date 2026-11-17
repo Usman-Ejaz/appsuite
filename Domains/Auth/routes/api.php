@@ -11,6 +11,6 @@ Route::prefix('v1')->group(function () {
     });
 
     Route::controller(TokenController::class)->group(function () {
-        Route::post('token', 'create')->name('token');
+        Route::post('token', 'create')->middleware('throttle:token')->name('token');
     });
 });

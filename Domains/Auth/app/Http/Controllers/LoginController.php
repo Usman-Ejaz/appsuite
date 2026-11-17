@@ -7,6 +7,8 @@ use Domains\Auth\Actions\AuthenticateUser;
 use Domains\Auth\Http\Requests\LoginRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class LoginController extends Controller
 {
@@ -36,12 +38,22 @@ class LoginController extends Controller
     /**
      * Log Out
      *
-     * Revokes the token used to authenticate the current request, signing the user out of
-     * the calling client. Subsequent requests made with the same token are rejected.
+     * Signs the caller out of the current client. For a bearer token, the token is revoked and
+     * later requests with it are rejected. For a session (cookie) login from the first-party
+     * SPA, the session is ended and its CSRF token rotated.
      */
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $token = $request->user()->currentAccessToken();
+
+        // Session-authenticated requests carry a TransientToken, which has nothing to revoke.
+        if ($token instanceof PersonalAccessToken) {
+            $token->delete();
+        } else {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         return response()->json(null, 204);
     }

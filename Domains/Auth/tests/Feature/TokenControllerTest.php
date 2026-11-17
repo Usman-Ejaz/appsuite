@@ -38,3 +38,34 @@ test('an unknown api_key is rejected', function () {
         'api_secret' => 'whatever',
     ])->assertUnprocessable();
 });
+
+test('a key issued without abilities gets a full-access token', function () {
+    $company = Company::factory()->create();
+
+    ['apiKey' => $apiKey, 'plainSecret' => $plainSecret] = app(IssueApiKey::class)->handle($company, ['name' => 'CI Key']);
+
+    expect($apiKey->abilities)->toBe(['*']);
+
+    $this->postJson('/api/v1/token', [
+        'api_key' => $apiKey->api_key,
+        'api_secret' => $plainSecret,
+    ])->assertCreated()->assertJsonPath('data.scopes', ['*']);
+});
+
+test('the token exchange is rate limited after repeated attempts', function () {
+    $company = Company::factory()->create();
+
+    ['apiKey' => $apiKey] = app(IssueApiKey::class)->handle($company, ['name' => 'CI Key']);
+
+    for ($i = 0; $i < 5; $i++) {
+        $this->postJson('/api/v1/token', [
+            'api_key' => $apiKey->api_key,
+            'api_secret' => 'wrong-secret',
+        ]);
+    }
+
+    $this->postJson('/api/v1/token', [
+        'api_key' => $apiKey->api_key,
+        'api_secret' => 'wrong-secret',
+    ])->assertTooManyRequests();
+});

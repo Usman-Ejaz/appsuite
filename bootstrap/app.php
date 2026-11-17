@@ -27,11 +27,15 @@ return Application::configure(basePath: dirname(__DIR__))
             SetTeamUrlDefaults::class,
         ]);
 
+        // Session (cookie) auth for the first-party SPA on /api routes: requests from a
+        // SANCTUM_STATEFUL_DOMAINS origin get a session and CSRF checks, so `auth:sanctum`
+        // accepts the logged-in user. Bearer-token requests (email/password login, API key
+        // token exchange) are untouched.
+        $middleware->statefulApi();
+
         $middleware->api(prepend: [
             ForceJsonResponse::class,
-        ]);
-
-        $middleware->alias([
+        ])->alias([
             'app' => EnsureAppAccess::class,
         ]);
     })

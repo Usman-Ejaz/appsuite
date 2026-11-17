@@ -32,8 +32,8 @@ class ApiKeyResource extends JsonResource
             'api_key' => $this->whenHas('api_key'),
 
             /**
-             * The scopes this key is allowed to act with. `null` means the key carries every
-             * ability its company can grant.
+             * The scopes this key is allowed to act with. `["*"]` means full access — every
+             * ability its company can grant. `null` or an empty list grants nothing.
              */
             'abilities' => $this->whenHas('abilities'),
 
