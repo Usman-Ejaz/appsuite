@@ -17,6 +17,7 @@ class CoreDatabaseSeeder extends Seeder
         'finance' => ['name' => 'Finance', 'category' => 'Accounting', 'icon' => 'wallet', 'site_mode' => null],
         'inventory' => ['name' => 'Inventory', 'category' => 'Operations', 'icon' => 'box', 'site_mode' => null],
         'support' => ['name' => 'Support', 'category' => 'Service', 'icon' => 'life-buoy', 'site_mode' => null],
+        'ecommerce' => ['name' => 'Ecommerce', 'category' => 'Commerce', 'icon' => 'shopping-cart', 'site_mode' => SiteMode::MULTI],
         'cms' => ['name' => 'CMS', 'category' => 'Content', 'icon' => 'file-text', 'site_mode' => SiteMode::MULTI],
         'system' => ['name' => 'System', 'category' => 'Management', 'icon' => 'file-text', 'site_mode' => null],
     ];
