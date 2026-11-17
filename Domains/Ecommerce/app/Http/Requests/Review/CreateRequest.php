@@ -11,7 +11,7 @@ class CreateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', EcommercePermission::REVIEW_CREATE->value);
+        return Gate::allows('permission', EcommercePermission::REVIEW_CREATE);
     }
 
     public function rules(): array

@@ -12,7 +12,7 @@ class CreateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', EcommercePermission::PAYMENT_METHOD_CREATE->value);
+        return Gate::allows('permission', EcommercePermission::PAYMENT_METHOD_CREATE);
     }
 
     public function rules(): array

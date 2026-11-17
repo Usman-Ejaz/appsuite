@@ -10,7 +10,7 @@ class UpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', EcommercePermission::REVIEW_UPDATE->value);
+        return Gate::allows('permission', EcommercePermission::REVIEW_UPDATE);
     }
 
     public function rules(): array

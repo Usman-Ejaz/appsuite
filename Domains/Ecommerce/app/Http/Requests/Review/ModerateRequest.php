@@ -12,7 +12,7 @@ class ModerateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', EcommercePermission::REVIEW_MODERATE->value);
+        return Gate::allows('permission', EcommercePermission::REVIEW_MODERATE);
     }
 
     /**
