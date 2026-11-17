@@ -3,39 +3,53 @@
 namespace Domains\Notification\Database\Seeders;
 
 use BackedEnum;
+use Domains\Core\Enums\AppCode;
 use Domains\Notification\Models\Trigger;
 use Illuminate\Database\Seeder;
 
 /**
- * Seeds one domain's trigger enum into the `triggers` table. Safe to re-run: existing triggers
- * are updated in place, so the actions companies attached to them are kept.
+ * Seeds one domain's triggers into the `triggers` table. Safe to re-run: existing triggers are
+ * updated in place, so the actions companies attached to them are kept.
  *
- * Each domain extends this with its own enum, e.g. `EcommerceTriggerSeeder`.
+ * Each domain extends this with its `appCode()` (the app its triggers belong to) and its
+ * `data()` (the label and description shown to companies for each trigger code), e.g.
+ * `EcommerceTriggerSeeder`.
  */
 abstract class BaseTriggerSeeder extends Seeder
 {
     /**
-     * The domain's trigger enum. Its cases are `Domain:Module:Event` codes with `label()` and
-     * `description()` methods.
-     *
-     * @return class-string<BackedEnum>
+     * The app every trigger of the domain belongs to.
      */
-    abstract protected function triggers(): string;
+    abstract protected function appCode(): AppCode;
+
+    /**
+     * Every trigger of the domain, each listed once, with the label and description companies
+     * see when they attach actions to it.
+     *
+     * @return list<array{trigger: BackedEnum, label: string, description: string}>
+     */
+    abstract protected function data(): array;
 
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        foreach ($this->triggers()::cases() as $trigger) {
-            [$domain, $module] = explode(':', $trigger->value);
+        $appCode = $this->appCode()->value;
+
+        $rows = $this->data();
+
+        foreach ($rows as $row) {
+            $trigger = $row['trigger'];
+
+            [$domain, $module] = explode(':', (string) $trigger->value);
 
             Trigger::updateOrCreate(['code' => $trigger->value], [
-                'name' => $trigger?->label(),
-                'description' => $trigger?->description(),
+                'name' => $row['label'],
+                'description' => $row['description'],
                 'domain' => $domain,
                 'module' => $module,
-                'app_code' => $trigger?->app_code(),
+                'app_code' => $appCode,
             ]);
         }
     }
