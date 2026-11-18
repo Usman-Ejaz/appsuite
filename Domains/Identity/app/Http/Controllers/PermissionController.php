@@ -24,8 +24,8 @@ class PermissionController extends Controller
     /**
      * Get Permissions
      *
-     * Returns the platform's permission catalog, optionally filtered by `app_id`. Restricted
-     * to root and owner users.
+     * Returns the platform's permission catalog. Filter by app with
+     * `filter={"field":"app_id","value":3}`. Restricted to root and owner users.
      */
     public function list(GetCollectionRequest $request)
     {

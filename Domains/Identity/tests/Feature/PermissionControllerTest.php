@@ -11,7 +11,7 @@ uses(TestCase::class, RefreshDatabase::class);
 
 test('a root user can list and view permissions', function () {
     Sanctum::actingAs(User::factory()->create(['is_root' => true]));
-    $permission = Permission::create(['name' => 'crm:contacts:view', 'label' => 'View Contacts', 'code' => 'contacts_view', 'guard_name' => 'web']);
+    $permission = Permission::create(['name' => 'crm:contacts:view', 'label' => 'View Contacts', 'guard_name' => 'web']);
 
     $this->getJson('/api/v1/permissions')->assertOk()->assertJsonCount(1, 'data');
     $this->getJson("/api/v1/permissions/{$permission->id}")
@@ -22,7 +22,7 @@ test('a root user can list and view permissions', function () {
 
 test('an owner can list and view permissions', function () {
     Sanctum::actingAs(User::factory()->create(['is_owner' => true]));
-    Permission::create(['name' => 'crm:contacts:view', 'code' => 'contacts_view', 'guard_name' => 'web']);
+    Permission::create(['name' => 'crm:contacts:view', 'guard_name' => 'web']);
 
     $this->getJson('/api/v1/permissions')->assertOk()->assertJsonCount(1, 'data');
 });
@@ -31,17 +31,19 @@ test('permissions can be filtered by app_id', function () {
     Sanctum::actingAs(User::factory()->create(['is_root' => true]));
     $crm = App::factory()->create(['code' => 'crm']);
     $hr = App::factory()->create(['code' => 'hr']);
-    Permission::create(['app_id' => $crm->id, 'name' => 'crm:contacts:view', 'code' => 'contacts_view', 'guard_name' => 'web']);
-    Permission::create(['app_id' => $hr->id, 'name' => 'hr:employees:view', 'code' => 'employees_view', 'guard_name' => 'web']);
+    Permission::create(['app_id' => $crm->id, 'name' => 'crm:contacts:view', 'guard_name' => 'web']);
+    Permission::create(['app_id' => $hr->id, 'name' => 'hr:employees:view', 'guard_name' => 'web']);
 
-    $response = $this->getJson("/api/v1/permissions?app_id={$crm->id}");
+    $filter = json_encode(['field' => 'app_id', 'op' => '=', 'value' => $crm->id]);
+
+    $response = $this->getJson('/api/v1/permissions?'.http_build_query(['filter' => $filter]));
 
     $response->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.app_id', $crm->id);
 });
 
 test('a non-owner user is forbidden from the permissions endpoints', function () {
     $user = User::factory()->create();
-    $permission = Permission::create(['name' => 'crm:contacts:view', 'code' => 'contacts_view', 'guard_name' => 'web']);
+    $permission = Permission::create(['name' => 'crm:contacts:view', 'guard_name' => 'web']);
     Sanctum::actingAs($user);
 
     $this->getJson('/api/v1/permissions')->assertForbidden();

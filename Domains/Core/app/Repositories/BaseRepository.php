@@ -21,11 +21,6 @@ class BaseRepository
     protected string $model = Model::class;
 
     /**
-     * The query filter.
-     */
-    protected array $filter = [];
-
-    /**
      * List the records with optional filter.
      *
      * The filter bag is handed to Qubuilder as-is against the (possibly
@@ -231,19 +226,6 @@ class BaseRepository
     public function findBy(string $field, mixed $value)
     {
         return $this->model::where($field, $value)->first();
-    }
-
-    /**
-     * Set the query filter.
-     *
-     * @param  array  $filter  The filter to store for query()/list() to use.
-     * @return $this
-     */
-    public function filter(array $filter)
-    {
-        $this->filter = $filter;
-
-        return $this;
     }
 
     /**
