@@ -18,7 +18,7 @@ class BuildSubmissionValidationRules
     {
         $rules = [];
 
-        foreach ($form->fields()->where('is_active', true)->get() as $field) {
+        foreach ($form->fields()->active()->get() as $field) {
             if ($field->type->isLayoutOnly()) {
                 continue;
             }

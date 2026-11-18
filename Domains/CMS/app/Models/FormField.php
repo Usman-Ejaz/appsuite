@@ -5,6 +5,8 @@ namespace Domains\CMS\Models;
 use Domains\CMS\Enums\FormFieldType;
 use Domains\Core\Models\BaseModel;
 use Domains\Shared\Traits\BelongsToSite;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FormField extends BaseModel
@@ -50,5 +52,11 @@ class FormField extends BaseModel
     public function form(): BelongsTo
     {
         return $this->belongsTo(Form::class);
+    }
+
+    #[Scope]
+    public function active(Builder $query)
+    {
+        return $query->where('is_active', true);
     }
 }

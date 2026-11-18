@@ -4,6 +4,8 @@ namespace Domains\CMS\Models;
 
 use Domains\Core\Models\BaseModel;
 use Domains\Shared\Traits\BelongsToSite;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Form extends BaseModel
@@ -47,5 +49,11 @@ class Form extends BaseModel
     public function submissions(): HasMany
     {
         return $this->hasMany(FormSubmission::class);
+    }
+
+    #[Scope]
+    public function active(Builder $query)
+    {
+        return $query->where('is_active', true);
     }
 }
