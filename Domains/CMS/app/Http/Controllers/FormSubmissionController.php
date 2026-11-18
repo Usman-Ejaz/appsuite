@@ -4,7 +4,7 @@ namespace Domains\CMS\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
-use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Enums\CMSPermission;
 use Domains\CMS\Http\Requests\FormSubmission\UpdateRequest;
 use Domains\CMS\Http\Resources\FormSubmissionCollection;
 use Domains\CMS\Http\Resources\FormSubmissionResource;
@@ -34,13 +34,18 @@ class FormSubmissionController extends Controller
     public function list(GetCollectionRequest $request, int $form): FormSubmissionCollection
     {
         abort_if($request->user() instanceof ApiKey, 403);
-        $this->authorize('permission', CmsPermission::FORM_SUBMISSIONS_VIEW->value);
+
+        $this->authorize('permission', CMSPermission::FORM_SUBMISSIONS_VIEW);
 
         $this->forms->findOrFail($form);
 
         $filters = $request->filters();
+        $filters['filter'] = ['AND' => array_values(array_filter([
+            ['field' => 'form_id', 'op' => '=', 'value' => $form],
+            $filters['filter'] ?? null,
+        ]))];
 
-        $records = $this->submissions->filter(['form_id' => $form])->list($filters);
+        $records = $this->submissions->list($filters);
 
         return new FormSubmissionCollection($records);
     }
@@ -50,18 +55,23 @@ class FormSubmissionController extends Controller
      *
      * Returns the details of a single form submission.
      */
-    public function get(GetResourceRequest $request, int $form, int $id): FormSubmissionResource
+    public function get(GetResourceRequest $request, int $form, int $id): JsonResponse
     {
         abort_if($request->user() instanceof ApiKey, 403);
-        $this->authorize('permission', CmsPermission::FORM_SUBMISSIONS_VIEW->value);
+        $this->authorize('permission', CMSPermission::FORM_SUBMISSIONS_VIEW);
 
         $this->forms->findOrFail($form);
 
         $filters = $request->filters();
+        $filters['filter'] = ['AND' => array_values(array_filter([
+            ['field' => 'form_id', 'op' => '=', 'value' => $form],
+            $filters['filter'] ?? null,
+        ]))];
 
-        $record = $this->submissions->filter(['form_id' => $form])->get($id, $filters);
+        $record = $this->submissions->get($id, $filters);
 
-        return FormSubmissionResource::make($record);
+        // Wrapped by hand: the resource has its own `data` field, so Laravel would not wrap it.
+        return response()->json(['data' => FormSubmissionResource::make($record)]);
     }
 
     /**
@@ -70,15 +80,18 @@ class FormSubmissionController extends Controller
      * Updates an existing form submission. Fields left out of the request keep their current
      * value.
      */
-    public function update(UpdateRequest $request, int $form, int $id): FormSubmissionResource
+    public function update(UpdateRequest $request, int $form, int $id): JsonResponse
     {
         $this->forms->findOrFail($form);
 
         $input = $request->validated();
 
-        $record = $this->submissions->filter(['form_id' => $form])->update($id, $input);
+        $record = $this->submissions->get($id, ['filter' => ['field' => 'form_id', 'op' => '=', 'value' => $form]]);
 
-        return FormSubmissionResource::make($record);
+        $record = $this->submissions->update($record, $input);
+
+        // Wrapped by hand: the resource has its own `data` field, so Laravel would not wrap it.
+        return response()->json(['data' => FormSubmissionResource::make($record)]);
     }
 
     /**
@@ -89,10 +102,12 @@ class FormSubmissionController extends Controller
     public function delete(Request $request, int $form, int $id): JsonResponse
     {
         abort_if($request->user() instanceof ApiKey, 403);
-        $this->authorize('permission', CmsPermission::FORM_SUBMISSIONS_DELETE->value);
+        $this->authorize('permission', CMSPermission::FORM_SUBMISSIONS_DELETE);
 
         $this->forms->findOrFail($form);
-        $this->submissions->filter(['form_id' => $form])->delete($id);
+        $record = $this->submissions->get($id, ['filter' => ['field' => 'form_id', 'op' => '=', 'value' => $form]]);
+
+        $this->submissions->delete($record);
 
         return response()->json(null, 204);
     }

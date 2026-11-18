@@ -39,11 +39,6 @@ class PermissionResource extends BaseResource
             'description' => $this->whenHas('description'),
 
             /**
-             * A short code identifying the permission within its app.
-             */
-            'code' => $this->whenHas('code'),
-
-            /**
              * The auth guard this permission applies to.
              */
             'guard_name' => $this->whenHas('guard_name'),

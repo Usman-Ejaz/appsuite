@@ -15,6 +15,6 @@ class Permission extends SpatiePermission
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'app_id', 'name', 'description', 'code', 'guard_name',
+        'app_id', 'name', 'label', 'description', 'guard_name',
     ];
 }

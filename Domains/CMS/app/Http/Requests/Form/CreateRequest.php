@@ -2,7 +2,7 @@
 
 namespace Domains\CMS\Http\Requests\Form;
 
-use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Enums\CMSPermission;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -11,7 +11,7 @@ class CreateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', CmsPermission::FORM_CREATE->value);
+        return Gate::allows('permission', CMSPermission::FORM_CREATE);
     }
 
     public function rules(): array

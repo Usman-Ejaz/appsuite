@@ -3,7 +3,7 @@
 namespace Domains\CMS\Http\Requests\Blog;
 
 use Domains\CMS\Enums\BlogStatus;
-use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Enums\CMSPermission;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -12,7 +12,7 @@ class UpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', CmsPermission::BLOG_UPDATE->value);
+        return Gate::allows('permission', CMSPermission::BLOG_UPDATE);
     }
 
     public function rules(): array

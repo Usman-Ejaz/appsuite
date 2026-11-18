@@ -2,6 +2,7 @@
 
 namespace Domains\CMS\Models;
 
+use Domains\CMS\Database\Factories\FormActionFactory;
 use Domains\Core\Models\BaseModel;
 use Domains\Shared\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -50,5 +51,10 @@ class FormAction extends BaseModel
     public function active(Builder $query)
     {
         return $query->where('is_active', true);
+    }
+
+    protected static function newFactory(): FormActionFactory
+    {
+        return FormActionFactory::new();
     }
 }

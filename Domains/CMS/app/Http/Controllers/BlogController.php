@@ -5,7 +5,7 @@ namespace Domains\CMS\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
 use Domains\CMS\Actions\BlogPublisher;
-use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Enums\CMSPermission;
 use Domains\CMS\Http\Requests\Blog\CreateRequest;
 use Domains\CMS\Http\Requests\Blog\UpdateRequest;
 use Domains\CMS\Http\Resources\BlogResource;
@@ -30,7 +30,7 @@ class BlogController extends Controller
      */
     public function list(GetCollectionRequest $request)
     {
-        $this->authorize('permission', CmsPermission::BLOG_VIEW);
+        $this->authorize('permission', CMSPermission::BLOG_VIEW);
 
         $filters = $request->filters();
 
@@ -62,7 +62,7 @@ class BlogController extends Controller
      */
     public function get(GetResourceRequest $request, int $id): BlogResource
     {
-        $this->authorize('permission', CmsPermission::BLOG_VIEW);
+        $this->authorize('permission', CMSPermission::BLOG_VIEW);
 
         $filters = $request->filters();
 
@@ -92,7 +92,7 @@ class BlogController extends Controller
      */
     public function delete(int $id): JsonResponse
     {
-        $this->authorize('permission', CmsPermission::BLOG_DELETE);
+        $this->authorize('permission', CMSPermission::BLOG_DELETE);
 
         $this->blogs->delete($id);
 
@@ -107,7 +107,7 @@ class BlogController extends Controller
      */
     public function publish(int $id): BlogResource
     {
-        $this->authorize('permission', CmsPermission::BLOG_PUBLISH);
+        $this->authorize('permission', CMSPermission::BLOG_PUBLISH);
 
         $blog = BlogPublisher::publish(
             $this->blogs->findOrFail($id)
@@ -123,7 +123,7 @@ class BlogController extends Controller
      */
     public function unpublish(int $id): BlogResource
     {
-        $this->authorize('permission', CmsPermission::BLOG_PUBLISH);
+        $this->authorize('permission', CMSPermission::BLOG_PUBLISH);
 
         $blog = BlogPublisher::unpublish(
             $this->blogs->findOrFail($id)

@@ -4,7 +4,7 @@ namespace Domains\CMS\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
-use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Enums\CMSPermission;
 use Domains\CMS\Http\Requests\FormAction\CreateRequest;
 use Domains\CMS\Http\Requests\FormAction\UpdateRequest;
 use Domains\CMS\Http\Resources\FormActionCollection;
@@ -32,13 +32,18 @@ class FormActionController extends Controller
      */
     public function list(GetCollectionRequest $request, int $form): FormActionCollection
     {
-        $this->authorize('permission', CmsPermission::FORM_VIEW->value);
+        $this->authorize('permission', CMSPermission::FORM_VIEW);
 
         $this->forms->findOrFail($form);
 
         $filters = $request->filters();
 
-        $records = $this->actions->filter(['form_id' => $form])->list($filters);
+        $filters['filter'] = ['AND' => array_values(array_filter([
+            ['field' => 'form_id', 'op' => '=', 'value' => $form],
+            $filters['filter'] ?? null,
+        ]))];
+
+        $records = $this->actions->list($filters);
 
         return new FormActionCollection($records);
     }
@@ -66,13 +71,17 @@ class FormActionController extends Controller
      */
     public function get(GetResourceRequest $request, int $form, int $id): FormActionResource
     {
-        $this->authorize('permission', CmsPermission::FORM_VIEW->value);
+        $this->authorize('permission', CMSPermission::FORM_VIEW);
 
         $this->forms->findOrFail($form);
 
         $filters = $request->filters();
+        $filters['filter'] = ['AND' => array_values(array_filter([
+            ['field' => 'form_id', 'op' => '=', 'value' => $form],
+            $filters['filter'] ?? null,
+        ]))];
 
-        $record = $this->actions->filter(['form_id' => $form])->get($id, $filters);
+        $record = $this->actions->get($id, $filters);
 
         return FormActionResource::make($record);
     }
@@ -88,7 +97,9 @@ class FormActionController extends Controller
 
         $input = $request->validated();
 
-        $record = $this->actions->filter(['form_id' => $form])->update($id, $input);
+        $record = $this->actions->get($id, ['filter' => ['field' => 'form_id', 'op' => '=', 'value' => $form]]);
+
+        $record = $this->actions->update($record, $input);
 
         return FormActionResource::make($record);
     }
@@ -100,10 +111,12 @@ class FormActionController extends Controller
      */
     public function delete(int $form, int $id): JsonResponse
     {
-        $this->authorize('permission', CmsPermission::FORM_UPDATE->value);
+        $this->authorize('permission', CMSPermission::FORM_UPDATE);
 
         $this->forms->findOrFail($form);
-        $this->actions->filter(['form_id' => $form])->delete($id);
+        $record = $this->actions->get($id, ['filter' => ['field' => 'form_id', 'op' => '=', 'value' => $form]]);
+
+        $this->actions->delete($record);
 
         return response()->json(null, 204);
     }

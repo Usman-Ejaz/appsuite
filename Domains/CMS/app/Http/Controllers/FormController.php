@@ -5,7 +5,7 @@ namespace Domains\CMS\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
 use Domains\CMS\Actions\SubmitForm;
-use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Enums\CMSPermission;
 use Domains\CMS\Http\Requests\Form\CreateRequest;
 use Domains\CMS\Http\Requests\Form\SubmitRequest;
 use Domains\CMS\Http\Requests\Form\UpdateRequest;
@@ -34,7 +34,7 @@ class FormController extends Controller
      */
     public function list(GetCollectionRequest $request): FormCollection
     {
-        $this->authorize('permission', CmsPermission::FORM_VIEW->value);
+        $this->authorize('permission', CMSPermission::FORM_VIEW);
 
         $filters = $request->filters();
 
@@ -62,13 +62,13 @@ class FormController extends Controller
      *
      * Returns the details of a single form.
      */
-    public function get(GetResourceRequest $request, int $form): FormResource
+    public function get(GetResourceRequest $request, int $form_id): FormResource
     {
-        $this->authorize('permission', CmsPermission::FORM_VIEW->value);
+        $this->authorize('permission', CMSPermission::FORM_VIEW);
 
         $filters = $request->filters();
 
-        $record = $this->forms->get($form, $filters);
+        $record = $this->forms->get($form_id, $filters);
 
         return FormResource::make($record);
     }
@@ -78,11 +78,11 @@ class FormController extends Controller
      *
      * Updates an existing form. Fields left out of the request keep their current value.
      */
-    public function update(UpdateRequest $request, int $form): FormResource
+    public function update(UpdateRequest $request, int $form_id): FormResource
     {
         $input = $request->validated();
 
-        $record = $this->forms->update($form, $input);
+        $record = $this->forms->update($form_id, $input);
 
         return FormResource::make($record);
     }
@@ -92,11 +92,11 @@ class FormController extends Controller
      *
      * Permanently removes a form.
      */
-    public function delete(int $form): JsonResponse
+    public function delete(int $form_id): JsonResponse
     {
-        $this->authorize('permission', CmsPermission::FORM_DELETE->value);
+        $this->authorize('permission', CMSPermission::FORM_DELETE);
 
-        $this->forms->delete($form);
+        $this->forms->delete($form_id);
 
         return response()->json(null, 204);
     }
@@ -106,9 +106,9 @@ class FormController extends Controller
      *
      * Submits a response to a form on behalf of a visitor.
      */
-    public function submit(SubmitRequest $request, int $form): JsonResponse
+    public function submit(SubmitRequest $request, int $form_id): JsonResponse
     {
-        $formModel = $this->forms->findOrFail($form);
+        $formModel = $this->forms->findOrFail($form_id);
 
         $submission = $this->submitForm->handle(
             $formModel,

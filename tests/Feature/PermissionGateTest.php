@@ -16,7 +16,6 @@ beforeEach(function () {
     Permission::create([
         'app_id' => $this->app_->id,
         'name' => EcommercePermission::PRODUCT_VIEW->value,
-        'code' => 'products_view_test',
         'guard_name' => 'web',
     ]);
 

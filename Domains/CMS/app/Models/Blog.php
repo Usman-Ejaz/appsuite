@@ -2,6 +2,7 @@
 
 namespace Domains\CMS\Models;
 
+use Domains\CMS\Database\Factories\BlogFactory;
 use Domains\CMS\Enums\BlogStatus;
 use Domains\Core\Models\BaseModel;
 use Domains\Identity\Models\User;
@@ -60,5 +61,10 @@ class Blog extends BaseModel
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', BlogStatus::PUBLISHED)->where('published_at', '<=', now());
+    }
+
+    protected static function newFactory(): BlogFactory
+    {
+        return BlogFactory::new();
     }
 }

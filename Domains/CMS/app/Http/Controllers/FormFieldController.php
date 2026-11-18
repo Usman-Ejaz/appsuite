@@ -5,7 +5,7 @@ namespace Domains\CMS\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Dedoc\Scramble\Attributes\Group;
 use Domains\CMS\Actions\ReorderFormFields;
-use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Enums\CMSPermission;
 use Domains\CMS\Http\Requests\FormField\CreateRequest;
 use Domains\CMS\Http\Requests\FormField\ReorderRequest;
 use Domains\CMS\Http\Requests\FormField\UpdateRequest;
@@ -35,13 +35,17 @@ class FormFieldController extends Controller
      */
     public function list(GetCollectionRequest $request, int $form): FormFieldCollection
     {
-        $this->authorize('permission', CmsPermission::FORM_VIEW->value);
+        $this->authorize('permission', CMSPermission::FORM_VIEW);
 
         $this->forms->findOrFail($form);
 
         $filters = $request->filters();
+        $filters['filter'] = ['AND' => array_values(array_filter([
+            ['field' => 'form_id', 'op' => '=', 'value' => $form],
+            $filters['filter'] ?? null,
+        ]))];
 
-        $records = $this->fields->filter(['form_id' => $form])->list($filters);
+        $records = $this->fields->list($filters);
 
         return new FormFieldCollection($records);
     }
@@ -83,13 +87,17 @@ class FormFieldController extends Controller
      */
     public function get(GetResourceRequest $request, int $form, int $id): FormFieldResource
     {
-        $this->authorize('permission', CmsPermission::FORM_VIEW->value);
+        $this->authorize('permission', CMSPermission::FORM_VIEW);
 
         $this->forms->findOrFail($form);
 
         $filters = $request->filters();
+        $filters['filter'] = ['AND' => array_values(array_filter([
+            ['field' => 'form_id', 'op' => '=', 'value' => $form],
+            $filters['filter'] ?? null,
+        ]))];
 
-        $record = $this->fields->filter(['form_id' => $form])->get($id, $filters);
+        $record = $this->fields->get($id, $filters);
 
         return FormFieldResource::make($record);
     }
@@ -105,7 +113,9 @@ class FormFieldController extends Controller
 
         $input = $request->validated();
 
-        $record = $this->fields->filter(['form_id' => $form])->update($id, $input);
+        $record = $this->fields->get($id, ['filter' => ['field' => 'form_id', 'op' => '=', 'value' => $form]]);
+
+        $record = $this->fields->update($record, $input);
 
         return FormFieldResource::make($record);
     }
@@ -117,10 +127,12 @@ class FormFieldController extends Controller
      */
     public function delete(int $form, int $id): JsonResponse
     {
-        $this->authorize('permission', CmsPermission::FORM_UPDATE->value);
+        $this->authorize('permission', CMSPermission::FORM_UPDATE);
 
         $this->forms->findOrFail($form);
-        $this->fields->filter(['form_id' => $form])->delete($id);
+        $record = $this->fields->get($id, ['filter' => ['field' => 'form_id', 'op' => '=', 'value' => $form]]);
+
+        $this->fields->delete($record);
 
         return response()->json(null, 204);
     }

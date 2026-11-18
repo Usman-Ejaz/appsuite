@@ -3,7 +3,7 @@
 namespace Domains\CMS\Http\Requests\Blog;
 
 use Domains\CMS\Enums\BlogStatus;
-use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Enums\CMSPermission;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -12,7 +12,7 @@ class CreateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', CmsPermission::BLOG_CREATE->value);
+        return Gate::allows('permission', CMSPermission::BLOG_CREATE);
     }
 
     public function rules(): array
@@ -65,7 +65,7 @@ class CreateRequest extends FormRequest
              *
              * @example 3
              */
-            'category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->where('company_id', $companyId)],
+            'category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->where('company_id', $companyId)->where('app_code', 'cms')],
 
             /**
              * The blog post's publishing state. See `BlogStatus` for the allowed values.

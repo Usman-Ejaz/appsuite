@@ -2,6 +2,7 @@
 
 namespace Domains\CMS\Models;
 
+use Domains\CMS\Database\Factories\FormFieldFactory;
 use Domains\CMS\Enums\FormFieldType;
 use Domains\Core\Models\BaseModel;
 use Domains\Shared\Traits\BelongsToSite;
@@ -58,5 +59,10 @@ class FormField extends BaseModel
     public function active(Builder $query)
     {
         return $query->where('is_active', true);
+    }
+
+    protected static function newFactory(): FormFieldFactory
+    {
+        return FormFieldFactory::new();
     }
 }

@@ -16,14 +16,13 @@ uses(TestCase::class, RefreshDatabase::class);
 beforeEach(function () {
     $this->cmsApp = App::factory()->create(['code' => 'cms']);
     $this->company = Company::factory()->create();
-    $this->company->apps()->attach($this->cmsApp->id);
     $this->user = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => true]);
+    $this->company->apps()->attach($this->cmsApp->id, ['assigned_by' => $this->user->id, 'assigned_at' => now()]);
 
     foreach (['cms:blogs:view', 'cms:blogs:create', 'cms:blogs:update', 'cms:blogs:delete', 'cms:blogs:publish'] as $name) {
         $permission = Permission::create([
             'app_id' => $this->cmsApp->id,
             'name' => $name,
-            'code' => str($name)->afterLast(':').'_test',
             'guard_name' => 'web',
         ]);
         $this->user->givePermissionTo($permission);
@@ -75,7 +74,8 @@ test('a blog belonging to a different company is not found', function () {
 });
 
 test('a user without permission cannot manage blogs', function () {
-    $unprivilegedUser = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => true]);
+    $unprivilegedUser = User::factory()->create(['company_id' => $this->company->id]);
+    $unprivilegedUser->apps()->attach($this->cmsApp->id);
     Sanctum::actingAs($unprivilegedUser);
 
     $this->postJson('/api/v1/cms/blogs', ['title' => 'Hello World', 'slug' => 'hello-world'])->assertForbidden();
@@ -96,7 +96,8 @@ test('publishing a blog sets published_at once and republishing does not reset i
 });
 
 test('a user without the publish permission cannot publish a blog', function () {
-    $unprivilegedUser = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => true]);
+    $unprivilegedUser = User::factory()->create(['company_id' => $this->company->id]);
+    $unprivilegedUser->apps()->attach($this->cmsApp->id);
     Sanctum::actingAs($unprivilegedUser);
 
     $blog = Blog::factory()->create(['company_id' => $this->company->id]);
@@ -111,25 +112,20 @@ test('slug uniqueness is scoped per company', function () {
         ->assertUnprocessable();
 });
 
-test('an api key with only the view ability never sees draft blogs, unlike a user with the same ability', function () {
+test('an api key with the view ability sees draft and published blogs, like a user with the same ability', function () {
     Blog::factory()->create(['company_id' => $this->company->id, 'status' => 'Draft']);
     Blog::factory()->create(['company_id' => $this->company->id, 'status' => 'Published', 'published_at' => now()->subDay()]);
 
-    $viewOnlyUser = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => true]);
-    $viewPermission = Permission::create([
-        'app_id' => $this->cmsApp->id,
-        'name' => 'cms:blogs:view',
-        'code' => 'blogs_view_only',
-        'guard_name' => 'web',
-    ]);
-    $viewOnlyUser->givePermissionTo($viewPermission);
+    $viewOnlyUser = User::factory()->create(['company_id' => $this->company->id]);
+    $viewOnlyUser->apps()->attach($this->cmsApp->id);
+    $viewOnlyUser->givePermissionTo(Permission::findByName('cms:blogs:view', 'web'));
 
     Sanctum::actingAs($viewOnlyUser);
-    $this->getJson('/api/v1/cms/blogs')->assertOk()->assertJsonCount(1, 'data');
+    $this->getJson('/api/v1/cms/blogs')->assertOk()->assertJsonCount(2, 'data');
 
     $apiKey = ApiKey::factory()->create(['company_id' => $this->company->id, 'abilities' => ['cms:blogs:view']]);
     Sanctum::actingAs($apiKey);
-    $this->getJson('/api/v1/cms/blogs')->assertOk()->assertJsonCount(1, 'data');
+    $this->getJson('/api/v1/cms/blogs')->assertOk()->assertJsonCount(2, 'data');
 });
 
 test('author and category are nested when loaded', function () {
@@ -141,7 +137,9 @@ test('author and category are nested when loaded', function () {
         'category_id' => $category->id,
     ]);
 
-    $this->getJson("/api/v1/cms/blogs/{$blog->id}")
+    $include = json_encode([['name' => 'author'], ['name' => 'category']]);
+
+    $this->getJson("/api/v1/cms/blogs/{$blog->id}?".http_build_query(['include' => $include]))
         ->assertOk()
         ->assertJsonPath('data.author.id', $author->id)
         ->assertJsonPath('data.category.id', $category->id);

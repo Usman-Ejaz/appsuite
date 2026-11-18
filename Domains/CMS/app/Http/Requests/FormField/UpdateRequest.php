@@ -2,7 +2,7 @@
 
 namespace Domains\CMS\Http\Requests\FormField;
 
-use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Enums\CMSPermission;
 use Domains\CMS\Enums\FormFieldType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
@@ -12,14 +12,14 @@ class UpdateRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('permission', CmsPermission::FORM_UPDATE->value);
+        return Gate::allows('permission', CMSPermission::FORM_UPDATE);
     }
 
     public function rules(): array
     {
         return [
             'label' => ['sometimes', 'string', 'max:255'],
-            'name' => ['sometimes', 'string', 'max:100', Rule::unique('form_fields')->where('form_id', $this->route('form'))->ignore($this->route('id'))],
+            'name' => ['sometimes', 'string', 'max:100', Rule::unique('form_fields')->where('form_id', $this->route('form_id'))->ignore($this->route('id'))],
             'type' => ['sometimes', Rule::enum(FormFieldType::class)],
             'options' => ['nullable', 'array'],
             'default_value' => ['nullable'],

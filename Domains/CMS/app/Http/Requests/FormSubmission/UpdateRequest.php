@@ -2,7 +2,7 @@
 
 namespace Domains\CMS\Http\Requests\FormSubmission;
 
-use Domains\CMS\Enums\CmsPermission;
+use Domains\CMS\Enums\CMSPermission;
 use Domains\CMS\Enums\FormSubmissionStatus;
 use Domains\Identity\Models\ApiKey;
 use Illuminate\Foundation\Http\FormRequest;
@@ -18,7 +18,7 @@ class UpdateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return ! ($this->user() instanceof ApiKey) && Gate::allows('permission', CmsPermission::FORM_SUBMISSIONS_UPDATE->value);
+        return ! ($this->user() instanceof ApiKey) && Gate::allows('permission', CMSPermission::FORM_SUBMISSIONS_UPDATE);
     }
 
     public function rules(): array

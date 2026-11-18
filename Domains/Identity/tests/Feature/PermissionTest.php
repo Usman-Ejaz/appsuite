@@ -14,7 +14,6 @@ test('a permission can be created with its fillable attributes and belongs to an
         'app_id' => $app->id,
         'name' => 'crm:contacts:view',
         'label' => 'View Contacts',
-        'code' => 'contacts_view',
         'guard_name' => 'web',
     ]);
 

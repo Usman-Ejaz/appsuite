@@ -25,10 +25,10 @@ Route::prefix('v1/cms')->middleware(['auth:sanctum', 'app:cms'])->name('cms.')->
     Route::controller(FormController::class)->prefix('forms')->name('forms.')->group(function () {
         Route::get('/', 'list')->name('list');
         Route::post('/', 'create')->name('create');
-        Route::get('/{form}', 'get')->name('get');
-        Route::put('/{form}', 'update')->name('update');
-        Route::delete('/{form}', 'delete')->name('delete');
-        Route::post('/{form}/submit', 'submit')->name('submit');
+        Route::get('/{form_id}', 'get')->name('get');
+        Route::put('/{form_id}', 'update')->name('update');
+        Route::delete('/{form_id}', 'delete')->name('delete');
+        Route::post('/{form_id}/submit', 'submit')->name('submit');
     });
 
     Route::controller(FormFieldController::class)->prefix('forms/{form_id}/fields')->name('forms.fields.')->group(function () {

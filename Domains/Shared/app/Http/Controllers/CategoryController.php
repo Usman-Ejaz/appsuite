@@ -8,6 +8,7 @@ use Domains\Core\Http\Requests\GetCollectionRequest;
 use Domains\Core\Http\Requests\GetResourceRequest;
 use Domains\Shared\Http\Requests\Category\CreateRequest;
 use Domains\Shared\Http\Requests\Category\UpdateRequest;
+use Domains\Shared\Http\Resources\CategoryCollection;
 use Domains\Shared\Http\Resources\CategoryResource;
 use Domains\Shared\Repositories\CategoryRepository;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +31,7 @@ class CategoryController extends Controller
      *
      * Returns the categories that belong to the company.
      */
-    public function list(GetCollectionRequest $request, string $app_code): CategoryResource
+    public function list(GetCollectionRequest $request, string $app_code): CategoryCollection
     {
         $this->authorizeCategories($request, $app_code, 'view');
 
@@ -38,7 +39,7 @@ class CategoryController extends Controller
 
         $records = $this->repo->forAppCode($app_code)->list($filters);
 
-        return CategoryResource::collection($records);
+        return new CategoryCollection($records);
     }
 
     /**
@@ -102,7 +103,7 @@ class CategoryController extends Controller
 
     /**
      * Category permissions follow a uniform "{app_code}:categories:{view|manage}"
-     * shape across every app (confirmed against both CmsPermission and
+     * shape across every app (confirmed against both CMSPermission and
      * EcommercePermission's existing enum values), so no per-app enum is needed
      * here — the string is built directly from the route's app_code.
      */

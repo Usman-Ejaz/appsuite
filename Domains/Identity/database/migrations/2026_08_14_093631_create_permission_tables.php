@@ -27,8 +27,8 @@ return new class extends Migration
             $table->id(); // permission id
             $table->app();
             $table->string('name');
+            $table->string('label')->nullable();
             $table->string('description', 500)->nullable();
-            $table->string('code');
             $table->string('guard_name');
             $table->timestamps();
 

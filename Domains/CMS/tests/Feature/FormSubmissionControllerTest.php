@@ -17,14 +17,13 @@ uses(TestCase::class, RefreshDatabase::class);
 beforeEach(function () {
     $this->cmsApp = App::factory()->create(['code' => 'cms']);
     $this->company = Company::factory()->create();
-    $this->company->apps()->attach($this->cmsApp->id);
     $this->user = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => true]);
+    $this->company->apps()->attach($this->cmsApp->id, ['assigned_by' => $this->user->id, 'assigned_at' => now()]);
 
     foreach (['cms:forms:submit', 'cms:submissions:view', 'cms:submissions:update', 'cms:submissions:delete'] as $name) {
         $permission = Permission::create([
             'app_id' => $this->cmsApp->id,
             'name' => $name,
-            'code' => str($name)->afterLast(':').'_test',
             'guard_name' => 'web',
         ]);
         $this->user->givePermissionTo($permission);

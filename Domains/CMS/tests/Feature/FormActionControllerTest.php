@@ -15,14 +15,13 @@ uses(TestCase::class, RefreshDatabase::class);
 beforeEach(function () {
     $this->cmsApp = App::factory()->create(['code' => 'cms']);
     $this->company = Company::factory()->create();
-    $this->company->apps()->attach($this->cmsApp->id);
     $this->user = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => true]);
+    $this->company->apps()->attach($this->cmsApp->id, ['assigned_by' => $this->user->id, 'assigned_at' => now()]);
 
     foreach (['cms:forms:view', 'cms:forms:update'] as $name) {
         $permission = Permission::create([
             'app_id' => $this->cmsApp->id,
             'name' => $name,
-            'code' => str($name)->afterLast(':').'_test',
             'guard_name' => 'web',
         ]);
         $this->user->givePermissionTo($permission);
@@ -70,7 +69,8 @@ test('a form action belonging to a different form is not found', function () {
 });
 
 test('a user without permission cannot manage form actions', function () {
-    $unprivilegedUser = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => true]);
+    $unprivilegedUser = User::factory()->create(['company_id' => $this->company->id]);
+    $unprivilegedUser->apps()->attach($this->cmsApp->id);
     Sanctum::actingAs($unprivilegedUser);
 
     $this->postJson("/api/v1/cms/forms/{$this->form->id}/actions", [

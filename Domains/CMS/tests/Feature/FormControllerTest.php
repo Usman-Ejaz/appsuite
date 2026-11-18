@@ -15,14 +15,13 @@ uses(TestCase::class, RefreshDatabase::class);
 beforeEach(function () {
     $this->cmsApp = App::factory()->create(['code' => 'cms']);
     $this->company = Company::factory()->create();
-    $this->company->apps()->attach($this->cmsApp->id);
     $this->user = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => true]);
+    $this->company->apps()->attach($this->cmsApp->id, ['assigned_by' => $this->user->id, 'assigned_at' => now()]);
 
     foreach (['cms:forms:view', 'cms:forms:create', 'cms:forms:update', 'cms:forms:delete'] as $name) {
         $permission = Permission::create([
             'app_id' => $this->cmsApp->id,
             'name' => $name,
-            'code' => str($name)->afterLast(':').'_test',
             'guard_name' => 'web',
         ]);
         $this->user->givePermissionTo($permission);
@@ -47,6 +46,21 @@ test('a form can be created, listed, updated, and deleted', function () {
     $this->assertDatabaseMissing('forms', ['id' => $id]);
 });
 
+test('a form can be updated with its own slug', function () {
+    $id = $this->postJson('/api/v1/cms/forms', ['name' => 'Contact Us', 'slug' => 'contact-us'])->assertCreated()->json('data.id');
+
+    $this->putJson("/api/v1/cms/forms/{$id}", ['name' => 'Contact Sales', 'slug' => 'contact-us'])
+        ->assertOk()
+        ->assertJsonPath('data.slug', 'contact-us');
+});
+
+test('a form cannot take the slug of another form', function () {
+    $this->postJson('/api/v1/cms/forms', ['name' => 'Contact Us', 'slug' => 'contact-us'])->assertCreated();
+    $id = $this->postJson('/api/v1/cms/forms', ['name' => 'Support', 'slug' => 'support'])->assertCreated()->json('data.id');
+
+    $this->putJson("/api/v1/cms/forms/{$id}", ['slug' => 'contact-us'])->assertUnprocessable();
+});
+
 test('a form belonging to a different company is not found', function () {
     $otherCompany = Company::factory()->create();
     $form = Form::factory()->create(['company_id' => $otherCompany->id]);
@@ -57,7 +71,8 @@ test('a form belonging to a different company is not found', function () {
 });
 
 test('a user without permission cannot manage forms', function () {
-    $unprivilegedUser = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => true]);
+    $unprivilegedUser = User::factory()->create(['company_id' => $this->company->id]);
+    $unprivilegedUser->apps()->attach($this->cmsApp->id);
     Sanctum::actingAs($unprivilegedUser);
 
     $this->postJson('/api/v1/cms/forms', ['name' => 'Contact Us', 'slug' => 'contact-us'])->assertForbidden();
@@ -75,7 +90,9 @@ test('getting a form returns its fields ordered by sort_order', function () {
     FormField::factory()->create(['form_id' => $form->id, 'company_id' => $this->company->id, 'name' => 'second', 'sort_order' => 2]);
     FormField::factory()->create(['form_id' => $form->id, 'company_id' => $this->company->id, 'name' => 'first', 'sort_order' => 1]);
 
-    $response = $this->getJson("/api/v1/cms/forms/{$form->id}")->assertOk();
+    $include = json_encode([['name' => 'fields']]);
+
+    $response = $this->getJson("/api/v1/cms/forms/{$form->id}?".http_build_query(['include' => $include]))->assertOk();
 
     expect($response->json('data.fields.0.name'))->toBe('first')
         ->and($response->json('data.fields.1.name'))->toBe('second');

@@ -2,6 +2,7 @@
 
 namespace Domains\CMS\Models;
 
+use Domains\CMS\Database\Factories\FormSubmissionFactory;
 use Domains\CMS\Enums\FormSubmissionStatus;
 use Domains\Core\Models\BaseModel;
 use Domains\Shared\Traits\BelongsToSite;
@@ -39,5 +40,10 @@ class FormSubmission extends BaseModel
     public function form(): BelongsTo
     {
         return $this->belongsTo(Form::class);
+    }
+
+    protected static function newFactory(): FormSubmissionFactory
+    {
+        return FormSubmissionFactory::new();
     }
 }
