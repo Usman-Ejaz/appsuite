@@ -12,7 +12,7 @@ uses(TestCase::class, RefreshDatabase::class);
 
 test('a root user can create, list, view, update, and delete a role', function () {
     Sanctum::actingAs(User::factory()->create(['is_root' => true]));
-    $permission = Permission::create(['name' => 'crm:contacts:view', 'code' => 'contacts_view', 'guard_name' => 'web']);
+    $permission = Permission::create(['name' => 'crm:contacts:view', 'guard_name' => 'web']);
 
     $response = $this->postJson('/api/v1/roles', ['name' => 'Editor', 'permissions' => [$permission->id]]);
     $response->assertCreated()
@@ -108,9 +108,9 @@ test('a role name is unique per company but not globally', function () {
 
 test('updating a role syncs its permissions', function () {
     Sanctum::actingAs(User::factory()->create(['is_root' => true]));
-    $permA = Permission::create(['name' => 'perm.a', 'code' => 'perm_a', 'guard_name' => 'web']);
-    $permB = Permission::create(['name' => 'perm.b', 'code' => 'perm_b', 'guard_name' => 'web']);
-    $permC = Permission::create(['name' => 'perm.c', 'code' => 'perm_c', 'guard_name' => 'web']);
+    $permA = Permission::create(['name' => 'perm.a', 'guard_name' => 'web']);
+    $permB = Permission::create(['name' => 'perm.b', 'guard_name' => 'web']);
+    $permC = Permission::create(['name' => 'perm.c', 'guard_name' => 'web']);
 
     $role = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
     $role->syncPermissions([$permA, $permB]);
@@ -124,7 +124,7 @@ test('updating a role syncs its permissions', function () {
 
 test('updating a role without a permissions field leaves its permissions untouched', function () {
     Sanctum::actingAs(User::factory()->create(['is_root' => true]));
-    $permission = Permission::create(['name' => 'perm.a', 'code' => 'perm_a', 'guard_name' => 'web']);
+    $permission = Permission::create(['name' => 'perm.a', 'guard_name' => 'web']);
     $role = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
     $role->syncPermissions([$permission]);
 

@@ -137,7 +137,7 @@ test('a single app can be fetched with a restricted select', function () {
 test('the apps list can eager-load permissions via a qubuilder include', function () {
     Sanctum::actingAs(User::factory()->create(['is_root' => true]));
     $app = App::factory()->create(['name' => 'CRM', 'slug' => 'crm', 'code' => 'crm']);
-    Permission::create(['app_id' => $app->id, 'name' => 'crm:contacts:view', 'code' => 'contacts_view', 'guard_name' => 'web']);
+    Permission::create(['app_id' => $app->id, 'name' => 'crm:contacts:view', 'guard_name' => 'web']);
 
     $query = http_build_query(['include' => [['name' => 'permissions']]]);
 

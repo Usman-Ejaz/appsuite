@@ -23,8 +23,8 @@ test('a root user bypasses app-access checks regardless of subscription', functi
 test('an owner is allowed when their company has the app', function () {
     $cmsApp = App::factory()->create(['code' => 'cms']);
     $company = Company::factory()->create();
-    $company->apps()->attach($cmsApp->id);
     $user = User::factory()->create(['company_id' => $company->id, 'is_owner' => true]);
+    $company->apps()->attach($cmsApp->id, ['assigned_by' => $user->id, 'assigned_at' => now()]);
     Sanctum::actingAs($user);
 
     $this->getJson('/api/v1/cms/blogs')->assertOk();
@@ -40,18 +40,23 @@ test('an owner is forbidden when their company does not have the app', function 
 });
 
 test('a regular user requires both company subscription and an individual app grant', function () {
+    // A bare route, so the user's lack of blog permissions doesn't mask the middleware's answer.
+    Route::middleware(['auth:sanctum', 'app:cms'])
+        ->get('/api/v1/_test/cms', fn () => response()->json(['ok' => true]));
+
     $cmsApp = App::factory()->create(['code' => 'cms']);
     $company = Company::factory()->create();
-    $company->apps()->attach($cmsApp->id);
     $user = User::factory()->create(['company_id' => $company->id, 'is_owner' => false]);
+    $company->apps()->attach($cmsApp->id, ['assigned_by' => $user->id, 'assigned_at' => now()]);
     Sanctum::actingAs($user);
 
-    $this->getJson('/api/v1/cms/blogs')->assertForbidden();
+    $this->getJson('/api/v1/_test/cms')->assertForbidden();
 
     $user->apps()->attach($cmsApp->id);
-    Cache::store('redis')->flush();
+    $user->unsetRelation('apps');
+    Cache::flush();
 
-    $this->getJson('/api/v1/cms/blogs')->assertOk();
+    $this->getJson('/api/v1/_test/cms')->assertOk();
 });
 
 test('an unauthenticated request is rejected', function () {
@@ -61,8 +66,8 @@ test('an unauthenticated request is rejected', function () {
 test('a second request within the cache ttl does not re-query the database for company subscription', function () {
     $cmsApp = App::factory()->create(['code' => 'cms']);
     $company = Company::factory()->create();
-    $company->apps()->attach($cmsApp->id);
     $user = User::factory()->create(['company_id' => $company->id, 'is_owner' => true]);
+    $company->apps()->attach($cmsApp->id, ['assigned_by' => $user->id, 'assigned_at' => now()]);
     Sanctum::actingAs($user);
 
     DB::enableQueryLog();
@@ -77,14 +82,14 @@ test('a second request within the cache ttl does not re-query the database for c
 });
 
 test('the middleware is domain-agnostic and works for any app code', function () {
-    Route::middleware(['auth:sanctum', 'app:widgets'])
-        ->get('/api/v1/_test/widgets', fn () => response()->json(['ok' => true]));
+    Route::middleware(['auth:sanctum', 'app:inventory'])
+        ->get('/api/v1/_test/inventory', fn () => response()->json(['ok' => true]));
 
-    $widgetsApp = App::factory()->create(['code' => 'widgets']);
+    $inventoryApp = App::factory()->create(['code' => 'inventory']);
     $company = Company::factory()->create();
-    $company->apps()->attach($widgetsApp->id);
     $user = User::factory()->create(['company_id' => $company->id, 'is_owner' => true]);
+    $company->apps()->attach($inventoryApp->id, ['assigned_by' => $user->id, 'assigned_at' => now()]);
     Sanctum::actingAs($user);
 
-    $this->getJson('/api/v1/_test/widgets')->assertOk();
+    $this->getJson('/api/v1/_test/inventory')->assertOk();
 });

@@ -1,5 +1,6 @@
 <?php
 
+use Domains\Core\Enums\AppCode;
 use Domains\Core\Models\App;
 use Domains\Core\Models\Integration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,7 +16,7 @@ test('an app can be created with its fillable attributes', function () {
     ]);
 
     expect($app->name)->toBe('CRM')
-        ->and($app->code)->toBe('crm')
+        ->and($app->code)->toBe(AppCode::CRM)
         ->and($app->is_active)->toBeTrue();
 
     $this->assertDatabaseHas('apps', ['code' => 'crm']);
