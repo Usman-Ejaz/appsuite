@@ -70,8 +70,10 @@ return [
     'version_minor' => env('APP_VERSION_MINOR', '1.0.0'),
 
     'build' => file_exists($buildVersionFile = base_path('BUILD_VERSION'))
-        ? (trim(file_get_contents($buildVersionFile)) ?: null)
-        : null,
+        && is_string($buildVersion = file_get_contents($buildVersionFile))
+        && trim($buildVersion) !== ''
+            ? trim($buildVersion)
+            : null,
 
     /*
     |--------------------------------------------------------------------------

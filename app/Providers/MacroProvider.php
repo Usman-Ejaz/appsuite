@@ -27,7 +27,7 @@ class MacroProvider extends ServiceProvider
         $this->registerSchemaMacros();
     }
 
-    protected function registerSchemaMacros()
+    protected function registerSchemaMacros(): void
     {
         Blueprint::macro('company', function () {
             /** @var Blueprint $this */
@@ -70,7 +70,7 @@ class MacroProvider extends ServiceProvider
 
         Blueprint::macro('creator', function () {
             /** @var Blueprint $this */
-            return $this->nullableMorphs('creator');
+            $this->nullableMorphs('creator');
         });
 
         Blueprint::macro('dropCreator', function () {
@@ -80,7 +80,7 @@ class MacroProvider extends ServiceProvider
 
         Blueprint::macro('updater', function () {
             /** @var Blueprint $this */
-            return $this->nullableMorphs('updater');
+            $this->nullableMorphs('updater');
         });
 
         Blueprint::macro('dropUpdater', function () {
@@ -93,7 +93,7 @@ class MacroProvider extends ServiceProvider
             $this->creator();
 
             /** @var Blueprint $this */
-            return $this->updater();
+            $this->updater();
         });
 
         Blueprint::macro('dropEditor', function () {
@@ -105,7 +105,7 @@ class MacroProvider extends ServiceProvider
         });
     }
 
-    protected function registerRequestMacros()
+    protected function registerRequestMacros(): void
     {
         Request::macro('filter', function () {
             /** @var Request $this */

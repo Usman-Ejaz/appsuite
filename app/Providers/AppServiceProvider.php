@@ -62,7 +62,7 @@ class AppServiceProvider extends ServiceProvider
         );
     }
 
-    protected function registerGates()
+    protected function registerGates(): void
     {
         Gate::before(function (Actor $actor) {
             if ($actor->isRoot()) {

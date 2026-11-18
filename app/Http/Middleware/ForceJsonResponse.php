@@ -54,8 +54,7 @@ class ForceJsonResponse
             );
         }
 
-        $contents = json_decode($response->getContent(), true);
-        $contents = Arr::wrap($contents);
+        $contents = Arr::wrap($response->getData(true));
 
         // Stable machine-readable error code: explicit body `code`, else the transport
         // header set by abort() call sites, else a generic default for 401/403. Pulled here
