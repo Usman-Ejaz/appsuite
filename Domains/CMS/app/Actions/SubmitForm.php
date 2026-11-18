@@ -6,7 +6,7 @@ use Domains\CMS\Enums\CMSTrigger;
 use Domains\CMS\Enums\FormSubmissionStatus;
 use Domains\CMS\Models\Form;
 use Domains\CMS\Models\FormSubmission;
-use Domains\Notification\Actions\TriggerFormSubmissionAction;
+use Domains\Notification\Services\Triggers\TriggerDispatcher;
 
 class SubmitForm
 {
@@ -24,7 +24,7 @@ class SubmitForm
         // Notifications run as a queued trigger action, never inline here. TODO(form-actions):
         // this form's FormAction rows still aren't executed — they move onto `Cms:Form:Submitted`
         // trigger actions with a form condition.
-        TriggerFormSubmissionAction::dispatch($submission, CMSTrigger::FORM_SUBMITTED);
+        TriggerDispatcher::dispatch(CMSTrigger::FORM_SUBMITTED)->for($submission);
 
         return $submission;
     }

@@ -8,6 +8,7 @@ use Domains\Ecommerce\Database\Seeders\EcommerceTriggerSeeder;
 use Domains\Ecommerce\Enums\EcommerceTrigger;
 use Domains\Ecommerce\Enums\OrderStatus;
 use Domains\Ecommerce\Models\Order;
+use Domains\Ecommerce\Repositories\OrderRepository;
 use Domains\Identity\Models\Company;
 use Domains\Identity\Models\Customer;
 use Domains\Identity\Models\Role;
@@ -19,6 +20,7 @@ use Domains\Notification\Models\NotificationLog;
 use Domains\Notification\Models\Trigger;
 use Domains\Notification\Models\TriggerAction;
 use Domains\Notification\Notifications\TriggerNotification;
+use Domains\Notification\Services\Triggers\TriggerDispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Notifications\Events\NotificationSending;
@@ -61,9 +63,17 @@ function createTriggerAction(Company $company, BackedEnum $trigger, array $attri
     return $action;
 }
 
+/**
+ * Place an order through the repository, which fires `ORDER_CREATED` like a real checkout.
+ *
+ * @param  array<string, mixed>  $attributes
+ */
 function createOrder(Company $company, Customer $customer, array $attributes = []): Order
 {
-    return Order::factory()->create(['company_id' => $company->id, 'customer_id' => $customer->id, ...$attributes]);
+    $attributes = Order::factory()->raw(['company_id' => $company->id, 'customer_id' => $customer->id, ...$attributes]);
+
+    // company_id normally comes from the signed-in user; there is none here.
+    return Order::unguarded(fn () => app(OrderRepository::class)->create($attributes));
 }
 
 test('an order confirmation is sent to the customer with its tokens filled in', function () {
@@ -103,6 +113,17 @@ test('the owner gets an in-app notification and it is logged', function () {
         ->and($log->channel)->toBe(Channel::DATABASE)
         ->and($log->notifiable_id)->toBe($this->owner->id)
         ->and($log->resource_id)->toBe($order->id);
+});
+
+test("a trigger's notifications are queued on the trigger's queue", function () {
+    Notification::fake();
+
+    createTriggerAction($this->company, EcommerceTrigger::ORDER_CREATED, [], [['type' => RecipientType::DYNAMIC, 'code' => 'customer']]);
+    $order = Order::factory()->create(['company_id' => $this->company->id, 'customer_id' => $this->customer->id]);
+
+    TriggerDispatcher::dispatch(EcommerceTrigger::ORDER_CREATED)->for($order)->onQueue('notifications-high');
+
+    Notification::assertSentTo($this->customer, TriggerNotification::class, fn (TriggerNotification $notification) => $notification->queue === 'notifications-high');
 });
 
 test('an email to a fixed address is sent and logged with that address', function () {
@@ -151,10 +172,10 @@ test('a status change only notifies actions whose conditions pass', function () 
 
     $order = createOrder($this->company, $this->customer);
 
-    $order->update(['status' => OrderStatus::PROCESSING]);
+    app(OrderRepository::class)->update($order->id, ['status' => OrderStatus::PROCESSING]);
     Notification::assertNothingSent();
 
-    $order->update(['status' => OrderStatus::COMPLETED]);
+    app(OrderRepository::class)->update($order->id, ['status' => OrderStatus::COMPLETED]);
     Notification::assertSentTo($this->customer, TriggerNotification::class, fn (TriggerNotification $notification) => $notification->subject === 'Order moved from Processing to Completed');
     Notification::assertSentTimes(TriggerNotification::class, 1);
 });

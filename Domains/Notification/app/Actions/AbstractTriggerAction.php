@@ -111,12 +111,14 @@ abstract class AbstractTriggerAction implements ShouldQueue, ShouldQueueAfterCom
             foreach ($this->recipients($action, $channel, $companyId) as $notifiable) {
                 $tokens = [...$resolvers, 'recipient' => new RecipientTokenResolver($notifiable)];
 
-                Notification::send($notifiable, new TriggerNotification(
+                $notification = new TriggerNotification(
                     $action,
                     $this->resource,
                     $parser->parse($action->subject, $tokens),
                     $parser->parse($action->body, $tokens, html: $channel->isHtml()),
-                ));
+                );
+
+                Notification::send($notifiable, $notification->onQueue($this->queue));
             }
         }
     }

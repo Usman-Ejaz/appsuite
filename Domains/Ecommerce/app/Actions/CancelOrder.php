@@ -2,8 +2,10 @@
 
 namespace Domains\Ecommerce\Actions;
 
+use Domains\Ecommerce\Enums\EcommerceTrigger;
 use Domains\Ecommerce\Enums\OrderStatus;
 use Domains\Ecommerce\Models\Order;
+use Domains\Notification\Services\Triggers\TriggerDispatcher;
 
 class CancelOrder
 {
@@ -26,10 +28,16 @@ class CancelOrder
             $coupon->decrement('usage_count');
         }
 
+        $previousStatus = $order->status;
+
         $order->update([
             'status' => OrderStatus::CANCELLED,
             'cancelled_at' => now(),
         ]);
+
+        TriggerDispatcher::dispatch(EcommerceTrigger::ORDER_STATUS_CHANGED)
+            ->for($order)
+            ->with(['previous' => ['order.status' => $previousStatus->value]]);
 
         return $order->fresh();
     }
