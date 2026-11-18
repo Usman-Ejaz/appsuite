@@ -2,6 +2,7 @@
 
 namespace Domains\Shared\Http\Requests\Site;
 
+use Domains\Core\Enums\AppCode;
 use Domains\Shared\Enums\SiteStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -55,6 +56,20 @@ class CreateRequest extends FormRequest
             'status' => ['nullable', Rule::enum(SiteStatus::class)],
 
             /**
+             * The app this site serves. Set once, when the site is created.
+             *
+             * @example cms
+             */
+            'app_code' => ['required', Rule::enum(AppCode::class)],
+
+            /**
+             * A free-form kind of site within its app.
+             *
+             * @example blog
+             */
+            'type' => ['nullable', 'string', 'max:255'],
+
+            /**
              * A freeform bag of site-level settings.
              *
              * @example {"theme": "dark"}
@@ -68,7 +83,7 @@ class CreateRequest extends FormRequest
              *
              * @default true
              */
-            'allow_comments_on_blogs' => ['nullable', 'boolean'],
+            'allow_comments' => ['nullable', 'boolean'],
 
             /**
              * Whether a new comment must be approved before it becomes visible.

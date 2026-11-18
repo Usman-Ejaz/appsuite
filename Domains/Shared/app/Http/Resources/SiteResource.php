@@ -50,6 +50,16 @@ class SiteResource extends BaseResource
             'status' => $this->whenHas('status'),
 
             /**
+             * The app this site serves, e.g. `cms`.
+             */
+            'app_code' => $this->whenHas('app_code'),
+
+            /**
+             * A free-form kind of site within its app.
+             */
+            'type' => $this->whenHas('type'),
+
+            /**
              * A freeform bag of site-level settings.
              */
             'setting' => $this->whenHas('setting'),
@@ -57,7 +67,7 @@ class SiteResource extends BaseResource
             /**
              * Whether visitors can leave comments on blog posts.
              */
-            'allow_comments_on_blogs' => $this->whenHas('allow_comments_on_blogs'),
+            'allow_comments' => $this->whenHas('allow_comments'),
 
             /**
              * Whether a new comment must be approved before it becomes visible.

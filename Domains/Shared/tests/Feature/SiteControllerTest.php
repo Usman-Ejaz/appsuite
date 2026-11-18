@@ -17,8 +17,8 @@ beforeEach(function () {
 });
 
 test('a site can be created, listed, updated, and deleted', function () {
-    $response = $this->postJson('/api/v1/sites', ['name' => 'Acme Blog', 'url' => 'https://blog.acme.com']);
-    $response->assertCreated()->assertJsonPath('data.name', 'Acme Blog');
+    $response = $this->postJson('/api/v1/sites', ['name' => 'Acme Blog', 'url' => 'https://blog.acme.com', 'app_code' => 'cms']);
+    $response->assertCreated()->assertJsonPath('data.name', 'Acme Blog')->assertJsonPath('data.app_code', 'cms');
 
     $id = $response->json('data.id');
 
@@ -46,7 +46,7 @@ test('a site belonging to a different company is not found', function () {
 });
 
 test('status defaults to Draft and is cast correctly in the response', function () {
-    $response = $this->postJson('/api/v1/sites', ['name' => 'Acme Blog', 'url' => 'https://blog.acme.com']);
+    $response = $this->postJson('/api/v1/sites', ['name' => 'Acme Blog', 'url' => 'https://blog.acme.com', 'app_code' => 'cms']);
     $response->assertCreated();
     expect($response->json('data.status'))->toBe('Draft');
 

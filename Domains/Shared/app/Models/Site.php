@@ -17,8 +17,10 @@ class Site extends BaseModel
         'tag_line',
         'url',
         'status',
+        'app_code',
+        'type',
         'setting',
-        'allow_comments_on_blogs',
+        'allow_comments',
         'requires_comment_approval',
         'notify_on_comments',
         'spam_filtering',
@@ -31,7 +33,7 @@ class Site extends BaseModel
      */
     protected $attributes = [
         'status' => SiteStatus::DRAFT->value,
-        'allow_comments_on_blogs' => true,
+        'allow_comments' => true,
         'requires_comment_approval' => true,
         'notify_on_comments' => true,
         'spam_filtering' => true,
@@ -49,7 +51,7 @@ class Site extends BaseModel
     {
         return [
             'setting' => 'array',
-            'allow_comments_on_blogs' => 'boolean',
+            'allow_comments' => 'boolean',
             'requires_comment_approval' => 'boolean',
             'notify_on_comments' => 'boolean',
             'spam_filtering' => 'boolean',

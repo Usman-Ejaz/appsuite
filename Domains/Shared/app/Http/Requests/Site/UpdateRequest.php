@@ -53,6 +53,13 @@ class UpdateRequest extends FormRequest
             'status' => ['nullable', Rule::enum(SiteStatus::class)],
 
             /**
+             * A free-form kind of site within its app.
+             *
+             * @example blog
+             */
+            'type' => ['nullable', 'string', 'max:255'],
+
+            /**
              * A freeform bag of site-level settings.
              *
              * @example {"theme": "dark"}
@@ -64,7 +71,7 @@ class UpdateRequest extends FormRequest
              *
              * @example true
              */
-            'allow_comments_on_blogs' => ['nullable', 'boolean'],
+            'allow_comments' => ['nullable', 'boolean'],
 
             /**
              * Whether a new comment must be approved before it becomes visible.

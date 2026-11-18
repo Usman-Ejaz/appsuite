@@ -2,6 +2,7 @@
 
 namespace Domains\Shared\Database\Factories;
 
+use Domains\Core\Enums\AppCode;
 use Domains\Shared\Models\Site;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,6 +18,10 @@ class SiteFactory extends Factory
      */
     public function definition(): array
     {
-        return [];
+        return [
+            'name' => fake()->company(),
+            'url' => fake()->url(),
+            'app_code' => AppCode::CMS,
+        ];
     }
 }
