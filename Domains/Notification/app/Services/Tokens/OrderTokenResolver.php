@@ -4,6 +4,7 @@ namespace Domains\Notification\Services\Tokens;
 
 use Domains\Ecommerce\Models\Order;
 use Domains\Ecommerce\Models\OrderItem;
+use Illuminate\Support\Number;
 
 /**
  * `{{ order.* }}` tokens: every visible order column, plus the computed ones below.
@@ -31,6 +32,24 @@ class OrderTokenResolver extends AbstractTokenResolver
     public function getPreviousStatus(): ?string
     {
         return $this->previous['order.status'] ?? null;
+    }
+
+    /**
+     * `{{ order.items }}`: one row per order line, with prices in the order's currency, for
+     * `{{ order.items | table }}`.
+     *
+     * @return list<array{product: string, quantity: int, price: string, total: string}>
+     */
+    public function getItems(): array
+    {
+        $currency = $this->model?->currency ?: 'USD';
+
+        return $this->model?->items->map(fn (OrderItem $item) => [
+            'product' => (string) $item->product_name,
+            'quantity' => (int) $item->quantity,
+            'price' => (string) Number::currency((float) $item->unit_price, in: $currency),
+            'total' => (string) Number::currency((float) $item->subtotal, in: $currency),
+        ])->values()->all() ?? [];
     }
 
     /**
