@@ -14,9 +14,7 @@ class ProductRoutes
 {
     public static function register(string $appCode): void
     {
-        Route::controller(ProductController::class)
-            ->prefix('products')
-            ->name("{$appCode}.products.")
+        Route::controller(ProductController::class)->prefix('products')->name('products.')
             ->group(function () use ($appCode) {
                 Route::get('/', 'list')->name('list')->defaults('app_code', $appCode);
                 Route::post('/', 'create')->name('create')->defaults('app_code', $appCode);

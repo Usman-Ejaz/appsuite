@@ -24,7 +24,6 @@ beforeEach(function () {
         $permission = Permission::create([
             'app_id' => $this->ecommerceApp->id,
             'name' => $name,
-            'code' => str($name)->afterLast(':').'_test',
             'guard_name' => 'web',
         ]);
         $this->user->givePermissionTo($permission);
@@ -37,7 +36,7 @@ beforeEach(function () {
 });
 
 test('an item can be added, listed, updated, and removed, adjusting stock and order totals throughout', function () {
-    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 20, 'price' => 25]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 20, 'selling_price' => 25]);
 
     $response = $this->postJson("/api/v1/ecommerce/orders/{$this->order->id}/items", [
         'product_id' => $product->id,
@@ -117,7 +116,7 @@ test('increasing quantity beyond available stock is rejected and leaves the item
 });
 
 test('line items snapshot the product name, sku, and price at the time of purchase', function () {
-    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'sku' => 'ORIGINAL-SKU', 'price' => 30, 'stock_quantity' => 10]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'sku' => 'ORIGINAL-SKU', 'selling_price' => 30, 'stock_quantity' => 10]);
 
     $response = $this->postJson("/api/v1/ecommerce/orders/{$this->order->id}/items", [
         'product_id' => $product->id,
@@ -125,7 +124,7 @@ test('line items snapshot the product name, sku, and price at the time of purcha
     ]);
     $itemId = $response->json('data.id');
 
-    $product->update(['sku' => 'CHANGED-SKU', 'price' => 999]);
+    $product->update(['sku' => 'CHANGED-SKU', 'selling_price' => 999]);
 
     $this->getJson("/api/v1/ecommerce/orders/{$this->order->id}/items/{$itemId}")
         ->assertOk()

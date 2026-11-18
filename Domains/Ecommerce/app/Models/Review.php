@@ -6,9 +6,9 @@ use Domains\Core\Models\BaseModel;
 use Domains\Ecommerce\Database\Factories\ReviewFactory;
 use Domains\Ecommerce\Enums\ReviewStatus;
 use Domains\Identity\Models\Customer;
-use Domains\Shared\Models\Product;
 use Domains\Shared\Traits\BelongsToSite;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Review extends BaseModel
 {
@@ -18,7 +18,8 @@ class Review extends BaseModel
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'product_id',
+        'reviewable_type',
+        'reviewable_id',
         'customer_id',
         'rating',
         'title',
@@ -47,9 +48,12 @@ class Review extends BaseModel
         ];
     }
 
-    public function product(): BelongsTo
+    /**
+     * The record the review was left on. Only products are reviewable today.
+     */
+    public function reviewable(): MorphTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->morphTo();
     }
 
     public function customer(): BelongsTo

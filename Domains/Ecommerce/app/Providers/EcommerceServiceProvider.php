@@ -64,14 +64,14 @@ class EcommerceServiceProvider extends ModuleServiceProvider
      */
     protected function registerProductRelations(): void
     {
-        Product::resolveRelationUsing('brand', fn (Product $product) => $product->belongsTo(Brand::class));
+        Product::resolveRelationUsing('brand', fn (Product $product) => $product->belongsTo(Brand::class, 'brand_id', 'id', 'brand'));
 
         Product::resolveRelationUsing(
             'collections',
-            fn (Product $product) => $product->belongsToMany(Collection::class, 'collection_product')->withPivot('sort_order')
+            fn (Product $product) => $product->belongsToMany(Collection::class, 'product_collection')->withPivot('sort_order')
         );
 
-        Product::resolveRelationUsing('reviews', fn (Product $product) => $product->hasMany(Review::class));
+        Product::resolveRelationUsing('reviews', fn (Product $product) => $product->morphMany(Review::class, 'reviewable'));
 
         Product::resolveRelationUsing('orderItems', fn (Product $product) => $product->hasMany(OrderItem::class));
     }

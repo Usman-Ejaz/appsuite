@@ -8,30 +8,16 @@ use Domains\Ecommerce\Http\Controllers\CustomerController;
 use Domains\Ecommerce\Http\Controllers\OrderController;
 use Domains\Ecommerce\Http\Controllers\OrderItemController;
 use Domains\Ecommerce\Http\Controllers\PaymentMethodController;
-use Domains\Ecommerce\Http\Controllers\ProductController;
 use Domains\Ecommerce\Http\Controllers\ReviewController;
 use Domains\Shared\Routing\CategoryRoutes;
+use Domains\Shared\Routing\ProductRoutes;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1/ecommerce')->middleware(['auth:sanctum', 'app:ecommerce'])->name('ecommerce.')->group(function () {
 
     CategoryRoutes::register('ecommerce');
 
-    Route::controller(CategoryController::class)->prefix('categories')->name('categories.')->group(function () {
-        Route::get('/', 'list')->name('list');
-        Route::post('/', 'create')->name('create');
-        Route::get('/{id}', 'get')->name('get');
-        Route::put('/{id}', 'update')->name('update');
-        Route::delete('/{id}', 'delete')->name('delete');
-    });
-
-    Route::controller(ProductController::class)->prefix('products')->name('products.')->group(function () {
-        Route::get('/', 'list')->name('list');
-        Route::post('/', 'create')->name('create');
-        Route::get('/{id}', 'get')->name('get');
-        Route::put('/{id}', 'update')->name('update');
-        Route::delete('/{id}', 'delete')->name('delete');
-    });
+    ProductRoutes::register('ecommerce');
 
     Route::controller(BrandController::class)->prefix('brands')->name('brands.')->group(function () {
         Route::get('/', 'list')->name('list');

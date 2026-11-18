@@ -20,11 +20,18 @@ class CreateRequest extends FormRequest
 
         return [
             /**
-             * The product being reviewed.
+             * The kind of record being reviewed. Only `Product` is reviewable today.
+             *
+             * @example Product
+             */
+            'reviewable_type' => ['required', Rule::in(['Product'])],
+
+            /**
+             * The id of the product being reviewed.
              *
              * @example 17
              */
-            'product_id' => ['required', 'integer', Rule::exists('products', 'id')->where('company_id', $companyId)],
+            'reviewable_id' => ['required', 'integer', Rule::exists('products', 'id')->where('company_id', $companyId)],
 
             /**
              * The customer who left the review, if known.

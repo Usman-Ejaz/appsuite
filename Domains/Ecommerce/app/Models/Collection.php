@@ -45,7 +45,7 @@ class Collection extends BaseModel
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'collection_product')
+        return $this->belongsToMany(Product::class, 'product_collection')
             ->withPivot('sort_order')
             ->orderByPivot('sort_order');
     }

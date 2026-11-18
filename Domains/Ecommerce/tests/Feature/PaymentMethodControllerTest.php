@@ -25,7 +25,6 @@ beforeEach(function () {
         $permission = Permission::create([
             'app_id' => $this->ecommerceApp->id,
             'name' => $name,
-            'code' => str($name)->afterLast(':').'_test',
             'guard_name' => 'web',
         ]);
         $this->user->givePermissionTo($permission);

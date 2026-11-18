@@ -14,7 +14,8 @@ class ReviewFactory extends Factory
     public function definition(): array
     {
         return [
-            'product_id' => ProductFactory::new()->ecommerce(),
+            'reviewable_type' => 'Product',
+            'reviewable_id' => ProductFactory::new()->ecommerce(),
             'rating' => fake()->numberBetween(1, 5),
             'title' => fake()->sentence(4),
             'body' => fake()->paragraph(),

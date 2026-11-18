@@ -18,12 +18,17 @@ class ReviewResource extends BaseResource
     {
         return array_merge(parent::toArray($request), [
             'company_id' => $this->company_id,
-            'product_id' => $this->product_id,
+            /**
+             * The kind of record this review was left on, e.g. `Product`.
+             */
+            'reviewable_type' => $this->reviewable_type,
+
+            'reviewable_id' => $this->reviewable_id,
 
             /**
-             * The product this review was left on.
+             * The product this review was left on, if loaded.
              */
-            'product' => ProductResource::make($this->whenLoaded('product')),
+            'reviewable' => ProductResource::make($this->whenLoaded('reviewable')),
 
             'customer_id' => $this->customer_id,
 

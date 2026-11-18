@@ -30,7 +30,6 @@ beforeEach(function () {
         $permission = Permission::create([
             'app_id' => $this->ecommerceApp->id,
             'name' => $name,
-            'code' => str($name)->afterLast(':').'_test',
             'guard_name' => 'web',
         ]);
         $this->user->givePermissionTo($permission);
@@ -110,7 +109,7 @@ test('a user without permission cannot manage orders', function () {
 });
 
 test('an order with an added item can be cancelled, which restocks the product and rolls back coupon usage', function () {
-    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 10, 'price' => 20]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 10, 'selling_price' => 20]);
     $coupon = Coupon::factory()->create(['company_id' => $this->company->id, 'type' => CouponType::FIXED, 'value' => 5]);
     $order = Order::factory()->create(['company_id' => $this->company->id, 'customer_id' => $this->customer->id]);
 
@@ -154,7 +153,7 @@ test('a user without the cancel permission cannot cancel an order', function () 
 });
 
 test('applying a percentage coupon computes the discount from the order subtotal', function () {
-    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 10, 'price' => 50]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 10, 'selling_price' => 50]);
     $coupon = Coupon::factory()->create(['company_id' => $this->company->id, 'type' => CouponType::PERCENTAGE, 'value' => 10]);
     $order = Order::factory()->create(['company_id' => $this->company->id, 'customer_id' => $this->customer->id]);
 
@@ -168,7 +167,7 @@ test('applying a percentage coupon computes the discount from the order subtotal
 });
 
 test('a percentage coupon discount is capped by max_discount_amount', function () {
-    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 10, 'price' => 100]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'stock_quantity' => 10, 'selling_price' => 100]);
     $coupon = Coupon::factory()->create([
         'company_id' => $this->company->id,
         'type' => CouponType::PERCENTAGE,
@@ -192,7 +191,7 @@ test('an expired coupon cannot be applied', function () {
 });
 
 test('a coupon below its minimum order amount cannot be applied', function () {
-    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'price' => 10]);
+    $product = Product::factory()->ecommerce()->create(['company_id' => $this->company->id, 'selling_price' => 10]);
     $coupon = Coupon::factory()->create(['company_id' => $this->company->id, 'min_order_amount' => 100]);
     $order = Order::factory()->create(['company_id' => $this->company->id, 'customer_id' => $this->customer->id]);
 
@@ -236,7 +235,9 @@ test('a payment method can be attached to an order and is nested in the response
     $this->putJson("/api/v1/ecommerce/orders/{$order->id}", ['payment_method_id' => $paymentMethod->id])
         ->assertOk();
 
-    $this->getJson("/api/v1/ecommerce/orders/{$order->id}")
+    $include = json_encode([['name' => 'paymentMethod']]);
+
+    $this->getJson("/api/v1/ecommerce/orders/{$order->id}?".http_build_query(['include' => $include]))
         ->assertOk()
         ->assertJsonPath('data.payment_method.id', $paymentMethod->id);
 });

@@ -22,7 +22,6 @@ beforeEach(function () {
         $permission = Permission::create([
             'app_id' => $this->ecommerceApp->id,
             'name' => $name,
-            'code' => str($name)->afterLast(':').'_test',
             'guard_name' => 'web',
         ]);
         $this->user->givePermissionTo($permission);
@@ -259,7 +258,9 @@ test('a valid brand_id succeeds and is nested in the get response', function () 
 
     $id = $response->json('data.id');
 
-    $this->getJson("/api/v1/ecommerce/products/{$id}")
+    $include = json_encode([['name' => 'brand']]);
+
+    $this->getJson("/api/v1/ecommerce/products/{$id}?".http_build_query(['include' => $include]))
         ->assertOk()
         ->assertJsonPath('data.brand.id', $brand->id);
 });

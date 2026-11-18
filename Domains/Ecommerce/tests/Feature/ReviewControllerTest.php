@@ -28,7 +28,6 @@ beforeEach(function () {
         $permission = Permission::create([
             'app_id' => $this->ecommerceApp->id,
             'name' => $name,
-            'code' => str($name)->afterLast(':').'_test',
             'guard_name' => 'web',
         ]);
         $this->permissions[$name] = $permission;
@@ -42,7 +41,8 @@ beforeEach(function () {
 
 test('a review can be created, listed, updated, and deleted', function () {
     $response = $this->postJson('/api/v1/ecommerce/reviews', [
-        'product_id' => $this->product->id,
+        'reviewable_type' => 'Product',
+        'reviewable_id' => $this->product->id,
         'rating' => 5,
         'title' => 'Great product',
         'body' => 'Works exactly as described.',
@@ -71,14 +71,16 @@ test('creating a review requires a product and rating', function () {
 
 test('rating must be between 1 and 5', function (int $rating) {
     $this->postJson('/api/v1/ecommerce/reviews', [
-        'product_id' => $this->product->id,
+        'reviewable_type' => 'Product',
+        'reviewable_id' => $this->product->id,
         'rating' => $rating,
     ])->assertUnprocessable();
 })->with([0, 6]);
 
 test('a newly created review always has a Pending status', function () {
     $response = $this->postJson('/api/v1/ecommerce/reviews', [
-        'product_id' => $this->product->id,
+        'reviewable_type' => 'Product',
+        'reviewable_id' => $this->product->id,
         'rating' => 5,
         'status' => ReviewStatus::APPROVED->value,
     ]);
@@ -89,7 +91,7 @@ test('a newly created review always has a Pending status', function () {
 test('a review belonging to a different company is not found', function () {
     $otherCompany = Company::factory()->create();
     $otherProduct = Product::factory()->ecommerce()->create(['company_id' => $otherCompany->id]);
-    $review = Review::factory()->create(['company_id' => $otherCompany->id, 'product_id' => $otherProduct->id]);
+    $review = Review::factory()->create(['company_id' => $otherCompany->id, 'reviewable_type' => 'Product', 'reviewable_id' => $otherProduct->id]);
 
     $this->getJson("/api/v1/ecommerce/reviews/{$review->id}")->assertNotFound();
     $this->putJson("/api/v1/ecommerce/reviews/{$review->id}", ['rating' => 3])->assertNotFound();
@@ -102,21 +104,25 @@ test('a user without permission cannot manage reviews', function () {
     Sanctum::actingAs($unprivilegedUser);
 
     $this->postJson('/api/v1/ecommerce/reviews', [
-        'product_id' => $this->product->id,
+        'reviewable_type' => 'Product',
+        'reviewable_id' => $this->product->id,
         'rating' => 5,
     ])->assertForbidden();
 });
 
 test('getting a single review includes the nested product', function () {
-    $review = Review::factory()->create(['company_id' => $this->company->id, 'product_id' => $this->product->id]);
+    $review = Review::factory()->create(['company_id' => $this->company->id, 'reviewable_type' => 'Product', 'reviewable_id' => $this->product->id]);
 
-    $this->getJson("/api/v1/ecommerce/reviews/{$review->id}")
+    $include = json_encode([['name' => 'reviewable']]);
+
+    $this->getJson("/api/v1/ecommerce/reviews/{$review->id}?".http_build_query(['include' => $include]))
         ->assertOk()
-        ->assertJsonPath('data.product.id', $this->product->id);
+        ->assertJsonPath('data.reviewable_type', 'Product')
+        ->assertJsonPath('data.reviewable.id', $this->product->id);
 });
 
 test('moderating a review to Approved succeeds', function () {
-    $review = Review::factory()->create(['company_id' => $this->company->id, 'product_id' => $this->product->id]);
+    $review = Review::factory()->create(['company_id' => $this->company->id, 'reviewable_type' => 'Product', 'reviewable_id' => $this->product->id]);
 
     $this->patchJson("/api/v1/ecommerce/reviews/{$review->id}/moderate", ['status' => 'Approved'])
         ->assertOk()
@@ -126,14 +132,14 @@ test('moderating a review to Approved succeeds', function () {
 });
 
 test('moderating a review to Pending is rejected', function () {
-    $review = Review::factory()->create(['company_id' => $this->company->id, 'product_id' => $this->product->id]);
+    $review = Review::factory()->create(['company_id' => $this->company->id, 'reviewable_type' => 'Product', 'reviewable_id' => $this->product->id]);
 
     $this->patchJson("/api/v1/ecommerce/reviews/{$review->id}/moderate", ['status' => 'Pending'])
         ->assertUnprocessable();
 });
 
 test('a user with update permission but not moderate permission cannot moderate a review', function () {
-    $review = Review::factory()->create(['company_id' => $this->company->id, 'product_id' => $this->product->id]);
+    $review = Review::factory()->create(['company_id' => $this->company->id, 'reviewable_type' => 'Product', 'reviewable_id' => $this->product->id]);
 
     $updateOnlyUser = User::factory()->create(['company_id' => $this->company->id, 'is_owner' => false]);
     $updateOnlyUser->apps()->attach($this->ecommerceApp->id);

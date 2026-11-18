@@ -61,8 +61,8 @@ class ReviewController extends Controller
     /**
      * Get Review
      *
-     * Retrieves a single review, including the product it was left on and the customer who left
-     * it.
+     * Retrieves a single review. Include `reviewable` and `customer` for the product it was left on
+     * and the customer who left it.
      */
     public function get(GetResourceRequest $request, int $id): ReviewResource
     {

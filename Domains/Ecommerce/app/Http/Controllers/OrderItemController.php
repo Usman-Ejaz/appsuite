@@ -43,7 +43,10 @@ class OrderItemController extends Controller
         $this->orders->findOrFail($order_id);
 
         $filters = $request->filters();
-        $filters['order_id'] = $order_id;
+        $filters['filter'] = ['AND' => array_values(array_filter([
+            ['field' => 'order_id', 'op' => '=', 'value' => $order_id],
+            $filters['filter'] ?? null,
+        ]))];
 
         $records = $this->items->list($filters);
 
@@ -81,7 +84,10 @@ class OrderItemController extends Controller
         $this->orders->findOrFail($order_id);
 
         $filters = $request->filters();
-        $filters['order_id'] = $order_id;
+        $filters['filter'] = ['AND' => array_values(array_filter([
+            ['field' => 'order_id', 'op' => '=', 'value' => $order_id],
+            $filters['filter'] ?? null,
+        ]))];
 
         $record = $this->items->get($id, $filters);
 
@@ -98,7 +104,7 @@ class OrderItemController extends Controller
     {
         $this->orders->findOrFail($order_id);
 
-        $item = $this->items->findOrFail($id);
+        $item = $this->items->get($id, ['filter' => ['field' => 'order_id', 'op' => '=', 'value' => $order_id]]);
 
         $item = $this->updateOrderItemQuantity->handle($item, $request->validated('quantity'));
 
@@ -117,7 +123,7 @@ class OrderItemController extends Controller
 
         $this->orders->findOrFail($order_id);
 
-        $item = $this->items->findOrFail($id);
+        $item = $this->items->get($id, ['filter' => ['field' => 'order_id', 'op' => '=', 'value' => $order_id]]);
 
         $this->removeOrderItem->handle($item);
 

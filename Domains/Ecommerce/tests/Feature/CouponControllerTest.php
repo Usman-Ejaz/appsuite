@@ -23,7 +23,6 @@ beforeEach(function () {
         $permission = Permission::create([
             'app_id' => $this->ecommerceApp->id,
             'name' => $name,
-            'code' => str($name)->afterLast(':').'_test',
             'guard_name' => 'web',
         ]);
         $this->user->givePermissionTo($permission);
@@ -93,7 +92,7 @@ test('coupon code uniqueness is scoped per company', function () {
     ])->assertUnprocessable();
 });
 
-test('creating a coupon with a campaign succeeds and the campaign is eager loaded on get', function () {
+test('creating a coupon with a campaign succeeds and the campaign is included on get', function () {
     $campaign = Campaign::factory()->create(['company_id' => $this->company->id]);
 
     $response = $this->postJson('/api/v1/ecommerce/coupons', [
@@ -105,7 +104,9 @@ test('creating a coupon with a campaign succeeds and the campaign is eager loade
 
     $id = $response->json('data.id');
 
-    $this->getJson("/api/v1/ecommerce/coupons/{$id}")
+    $include = json_encode([['name' => 'campaign']]);
+
+    $this->getJson("/api/v1/ecommerce/coupons/{$id}?".http_build_query(['include' => $include]))
         ->assertOk()
         ->assertJsonPath('data.campaign.id', $campaign->id);
 });
