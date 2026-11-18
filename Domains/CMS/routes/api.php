@@ -10,15 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1/cms')->middleware(['auth:sanctum', 'app:cms'])->name('cms.')->group(function () {
 
-    // CategoryRoutes::registerFor('cms');
-
-    Route::controller(CategoryController::class)->prefix('categories')->name('categories.')->group(function () {
-        Route::get('/', 'list')->name('list');
-        Route::post('/', 'create')->name('create');
-        Route::get('/{id}', 'get')->name('get');
-        Route::put('/{id}', 'update')->name('update');
-        Route::delete('/{id}', 'delete')->name('delete');
-    });
+    CategoryRoutes::registerFor('cms');
 
     Route::controller(BlogController::class)->prefix('blogs')->name('blogs.')->group(function () {
         Route::get('/', 'list')->name('list');

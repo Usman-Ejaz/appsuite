@@ -19,9 +19,7 @@ class CategoryRoutes
 {
     public static function register(string $appCode): void
     {
-        Route::controller(CategoryController::class)
-            ->prefix('categories')
-            ->name("{$appCode}.categories.")
+        Route::controller(CategoryController::class)->prefix('categories')->name('categories.')
             ->group(function () use ($appCode) {
                 Route::get('/', 'list')->name('list')->defaults('app_code', $appCode);
                 Route::post('/', 'create')->name('create')->defaults('app_code', $appCode);
